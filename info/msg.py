@@ -1,6 +1,10 @@
+import json
+
+
 class ExampleMessage():
-	def __init__(my, str="Hello world!"):
-		my.id = my.__class__.__name__
-		my.str = str
-	def __str__(my):
-		return json.dumps(my.__dict__)
+    def __init__(self, string="Hello world!"):
+        self.id = self.__class__.__name__
+        self.str = string
+
+    def __str__(self):
+        return json.dumps(self.__dict__)
