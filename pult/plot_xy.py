@@ -9,7 +9,7 @@ YLIM = [-5.0, 5.0]
 
 xy = msg.XY()
 yaw = msg.Yaw()
-net = net.Net(msg=[xy.id, yaw.id], timer=0.5)
+net = net.Net(msg=[xy.id, yaw.id], timer=0.1)
 
 matplotlib.use('TkAgg')
 auv_b_x, auv_b_y = [], []

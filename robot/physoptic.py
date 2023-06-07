@@ -144,7 +144,7 @@ earth_rotation = 2.6656648454566797e-05
 def main():
     init_id = msg.IniAuv().id
 
-    network = net.Net()
+    network = net.Net(timer=1)  # TODO: msg?
 
     yaw = msg.Yaw()
 
