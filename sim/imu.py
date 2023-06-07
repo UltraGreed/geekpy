@@ -1,16 +1,18 @@
 import time
 
-from net_lib import net, msg
+from base import net, msg
 
 TIMEOUT = 1.0  # Force timeout
 DT = 0.05  # Integration period
 M = 0.1  # Mass in yaw axis
 
 update_t = 0.0
-ini = msg.IniAuv()
-speed = msg.Speed()
-yaw = msg.Yaw()
+ini = msg.IniAuv()  # -> ini_id = msg.IniAuv.id
+speed = msg.Speed()  # ...
+yaw = msg.Yaw()  # ...
 net = net.Net(timer=DT, msg=[ini.id, speed.id])
+
+net.set(ini)
 
 while True:
     got = net.get()
@@ -18,10 +20,10 @@ while True:
     if got == 'Timer':
         if (time.time() - update_t) > TIMEOUT:
             speed = msg.Speed()
-        yaw.acc = DT * (speed.yaw - yaw.vel) / M
-        yaw.vel += DT * yaw.acc
-        yaw.pos += DT * yaw.vel
-        net.set(yaw)
+        # yaw.acc = DT * (speed.yaw - yaw.vel) / M
+        # yaw.vel += DT * yaw.acc
+        # yaw.pos += DT * yaw.vel
+        # net.set(yaw)
 
     elif got.id == ini.id:
         ini = got

@@ -2,7 +2,7 @@
 
 import time
 
-from net_lib import net
+from base import net
 import msg
 
 exam = msg.ExampleMessage("My hello world!")
@@ -10,7 +10,7 @@ net = net.Net()
 i = 0
 while True:
     i += 1
-    exam.str += "."
+    exam.string += "."
     net.set(exam)
-    print(exam.str)
+    print(exam.string)
     time.sleep(1)

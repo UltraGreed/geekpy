@@ -2,7 +2,7 @@ import sys
 import termios
 import tty
 
-from net_lib import net, msg
+from base import net, msg
 
 
 def getchar():

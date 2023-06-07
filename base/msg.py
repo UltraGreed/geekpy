@@ -1,6 +1,8 @@
 import json
 
 
+# TODO: Create base class for all messages
+
 ########################
 ###### NAVIGATION ######
 ########################
@@ -19,7 +21,7 @@ class XY:
 
 
 # Robot up position, velocity (rate) and acceleration
-class Up:
+class Depth:
     def __init__(self, pos=0.0, vel=0.0, acc=0.0):
         self.id = self.__class__.__name__
         self.pos, self.vel, self.acc = pos, vel, acc

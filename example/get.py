@@ -2,11 +2,11 @@
 
 import time
 
-from net_lib import net
+from base import net
 import msg
 
 exam = msg.ExampleMessage()
-net = net.Net(timer=2, msg=[exam.id])
+net = net.Net(timer=2)
 i = 0
 while True:
     i = i + 1

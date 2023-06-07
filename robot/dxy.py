@@ -1,7 +1,5 @@
 import time
-import math
-import sys
-from net_lib import deg, net, msg
+from base import deg, net, msg
 
 
 TIMEOUT = 1.0  # Force timeout

@@ -17,11 +17,14 @@ class Net:
         self.msg = msg
         self.set_ip = set_ip
         self.set_ports = set_ports
+
         self.start = time.time()
         self.next = self.start + self.timer + DELAY
+
         self.s_set = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.s_set.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.s_set.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+
         self.s_get = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.s_get.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.s_get.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
@@ -48,3 +51,4 @@ class Net:
             return 'Timer'
         else:
             return pickle.loads(data)
+

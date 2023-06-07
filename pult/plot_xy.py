@@ -2,7 +2,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 
-from net_lib import deg, net, msg
+from base import deg, net, msg
 
 XLIM = [-12.5, 12.5]
 YLIM = [-5.0, 5.0]
