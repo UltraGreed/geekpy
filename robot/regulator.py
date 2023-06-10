@@ -1,33 +1,43 @@
 #!python3 regulator.py
-# @todo: Improve stab_xy() to ellipse projections.
-import time, sys
+# @todo: Improve pd_xy() to ellipse projections.
+import time, sys, math
 sys.path.append('../base')
 import mat, network, message
 from message import X, Y, YAW, AXIS
 
 ############### X ##### Y # DEPTH ### YAW # PITCH ## ROLL
-STAB_P  = [  0.50,   0.50, 000.00,   5.00, 000.00, 000.00]  # Proportional coefficients of regulator
-STAB_D  = [  0.50,   0.50, 000.00,   5.00, 000.00, 000.00]  # Differential coefficients of regulator
-SAT_MAX = [  0.70,   0.70, 000.00,  30.00, 000.00, 000.00]  # Maximal possible velocity in stabilization mode
-SAT_MIN = [ -0.70,  -0.70, 000.00, -30.00, 000.00, 000.00]  # Minimal possible velocity in stabilization mode
+P   = [  0.50,   0.50, 000.00,   5.00, 000.00, 000.00]  # Proportional coefficients of regulator
+D   = [  0.50,   0.50, 000.00,   5.00, 000.00, 000.00]  # Differential coefficients of regulator
+MAX = [  0.70,   0.70, 000.00,  30.00, 000.00, 000.00]  # Maximal possible velocity in stabilization mode
+MIN = [ -0.70,  -0.70, 000.00, -30.00, 000.00, 000.00]  # Minimal possible velocity in stabilization mode
 TIMER   = 0.05  # 'Motion' message publication timer
 
-## Stabilization of common coordinates like DEPTH, PITCH and ROLL
-def stab_coord(speed, dif, vel, i):
-    val      = STAB_P[i] * dif - STAB_D[i] * vel     # PD regulator.
-    speed[i] = mat.sat(val, SAT_MIN[i], SAT_MAX[i])  # Return value to axel.
+## Simple PD-regulator with saturation
+def pd(dif, vel, stab_p, stab_d, sat_min, sat_max):
+    val = stab_p * dif - stab_d * vel      # PD regulator.
+    return mat.sat(val, sat_min, sat_max)  # Return value with saturation.
 
 ## Stabilization of XY coordinates
-def stab_xy(speed, stab, pos, vel):
+def pd_xy(speed, stab, pos, vel):
     sx = stab[X] if mat.is_num(stab[X]) else pos[X]             # Save stabilization
     sy = stab[Y] if mat.is_num(stab[Y]) else pos[Y]             # values X and/or Y (if exists).
     dx, dy = mat.map2robot(sx - pos[X], sy - pos[Y], pos[YAW])  # Convert stab values to robot coords.
-    stab_coord(speed, dx, vel, X)                               # Apply 
-    stab_coord(speed, dy, vel, Y)                               # 
+    r = math.sqrt(sx*sx + sy*sy)
+    if (r < 0.001): return
+    min_x = MIN[X] * abs(dx) / r
+    min_y = MIN[Y] * abs(dy) / r
+    max_x = MAX[X] * abs(dx) / r
+    max_y = MAX[Y] * abs(dy) / r
+    speed[X] = pd(dx, vel, P[X], D[X], min_x, max_x)   # Apply PD-regulator for X
+    speed[Y] = pd(dy, vel, P[Y], D[Y], min_y, max_y)   # and Y axis.
 
 ## Stabilization of YAW coordinate
-def stab_yaw(speed, dif, vel):
-    stab_coord(speed, mat.to180(dif), vel, YAW)
+def pd_yaw(speed, dif, vel):
+    speed[YAW] = pd(mat.to180(dif), vel, P[YAW], D[YAW], MIN[YAW], MAX[YAW])
+
+## Stabilization of DEPTH, PITCH and ROLL coordinates
+def pd_axel(speed, dif, vel, i):
+    speed[i] = pd(mat.to180(dif), vel, P[i], D[i], MIN[i], MAX[i])
 
 net       = network.Net(timer=TIMER)        # Will wait messages and timer ticks.
 tack      = message.Tack()                  # Incoming Tack message for robot control.
@@ -43,12 +53,9 @@ while net.receive():  # Waiting for timer ticks and messages.
         motion = message.Motion()                 # Create Motion message.
         for i in range(AXIS):                     # In all axis:
             if mat.is_num(tack.stab[i]):          # - update stabilization values,
-                if i == X or i == Y:
-                    stab_xy(motion.speed, tack.stab, pos, vel[i])
-                elif i == YAW:
-                    stab_yaw(motion.speed, tack.stab[i] - pos[i], vel[i])
-                else:
-                    stab_coord(motion.speed, tack.stab[i] - pos[i], vel[i], i)
+                if i == X or i == Y: pd_xy(motion.speed, tack.stab,     pos,    vel[i])
+                elif i == YAW:      pd_yaw(motion.speed, tack.stab[i] - pos[i], vel[i])
+                else:                   pd(motion.speed, tack.stab[i] - pos[i], vel[i], i)
             if mat.is_num(tack.speed[i]):         # - and append speed values
                 motion.speed[i] += tack.speed[i]  # (if 'stab' and/or 'speed' mode).
         net.send(motion)
