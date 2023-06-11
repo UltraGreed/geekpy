@@ -4,6 +4,7 @@ cd robot
 python3 navigation.py &
 python3 odometry.py &
 python3 regulator.py &
+python3 scene.py &
 
 cd ../simulation
 python3 imu.py &
