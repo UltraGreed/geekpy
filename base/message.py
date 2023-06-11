@@ -110,21 +110,27 @@ class InitRobot(Message):
     def __init__(self, x=None, y=None, depth=None, yaw=None, pitch=None, roll=None):
         self.pos = [x, y, depth, yaw, pitch, roll]
 
-"""
 class InitObject(Message):
     def __init__(self, obj='', x=None, y=None, up=None, yaw=None):
-        self.obj, self.x, self.y, self.up, self.yaw = obj, x, y, up, yaw
+        self.obj = obj
+        self.pos = [x, y, up, yaw]
 
-# Detected object
+# Detected object sended to scene
 class DetectedObject(Message):
-    def __init__(self, obj='', x=0.0, y=0.0, up=0.0):
-        self.obj, self.x, self.y, self.up, self.yaw = obj, x, y, up
+    def __init__(self, obj='', x=None, y=None, up=None, yaw=None):
+        self.obj = obj
+        self.pos = [x, y, up, yaw]
 
-# Filtered objects
+# Filtered objects sended from scene
 class FilteredObjects(Message):
-    def __init__(self, objs=[]):
+    def __init__(self, objs={
+        "Start":  [0.0, 0.0, 0.0, 0.0],
+        "Pinger": [4.0, 3.0, 2.0, 1.0]
+        }):
         self.objs = objs
 
+
+"""
 # Wave delays of received signals
 class WaveDelays(Message):
     def __init__(self, f=0.0, dt=[0.0, 0.0, 0.0, 0.0]):
