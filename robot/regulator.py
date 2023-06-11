@@ -10,7 +10,8 @@ P   = [  0.50,   0.50, 000.00,   5.00, 000.00, 000.00]  # Proportional coefficie
 D   = [  0.50,   0.50, 000.00,   5.00, 000.00, 000.00]  # Differential coefficients of regulator
 MAX = [  0.70,   0.70, 000.00,  30.00, 000.00, 000.00]  # Maximal possible velocity in stabilization mode
 MIN = [ -0.70,  -0.70, 000.00, -30.00, 000.00, 000.00]  # Minimal possible velocity in stabilization mode
-TIMER   = 0.05  # 'Motion' message publication timer
+TIMER         = 0.05   # 'Motion' message publication timer.
+MIN_STAB_DIST = 0.001  # Min distance to make stabilization.
 
 ## Simple PD-regulator with saturation
 def pd(dif, vel, stab_p, stab_d, sat_min, sat_max):
@@ -22,14 +23,14 @@ def pd_xy(speed, stab, pos, vel):
     sx = stab[X] if mat.is_num(stab[X]) else pos[X]             # Save stabilization
     sy = stab[Y] if mat.is_num(stab[Y]) else pos[Y]             # values X and/or Y (if exists).
     dx, dy = mat.map2robot(sx - pos[X], sy - pos[Y], pos[YAW])  # Convert stab values to robot coords.
-    r = math.sqrt(sx*sx + sy*sy)
-    if (r < 0.001): return
-    min_x = MIN[X] * abs(dx) / r
-    min_y = MIN[Y] * abs(dy) / r
-    max_x = MAX[X] * abs(dx) / r
-    max_y = MAX[Y] * abs(dy) / r
-    speed[X] = pd(dx, vel, P[X], D[X], min_x, max_x)   # Apply PD-regulator for X
-    speed[Y] = pd(dy, vel, P[Y], D[Y], min_y, max_y)   # and Y axis.
+    dist = math.sqrt(sx*sx + sy*sy)                             # Claculate distance to stab-point.
+    if (dist < MIN_STAB_DIST): return                           # If distanace lees then minimal then nothing to stab.
+    min_x = MIN[X] * abs(dx) / dist                             # Calculate
+    min_y = MIN[Y] * abs(dy) / dist                             # min and max
+    max_x = MAX[X] * abs(dx) / dist                             # restrictions
+    max_y = MAX[Y] * abs(dy) / dist                             # for axis.
+    speed[X] = pd(dx, vel, P[X], D[X], min_x, max_x)            # Apply PD-regulator for X
+    speed[Y] = pd(dy, vel, P[Y], D[Y], min_y, max_y)            # and Y axis.
 
 ## Stabilization of YAW coordinate
 def pd_yaw(speed, dif, vel):

@@ -37,3 +37,9 @@ def map2robot(map_dx, map_dy, robot_yaw):
     robot_dy = proj_y(map_dx, map_dy, -robot_yaw)
     return robot_dx, robot_dy
 
+# Convert dxy vector from map to robot coordinate system
+def robot2map(robot_dx, robot_dy, robot_yaw):
+    map_dx = proj_x(robot_dx, robot_dy, robot_yaw)
+    map_dy = proj_y(robot_dx, robot_dy, robot_yaw)
+    return map_dx, map_dy
+

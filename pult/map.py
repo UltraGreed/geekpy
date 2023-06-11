@@ -7,47 +7,74 @@ sys.path.append('../base')
 import mat, network, message
 from message import X, Y, YAW
 
-XLIM, YLIM = [-12.5, 12.5], [ -5.0,  5.0]  # Plot axis limits
-REFRESH    = 0.5                           # Refresh time, sec
+# Static markers coordinates.
+MARKERS = {
+    "Zero":       ([0],
+                   [0]),
+    "Pool":       ([-5,  5, -5, 5],
+                   [-5, -5,  5, 5]),
+    "StabSquare": ([-2,  2, -2, 2],
+                   [-2, -2,  2, 2])
+}
 
-pos_x, pos_y, pos_yaw = 0.0, 0.0, 0.0
-net = network.Net(timer=REFRESH)
+# Robot (X, Y) coordinates.
+ROBOT = [( 0.0, -0.3),
+         (-0.2, -0.4),
+         ( 0.0,  0.4),
+         ( 0.2, -0.4),
+         ( 0.0, -0.3)]
+
+REFRESH = 0.5      # Refresh time, sec.
+POINTS  = 120 * 3  # Number of points in trajectories.
 
 # matplotlib.use('TkAgg')
-auv_b_x, auv_b_y = [], []
-auv_p_x, auv_p_y = [], []
-auv_t_x, auv_t_y = [], []
-
 plt.ion()
-fig = plt.figure()
-fad = fig.add_subplot(1,1,1)
-plt.xlim(XLIM)
-plt.ylim(YLIM)
+fig = plt.figure(num='Map')
+sub = fig.add_subplot(1,1,1)
+sub.axis('equal')
 
-auv_b, = fad.plot(auv_b_x, auv_b_y, 'o',  linestyle=':', markersize=10, color='#66FF66', alpha=0.6)
-auv_p, = fad.plot(auv_p_x, auv_p_y, 'g-', linewidth=3, color='#33DD33', alpha=0.4)
-auv_t, = fad.plot(auv_t_x, auv_t_y, 'g-', linewidth=1, color='#009900', alpha=0.2)
+# Init robot position&trajectory and static markers.
+robot, = sub.plot([], [], '-', color='#FF330099', linewidth=2)
+way,   = sub.plot([], [], '-', color='#FF330033', linewidth=1)
+for m in MARKERS:
+    sub.plot(MARKERS[m][X], MARKERS[m][Y], 'o', color='#00000066')
 
-# Update plots in infinit loop
+# Connect to network and start to redresh data.
+net = network.Net(timer=REFRESH)
+pos_x, pos_y, pos_yaw = 0.0, 0.0, 0.0
+way_x, way_y = [], []
+robot_x, robot_y = [0] * len(ROBOT), [0] * len(ROBOT)
+
+# Update plots in infinit loop.
 while net.receive():
-	
-	if net.id() == 'Timer':
-		# Update position
-		auv_b.set_xdata(pos_x)
-		auv_b.set_ydata(pos_y)
-		auv_p.set_xdata([pos_x, pos_x + mat.sind(pos_yaw)])
-		auv_p.set_ydata([pos_y, pos_y + mat.cosd(pos_yaw)])
-		# Update trajectory
-		auv_t_x = np.append(auv_t_x, pos_x)
-		auv_t_y = np.append(auv_t_y, pos_y)
-		auv_t.set_xdata(auv_t_x)
-		auv_t.set_ydata(auv_t_y)
-		# Update plot
-		fig.canvas.draw()
-		fig.canvas.flush_events()
+    
+    # Update plots on timer.
+    if net.id() == 'Timer':
 
-	elif net.id() == 'Coord':
-		pos     = net.msg().pos
-		pos_x   = pos[X  ] if mat.is_num(pos[X  ]) else 0.0
-		pos_y   = pos[Y  ] if mat.is_num(pos[Y  ]) else 0.0
-		pos_yaw = pos[YAW] if mat.is_num(pos[YAW]) else 0.0
+        # Update robot position.
+        for i in range(len(ROBOT)):
+            # print("i =", i, "r =", ROBOT[i])
+            dx, dy = mat.robot2map(ROBOT[i][X], ROBOT[i][Y], pos_yaw)
+            robot_x[i] = pos_x + dx
+            robot_y[i] = pos_y + dy
+        robot.set_xdata(robot_x)
+        robot.set_ydata(robot_y)
+
+        # Update robot trajectory.
+        way_x = np.append(way_x, pos_x)
+        way_y = np.append(way_y, pos_y)
+        while len(way_x) > POINTS: way_x = way_x[1:]
+        while len(way_y) > POINTS: way_y = way_y[1:]
+        way.set_xdata(way_x)
+        way.set_ydata(way_y)
+
+        # Update plots.
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+
+    # Save robot coordinates.
+    elif net.id() == 'Coord':
+        pos     = net.msg().pos
+        pos_x   = pos[X  ] if mat.is_num(pos[X  ]) else 0.0
+        pos_y   = pos[Y  ] if mat.is_num(pos[Y  ]) else 0.0
+        pos_yaw = pos[YAW] if mat.is_num(pos[YAW]) else 0.0
