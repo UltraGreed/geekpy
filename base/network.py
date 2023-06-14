@@ -54,3 +54,11 @@ class Net:
         else:
             self.data = pickle.loads(buf)
             return True
+
+
+# Identification name of the received message (ClassName)
+def wait_message(id=''):
+    net = Net()               # Will wait for messages without timer.
+    while net.receive():      # Wait all messages.
+        if net.id() == id:    # If id is necessary then
+            return net.msg()  # return message.
