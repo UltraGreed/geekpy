@@ -56,7 +56,7 @@ while net.receive():  # Waiting for timer ticks and messages.
             if mat.is_num(tack.stab[i]):          # - update stabilization values,
                 if i == X or i == Y: pd_xy(motion.speed, tack.stab,     pos,    vel[i])
                 elif i == YAW:      pd_yaw(motion.speed, tack.stab[i] - pos[i], vel[i])
-                else:                   pd(motion.speed, tack.stab[i] - pos[i], vel[i], i)
+                else:              pd_axel(motion.speed, tack.stab[i] - pos[i], vel[i], i)
             if mat.is_num(tack.speed[i]):         # - and append speed values
                 motion.speed[i] += tack.speed[i]  # (if 'stab' and/or 'speed' mode).
         net.send(motion)
