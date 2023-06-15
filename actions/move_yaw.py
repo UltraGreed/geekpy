@@ -7,7 +7,7 @@ from message import X, Y, YAW
 TIMER = 0.5
 
 ## Robot ahead moving function with given yaw
-def ahead(origin='Current', yaw=0, dist=1, speed=0.1, depth=0):
+def move_yaw(origin='Current', yaw=0.0, dist=0.1, speed=0.1, depth=0.0):
 
     # Initial and current robot positions and objects data.
     pos   = network.wait_message('Coord').pos
