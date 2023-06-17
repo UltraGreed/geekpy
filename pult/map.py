@@ -1,8 +1,8 @@
 #!python3 map.py
+import time, sys, setproctitle
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import time, sys
 sys.path.append('../base')
 import mat, network, message
 from message import X, Y, YAW
@@ -28,6 +28,7 @@ REFRESH = 0.2      # Refresh time, sec.
 POINTS  = 20 * 60  # Number of points in trajectories.
 
 # matplotlib.use('TkAgg')
+setproctitle.setproctitle(sys.argv[0])  # Set filename.py title for process.
 plt.ion()
 fig = plt.figure(num='Map')
 sub = fig.add_subplot(1,1,1)

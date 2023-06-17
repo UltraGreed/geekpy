@@ -1,5 +1,5 @@
 #!python3 keyboard.py
-import time, tty, termios, sys
+import time, tty, termios, sys, setproctitle
 sys.path.append('../base')
 import network, message
 
@@ -13,6 +13,7 @@ def getchar():
         termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
     return ch
    
+setproctitle.setproctitle(sys.argv[0])  # Set filename.py title for process.
 net = network.Net()
 
 while True:
