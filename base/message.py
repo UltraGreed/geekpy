@@ -15,6 +15,7 @@ class TestMessage(Message):
     def __init__(self, text="Hello world!"):
         self.text = text
 
+
 ########################
 ###### NAVIGATION ######
 ########################
@@ -66,40 +67,6 @@ class Control(Message):  # Thruster control power, %         #####
                    middle_left, middle_right,            # SL     SR #
                     stern_left,  stern_right]             ###########
 
-################################
-###### SUBSYSTEMS CONTROL ######
-################################
-
-# Switch on GPIO key
-class KeyOn(Message):
-    def __init__(self, key='', time=3.0):
-        self.key  = key   # Turn on key of 'Grabber', 'Ball', 'Crane' etc
-        self.time = time  # Time of hold the key, -1 = infinit
-
-# Switch off GPIO key
-class KeyOff(Message):
-    def __init__(self, key=''):
-        self.key  = key   # Turn off key of 'Grabber', 'Ball', 'Crane'
-
-# Switch on photo camera
-class PhotoOn(Message):
-    def __init__(self, camera='Bottom', period=0.1):
-        self.camera = camera  # 'Bottom' or 'Front' camera
-        self.period = period  # Imaging period
-
-# Switch off photo camera
-class PhotoOff(Message):
-    def __init__(self, camera='Bottom'):
-        self.camera = camera  # 'Bottom' or 'Front' camera
-
-# Start saving photo images
-class PhotoSave(Message):
-    def __init__(self, camera='Bottom', folder="", time=10, period=0.2):
-        self.camera = camera  # 'Bottom' or 'Front' camera
-        self.folder = folder  # Folder name for saved images
-        self.time   = time    # Time of image saving
-        self.period = period  # Imaging period
-
 
 #####################################
 ###### AUV & OBJECTS POSITIONS ######
@@ -115,6 +82,11 @@ class InitObject(Message):
         self.obj = obj
         self.pos = [x, y, up, yaw]
 
+
+###############################
+###### OBJECTS DETECTION ######
+###############################
+
 # Detected object sended to scene
 class DetectedObject(Message):
     def __init__(self, obj='', x=None, y=None, up=None, yaw=None):
@@ -124,21 +96,91 @@ class DetectedObject(Message):
 # Filtered objects sended from scene
 class FilteredObjects(Message):
     def __init__(self, objs={
-        "Start":  [0.0, 0.0, 0.0, 0.0],
-        "Pinger": [4.0, 3.0, 2.0, 1.0]
+            "Start":  [0.0, 0.0, 0.0, 0.0],
+            "Pinger": [4.0, 3.0, 2.0, 1.0]
         }):
         self.objs = objs
 
+# Detection On
+class DetectionOn(Message):
+    def __init__(self, obj=''):
+        self.obj = obj
 
-"""
-# Wave delays of received signals
-class WaveDelays(Message):
-    def __init__(self, f=0.0, dt=[0.0, 0.0, 0.0, 0.0]):
-        self.dt = dt
+# Detection Off
+class DetectionOff(Message):
+    def __init__(self, obj=''):
+        self.obj = obj
+
+
+###########################
+###### PHOTO CONTROL ######
+###########################
+
+# Image link from saved object
+class PhotoLink(Message):
+    def __init__(self, obj='', path="", file=""):
+        self.obj  = obj
+        self.path = path
+        self.file = file
+
+# Start saving photo images
+class PhotoSave(Message):
+    def __init__(self, camera='Bottom', folder="", time=10, period=0.2):
+        self.camera = camera  # 'Bottom' or 'Front' camera
+        self.folder = folder  # Folder name for saved images
+        self.time   = time    # Time of image saving
+        self.period = period  # Imaging period
+
+# Switch on photo camera
+class PhotoOn(Message):
+    def __init__(self, camera='Bottom', period=0.1):
+        self.camera = camera  # 'Bottom' or 'Front' camera
+        self.period = period  # Imaging period
+
+# Switch off photo camera
+class PhotoOff(Message):
+    def __init__(self, camera='Bottom'):
+        self.camera = camera  # 'Bottom' or 'Front' camera
+
+
+##############################
+###### ACOUSTIC CONTROL ######
+##############################
+
+# Wave delay of received signals
+class Wave(Message):
+    def __init__(self, f=0.0, left=0.0, right=0.0, bottom=0.0, front=0.0):
+        self.f  = f
+        self.dr = [left, right, bottom, front]
+
+# Wave delay of received signals
+class WaveBin(Delay):
+
+# Wave delay of received signals
+class WaveFrame(Delay):
+
+
+##########################
+###### KEYS CONTROL ######
+##########################
+
+# Switch on GPIO key
+class KeyOn(Message):
+    def __init__(self, key='', time=3.0):
+        self.key  = key   # Turn on key of 'Grabber', 'BallLeft' or 'BallRight'
+        self.time = time  # Time of hold the key, -1 = infinit
+
+# Switch off GPIO key
+class KeyOff(Message):
+    def __init__(self, key=''):
+        self.key  = key   # Turn off key of 'Grabber', 'BallLeft' or 'BallRight'
+
 
 #####################
 ###### LOGGING ######
 #####################
+
+"""
 
 # Send text to blackbox and plot
 class Text(Message):
