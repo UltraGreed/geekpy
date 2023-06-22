@@ -148,16 +148,10 @@ class PhotoOff(Message):
 ##############################
 
 # Wave delay of received signals
-class Wave(Message):
+class AcousticDelay(Message):
     def __init__(self, f=0.0, left=0.0, right=0.0, bottom=0.0, front=0.0):
         self.f  = f
         self.dr = [left, right, bottom, front]
-
-# Wave delay of received signals
-class WaveBin(Delay):
-
-# Wave delay of received signals
-class WaveFrame(Delay):
 
 
 ##########################
