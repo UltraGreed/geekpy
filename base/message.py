@@ -82,24 +82,14 @@ class InitObject(Message):
         self.obj = obj
         self.pos = [x, y, up, yaw]
 
+class ResetObjects(Message):
+    def __init__(self):
+        pass
+
 
 ###############################
 ###### OBJECTS DETECTION ######
 ###############################
-
-# Detected object sended to scene
-class DetectedObject(Message):
-    def __init__(self, obj='', x=None, y=None, up=None, yaw=None):
-        self.obj = obj
-        self.pos = [x, y, up, yaw]
-
-# Filtered objects sended from scene
-class FilteredObjects(Message):
-    def __init__(self, objs={
-            "Start":  [0.0, 0.0, 0.0, 0.0],
-            "Pinger": [4.0, 3.0, 2.0, 1.0]
-        }):
-        self.objs = objs
 
 # Detection On
 class DetectionOn(Message):
@@ -111,17 +101,38 @@ class DetectionOff(Message):
     def __init__(self, obj=''):
         self.obj = obj
 
+# Detected object sended to scene
+class DetectedObject(Message):
+    def __init__(self, obj='', x=None, y=None, up=None, yaw=None):
+        self.obj = obj
+        self.pos = [x, y, up, yaw]
 
-###########################
-###### PHOTO CONTROL ######
-###########################
+# Filtered objects sended from scene
+class FilteredObjects(Message):
+    def __init__(self, objs={
+            "Zero":  [  0.0,  0.0, 0.0,   0.0],
+            "BallR": [ -5.0,  5.0, 2.0, -45.0],
+            "BallY": [ -6.0,  6.0, 2.0, -45.0],
+            "BallG": [ -7.0,  5.0, 2.0, -45.0],
+            "CellB": [-10.0, 10.0, 2.0,   0.0],
+            "CellY": [-10.0, 11.0, 2.0,   0.0],
+            "CellR": [-10.0, 12.0, 2.0,   0.0],
+            "Frame": [ -3.0, 11.0, 0.0,   0.0],
+        }):
+        self.objs = objs
+
+
+###################################
+###### IMAGE & PHOTO CONTROL ######
+###################################
 
 # Image link from saved object
-class PhotoLink(Message):
-    def __init__(self, obj='', path="", file=""):
-        self.obj  = obj
-        self.path = path
-        self.file = file
+class ImageLink(Message):
+    def __init__(self, obj='', path="", file="", counter=0):
+        self.obj     = obj
+        self.path    = path
+        self.file    = file
+        self.counter = counter
 
 # Start saving photo images
 class PhotoSave(Message):
@@ -143,15 +154,15 @@ class PhotoOff(Message):
         self.camera = camera  # 'Bottom' or 'Front' camera
 
 
-##############################
-###### ACOUSTIC CONTROL ######
-##############################
+######################################
+###### ACOUSTIC & SOUND CONTROL ######
+######################################
 
 # Wave delay of received signals
-class AcousticDelay(Message):
+class SoundDelay(Message):
     def __init__(self, f=0.0, left=0.0, right=0.0, bottom=0.0, front=0.0):
-        self.f  = f
-        self.dr = [left, right, bottom, front]
+        self.freq = freq                          # Signal frequency, Hz.
+        self.dist = [left, right, bottom, front]  # Distance delay, m.
 
 
 ##########################
