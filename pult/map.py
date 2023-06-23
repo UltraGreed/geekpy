@@ -2,19 +2,39 @@
 import time, sys, setproctitle
 import matplotlib
 import matplotlib.pyplot as plt
+# import matplotlib.artist as art
 import numpy as np
 sys.path.append('../base')
 import mat, network, message
 from message import X, Y, YAW
 
+OBJECT_COLORS = {
+    "Zero":  "#00000033",
+    "BallR": "#EE000099",
+    "BallY": "#EEEE0099",
+    "BallG": "#00EE0099",
+    "CellR": "#AA000099",
+    "CellY": "#AAAA0099",
+    "CellB": "#0000AA99",
+    "Frame": "#FF00FF99",
+}
+
+# Max count of detected objects markers.
+OBJ_COUNT = 60
+
 # Static markers coordinates.
 MARKERS = {
-    "Zero":       ([0],
-                   [0]),
-    "Pool":       ([-5,  5, -5, 5],
-                   [-5, -5,  5, 5]),
-    "StabSquare": ([-2,  2, -2, 2],
-                   [-2, -2,  2, 2])
+    # "Start":        ([0],
+    #                  [0]),
+    "Pool":         ([-13,   3, -13,   3],
+                     [ -3,  -3,  14,  14]),
+    "StartAndStab": ([ -2,   2,  -2,   2],
+                     [ -2,  -2,   2,   2]),
+    "Balls":        ([ -8,  -4,  -8,  -4],
+                     [  4,   4,   7,   7]),
+    "Bins":         ([-11,  -9, -11,  -9],
+                     [  9,   9,  13,  13])
+
 }
 
 # Robot (X, Y) coordinates.
@@ -37,8 +57,9 @@ sub.axis('equal')
 # Init robot position&trajectory and static markers.
 for m in MARKERS:
     sub.plot(MARKERS[m][X], MARKERS[m][Y], '+', color='#00000066')
-objs,  = sub.plot([], [], 'o', color='#00FF0033')
-way,   = sub.plot([], [], '-', color='#FF330033', linewidth=1)
+obj,   = sub.plot([], [], '.', color='#0066FF22')
+objs,  = sub.plot([], [], 'o', color='#00000033') #color='#00FF6644')
+way,   = sub.plot([], [], '-', color='#FF330066', linewidth=1)
 robot, = sub.plot([], [], '-', color='#FF330099', linewidth=2)
 
 # Connect to network and start to redresh data.
@@ -46,6 +67,7 @@ net = network.Net(timer=REFRESH)
 robot_x, robot_y = [0] * len(ROBOT), [0] * len(ROBOT)
 way_x,   way_y   = [], []
 objs_x,  objs_y  = [], []
+obj_x,   obj_y   = [], []
 
 # Update plots in infinit loop.
 while net.receive():
@@ -77,13 +99,32 @@ while net.receive():
         way.set_xdata(way_x)
         way.set_ydata(way_y)
 
-    # Save objects coordinates.
+    # Show filtered objects coordinates.
     elif net.id() == 'FilteredObjects':
         data = net.msg().objs
+        objs_x = []
+        objs_y = []
+        for txt in sub.texts:
+            txt.remove()
         for i in data:
             objs_x = np.append(objs_x, data[i][X])
             objs_y = np.append(objs_y, data[i][Y])
-        while len(objs_x) > 10: objs_x = objs_x[1:]
-        while len(objs_y) > 10: objs_y = objs_y[1:]
+            color = OBJECT_COLORS[i] if i in OBJECT_COLORS else '#000000AA'
+            # color = '#000000AA'
+            # if i in OBJECT_COLORS:
+            #     color = OBJECT_COLORS[i]
+            # else:
+            #     color = '#000000AA'
+            sub.text(data[i][X], data[i][Y], i, color=color, fontsize='small')
         objs.set_xdata(objs_x)
         objs.set_ydata(objs_y)
+
+    # Show detected object coordinates.
+    elif net.id() == 'DetectedObject':
+        data  = net.msg().pos
+        obj_x = np.append(obj_x, data[X])
+        obj_y = np.append(obj_y, data[Y])
+        while len(obj_x) > OBJ_COUNT: obj_x = obj_x[1:]
+        while len(obj_y) > OBJ_COUNT: obj_y = obj_y[1:]
+        obj.set_xdata(obj_x)
+        obj.set_ydata(obj_y)
