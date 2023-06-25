@@ -45,7 +45,7 @@ class Coord(Message):
 
 # Tack command to regulator, speed or stabilization mode
 class Tack(Message):
-    def __init__(self, priority=0, time=1,
+    def __init__(self, priority=0, time=1.0,
                  speed_x=None, speed_y=None, speed_depth=None, speed_yaw=None, speed_pitch=None, speed_roll=None,
                   stab_x=None,  stab_y=None,  stab_depth=None,  stab_yaw=None,  stab_pitch=None,  stab_roll=None):
         self.priority = priority  # Priority of movement control: 0=Mission, 1=Keyboard, 2=Gamepad

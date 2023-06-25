@@ -29,7 +29,8 @@ def move_yaw(origin='Current', yaw=0.0, dist=0.1, speed=0.1, depth=0.0):
         if net.id() == 'Timer':                             # If timer tick occures then:
             d = math.sqrt((start[X] - pos[X])**2            # Calc distance
                         + (start[Y] - pos[Y])**2)           # from start.
-            net.send(message.Tack(speed_x    = 0.0,         # Send 'Tack'
+            net.send(message.Tack(time       = 2.0,         # Control time.
+                                  speed_x    = 0.0,         # Send 'Tack'
                                   speed_y    = speed,       # message to
                                   stab_depth = depth,       # regulator
                                   stab_yaw   = target_yaw,  # with all
