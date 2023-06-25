@@ -51,6 +51,11 @@ class Net:
                 self.data[0] = 'UnknownTimeout'
                 print("WARNING: UnknownTimeout!")
             return True
+        except BlockingIOError as err:
+            self.data[1] = None
+            self.data[0] = BlockingIOError
+            print("ERROR: BlockingIOError", err)
+            return True
         else:
             self.data = pickle.loads(buf)
             return True
