@@ -4,7 +4,7 @@ sys.path.append('../base')
 import network, message
 from message import YAW
 
-TIMEOUT = 1.00  # Force timeout.
+TIMEOUT = 0.50  # Force timeout.
 PERIOD  = 0.05  # Integration period and publication timer.
 MOMENT  = 0.10  # Momement of inertion in yaw axis.
 
