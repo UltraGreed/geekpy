@@ -1,4 +1,8 @@
-import socket, pickle, time, math, struct, copy
+import copy
+import pickle
+import socket
+import time
+
 
 # Network communucation class
 class Net:

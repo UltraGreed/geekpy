@@ -1,9 +1,13 @@
 #!python3 odometry.py
-import time, math, sys, setproctitle
-sys.path.append('../base')
-import mat, network, message
-from mat import sind, cosd
-from message import X, Y, YAW
+import sys
+import time
+
+import setproctitle
+
+sys.path.append('./')
+from base import message, network
+from base.mat import cosd, sind
+from base.message import YAW, X, Y
 
 TIMER   = 0.05        # Integration and publication timer period.
 MX, MY  = 1.50, 1.00  # Mass in lateral and longitudinal directions.

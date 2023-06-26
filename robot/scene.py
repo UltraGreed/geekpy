@@ -1,7 +1,11 @@
 #!python3 scene.py
-import sys, setproctitle
-sys.path.append('../base')
-import mat, network, message
+import sys
+
+import setproctitle
+
+sys.path.append('./')
+from base import message, network
+
 # from message import AXIS
 
 TIMER = 0.3  # Coordinates publication timer.

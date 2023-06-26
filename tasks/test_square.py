@@ -1,7 +1,11 @@
 #!python3 test_square.py
-import sys, setproctitle
-sys.path.append('../actions')
-from move_yaw import move_yaw
+import sys
+
+import setproctitle
+
+sys.path.append('./')
+from actions.move_yaw import move_yaw
+
 setproctitle.setproctitle(sys.argv[0])  # Set filename.py title for process.
 
 print   ("Square trajectory task started...")

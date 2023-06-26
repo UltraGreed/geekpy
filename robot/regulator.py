@@ -1,9 +1,14 @@
 #!python3 regulator.py
 # @todo: Improve pd_xy() to ellipse projections.
-import time, sys, math, setproctitle
-sys.path.append('../base')
-import mat, network, message
-from message import X, Y, YAW, AXIS
+import math
+import sys
+import time
+
+import setproctitle
+
+sys.path.append('./')
+from base import mat, message, network
+from base.message import AXIS, YAW, X, Y
 
 ############### X ##### Y # DEPTH ### YAW # PITCH ## ROLL
 P   = [  0.50,   0.50, 000.00,   5.00, 000.00, 000.00]  # Proportional coefficients of regulator

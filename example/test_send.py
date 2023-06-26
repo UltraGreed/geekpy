@@ -1,7 +1,9 @@
 #!python3 test_send.py
-import time, sys
-sys.path.append('../base')
-import network, message
+import sys
+import time
+
+sys.path.append('./')
+from base import message, network
 
 test_message = message.TestMessage()
 net = network.Net()

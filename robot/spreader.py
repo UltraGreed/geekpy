@@ -1,6 +1,9 @@
+import sys
+
 import numpy as np
-sys.path.append('../base')
-import network, message
+
+sys.path.append('./')
+from base import network, message
 
 # Linear (1) & quadric (2) thrusters' spread by axis
 #######     X       Y       DEPTH   YAW     PITCH   ROLL

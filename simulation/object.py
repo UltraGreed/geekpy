@@ -1,8 +1,12 @@
 #!python3 object.py
-import time, sys, setproctitle, random
-sys.path.append('../base')
-import network, message
-from message import X, Y
+import random
+import sys
+
+import setproctitle
+
+sys.path.append('./')
+from base import message, network
+from base.message import X, Y
 
 # Input parameters.
 X      = float(sys.argv[1])

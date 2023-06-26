@@ -1,4 +1,5 @@
-import math, sys
+import math
+
 
 # Check if value is numerical
 def is_num(x):

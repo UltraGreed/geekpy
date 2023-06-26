@@ -1,9 +1,12 @@
 #!python3 navigation.py
 # @todo: Need to fix bag with InitRobot offset.
-import sys, setproctitle
-sys.path.append('../base')
-import mat, network, message
-from message import AXIS
+import sys
+
+import setproctitle
+
+sys.path.append('./')
+from base import mat, message, network
+from base.message import AXIS
 
 TIMER = 0.05  # Coordinates publication timer.
 

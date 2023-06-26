@@ -1,8 +1,12 @@
 #!python3 imu.py
-import time, sys, setproctitle
-sys.path.append('../base')
-import network, message
-from message import YAW
+import sys
+import time
+
+import setproctitle
+
+sys.path.append('./')
+from base import message, network
+from base.message import YAW
 
 TIMEOUT = 0.50  # Force timeout.
 PERIOD  = 0.05  # Integration period and publication timer.

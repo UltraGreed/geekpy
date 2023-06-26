@@ -1,7 +1,13 @@
 #!python3 keyboard.py
-import time, tty, termios, sys, setproctitle
-sys.path.append('../base')
-import network, message
+import sys
+import termios
+import tty
+
+import setproctitle
+
+sys.path.append('./')
+from base import message, network
+
 
 def getchar():
     fd = sys.stdin.fileno()

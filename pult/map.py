@@ -1,12 +1,15 @@
 #!python3 map.py
-import time, sys, setproctitle
-import matplotlib
+import sys
+
 import matplotlib.pyplot as plt
 # import matplotlib.artist as art
 import numpy as np
-sys.path.append('../base')
-import mat, network, message
-from message import X, Y, YAW
+
+import setproctitle
+
+sys.path.append('./')
+from base import mat, network
+from base.message import YAW, X, Y
 
 OBJECT_COLORS = {
     "Zero":  "#00000033",

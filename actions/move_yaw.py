@@ -1,7 +1,9 @@
-import math, sys
-sys.path.append('../base')
-import mat, network, message
-from message import X, Y, YAW
+import math
+import sys
+
+sys.path.append('./')
+from base import message, network
+from base.message import YAW, X, Y
 
 # Timer period to send 'Tack' message to regulator.
 TIMER = 0.5

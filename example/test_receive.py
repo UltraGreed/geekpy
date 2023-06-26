@@ -1,7 +1,8 @@
 #!python3 test_receive.py
-import time, sys
-sys.path.append('../base')
-import network, message
+import sys
+
+sys.path.append('./')
+from base import network
 
 net = network.Net(timer=3)
 i, j = 0, 0
