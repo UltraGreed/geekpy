@@ -17,13 +17,12 @@ ini = message.FilteredObjects()                # Sended array with all filtered 
 
 while net.receive():  # Wait for messages or timer
 
-    if net.id() == 'Timer':  # If timer has come then
+    if net.id == 'Timer':  # If timer has come then
         net.send(out)        # send output objects array.
 
-    elif net.id() == 'DetectedObject':  # If object has come
+    elif net.id == 'DetectedObject':  # If object has come
         data = net.msg()                # then read object position
         out.objs[data.obj] = data.pos   # and save to filtered output data.
-
 
     # if net.id() == 'Timer':  # If timer has come then
     #     for obj in out.param:
@@ -31,7 +30,7 @@ while net.receive():  # Wait for messages or timer
     #             obj.pos = DEEPCOPY ini[obj].pos
     #     net.send(out)
 
-    # elif net.id() == 'DetectedObject':  # If object has come
+    # elif net.id == 'DetectedObject':  # If object has come
     #     msg = net.msg()                 # then read object position
     #     out.objs[msg.obj] = msg.pos     # and save to filtered output data.
 

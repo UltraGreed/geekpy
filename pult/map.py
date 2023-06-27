@@ -1,12 +1,14 @@
-#!python3
-import time, sys, setproctitle
+#!python3 map.py
+import setproctitle
+import sys
+
 import matplotlib
 import matplotlib.pyplot as plt
-# import matplotlib.artist as art
+from base import network, mat
+
 import numpy as np
-sys.path.append('../base')
-import mat, network, message
-from message import X, Y, YAW
+
+from base.message import X, Y, YAW
 
 OBJECT_COLORS = {
     "Zero":  "#00000033",
@@ -73,14 +75,14 @@ obj_x,   obj_y   = [], []
 while net.receive():
     
     # Update plots on timer.
-    if net.id() == 'Timer':
+    if net.id == 'Timer':
         fig.canvas.draw()
         fig.canvas.flush_events()
 
     # Save robot coordinates.
-    elif net.id() == 'Coord':
+    elif net.id == 'Coord':
         # Read coordinartes.
-        pos     = net.msg().pos
+        pos     = net.msg.pos
         pos_x   = pos[X  ] if mat.is_num(pos[X  ]) else 0.0
         pos_y   = pos[Y  ] if mat.is_num(pos[Y  ]) else 0.0
         pos_yaw = pos[YAW] if mat.is_num(pos[YAW]) else 0.0
@@ -100,8 +102,8 @@ while net.receive():
         way.set_ydata(way_y)
 
     # Show filtered objects coordinates.
-    elif net.id() == 'FilteredObjects':
-        data = net.msg().objs
+    elif net.id == 'FilteredObjects':
+        data = net.msg.objs
         objs_x = []
         objs_y = []
         for txt in sub.texts:

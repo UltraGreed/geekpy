@@ -23,11 +23,14 @@ control = message.Control()  # Sended Control.power data.
 
 while net.receive():  # Wait for incoming messages.
 
-    if net.id() == 'Motion':                 # If Motion message appears then:
+    if net.id == 'Motion':                 # If Motion message appears then:
         speed  = net.msg().speed             # - read Motion.speed vector,
         speed1 = np.array(speed)             # - convert ot numpy array,
         speed2 = speed1 * np.abs(speed1)     # - make signed speed^2 of each value,
-        add    = np.matmul(SPREAD1, speed1)  # - make matrix multiplication of linear part,
-               + np.matmul(SPREAD2, speed2)  # - make matrix multiplication of quadric part,
+
+        #                   make matrix multiplication of
+        #              linear part         and        quadric part
+        add    = np.matmul(SPREAD1, speed1) + np.matmul(SPREAD2, speed2)
+
         control.power = add.to_list()        # - save sum of parts to message,
         net.send(control)                    # - and send message to network.
