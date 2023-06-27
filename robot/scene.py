@@ -13,11 +13,11 @@ out = message.FilteredObjects()         # Sended array with all filtered objects
 
 while net.receive():  # Wait for messages or timer
 
-    if net.id() == 'Timer':  # If timer has come then
+    if net.id == 'Timer':  # If timer has come then
         net.send(out)        # send output objects array.
 
-    # elif net.id() == 'Coord':  # If Coord data has come
+    # elif net.id == 'Coord':  # If Coord data has come
     #     pos = net.msg().pos    # then save robot position.
 
-    # elif net.id() == 'InitObject':               # If Initialization message has come
+    # elif net.id == 'InitObject':               # If Initialization message has come
     #     out.objs[net.msg().obj] = net.msg().pos  # then save object to output array.

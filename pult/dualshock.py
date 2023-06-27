@@ -5,7 +5,7 @@ import time
 import pygame
 import os
 
-from base import msg, net
+from base import message, network
 
 
 pygame.init()
@@ -61,7 +61,7 @@ yaw_coef = 50
 xy_coef = 10
 depth_coef = 10
 
-network = net.Net()  # TODO: msg?
+net = network.Net()  # TODO: msg?
 
 # Main loop, one can press the PS button to break
 while True:
@@ -76,26 +76,30 @@ while True:
         elif event.type == pygame.JOYHATMOTION:
             hat[event.hat] = event.value
 
-    speed = msg.Speed()
-
-    speed.yaw = (axis[AXIS_R2] - axis[AXIS_L2]) * yaw_coef  # TODO: meters per second? percents?
+    tack_params = {'speed_yaw': (axis[AXIS_R2] - axis[AXIS_L2]) * yaw_coef}
 
     # Sticks are not ideal, so we have to use this
     if abs(axis[AXIS_LEFT_STICK_X]) > 0.1:
-        speed.x = axis[AXIS_LEFT_STICK_X] * xy_coef
+        tack_params['speed_x'] = axis[AXIS_LEFT_STICK_X] * xy_coef
+    else:
+        tack_params['speed_x'] = 0.0
 
     if abs(axis[AXIS_LEFT_STICK_Y]) > 0.1:
-        speed.y = -axis[AXIS_LEFT_STICK_Y] * xy_coef
+        tack_params['speed_y'] = -axis[AXIS_LEFT_STICK_Y] * xy_coef
+    else:
+        tack_params['speed_y'] = 0.0
 
     if abs(axis[AXIS_RIGHT_STICK_Y]) > 0.1:
-        speed.up = -axis[AXIS_RIGHT_STICK_Y] * depth_coef
+        tack_params['speed_depth'] = -axis[AXIS_RIGHT_STICK_Y] * depth_coef
+    else:
+        tack_params['speed_depth'] = 0.0
 
-    network.set(speed)
+    net.send(message.Tack(priority=2, time=0.1, **tack_params))
 
     # Resets all the values to default (debug purposes)
     if button[BUTTON_PS]:
-        ini = msg.IniAuv()
-        network.set(ini)
+        init = message.InitRobot()
+        net.send(init)
 
     # Print out results
     os.system('clear')

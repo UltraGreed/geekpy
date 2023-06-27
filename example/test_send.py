@@ -1,13 +1,12 @@
 #!python3 test_send.py
-import time, sys
-sys.path.append('../base')
-import network, message
+import time
+from base import network, message
 
 test_message = message.TestMessage()
 net = network.Net()
 i = 0
 
-# Infinit loop of message sending
+# Infinite loop of message sending
 while True:
 
     i += 1

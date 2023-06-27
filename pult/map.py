@@ -1,11 +1,14 @@
 #!python3 map.py
-import time, sys, setproctitle
+import setproctitle
+import sys
+
 import matplotlib
 import matplotlib.pyplot as plt
+from base import network, mat
+
 import numpy as np
-sys.path.append('../base')
-import mat, network, message
-from message import X, Y, YAW
+
+from base.message import X, Y, YAW
 
 # Static markers coordinates.
 MARKERS = {
@@ -51,14 +54,14 @@ objs_x,  objs_y  = [], []
 while net.receive():
     
     # Update plots on timer.
-    if net.id() == 'Timer':
+    if net.id == 'Timer':
         fig.canvas.draw()
         fig.canvas.flush_events()
 
     # Save robot coordinates.
-    elif net.id() == 'Coord':
+    elif net.id == 'Coord':
         # Read coordinartes.
-        pos     = net.msg().pos
+        pos     = net.msg.pos
         pos_x   = pos[X  ] if mat.is_num(pos[X  ]) else 0.0
         pos_y   = pos[Y  ] if mat.is_num(pos[Y  ]) else 0.0
         pos_yaw = pos[YAW] if mat.is_num(pos[YAW]) else 0.0
@@ -78,8 +81,8 @@ while net.receive():
         way.set_ydata(way_y)
 
     # Save objects coordinates.
-    elif net.id() == 'FilteredObjects':
-        data = net.msg().objs
+    elif net.id == 'FilteredObjects':
+        data = net.msg.objs
         for i in data:
             objs_x = np.append(objs_x, data[i][X])
             objs_y = np.append(objs_y, data[i][Y])

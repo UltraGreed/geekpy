@@ -2,7 +2,7 @@ import math
 
 import serial
 
-from base import msg, net
+from base import message, network
 
 
 class DataLostException(Exception):
@@ -142,27 +142,25 @@ earth_rotation = 2.6656648454566797e-05
 
 
 def main():
-    init_id = msg.IniAuv().id
+    net = network.Net(timer=1)  # TODO: msg?
 
-    network = net.Net(timer=1)  # TODO: msg?
-
-    yaw = msg.Yaw()
-
-    received = network.get()
-    if received.id == init_id:
-        yaw.pos = received.yaw
+    net.receive()
+    if net.id == message.InitRobot:
+        pos_yaw = net.msg.yaw
+    else:
+        pos_yaw = 0
     print('Initial yaw received')
 
     with PhysopticSerial(port=port_name, baudrate=baudrate) as ser:
         # 18.75 times per second we send 1 UDP package, containing an average of 4 data sets or 64 packages
         while True:
             data_sets = [ser.get_data_set() for _ in range(4)]
-            yaw.vel = sum(data_set.average_rate for data_set in data_sets) / 4
-            yaw.pos += sum(data_set.course_change for data_set in data_sets)
+            vel_yaw = sum(data_set.average_rate for data_set in data_sets) / 4
+            pos_yaw += sum(data_set.course_change for data_set in data_sets)
 
-            network.set(yaw)
-            print(f'Course change: {yaw.vel}')
-            print(f'Course: {yaw.pos}')
+            net.send(message.Coord(pos_yaw=pos_yaw, vel_yaw=vel_yaw))
+            print(f'Course change: {vel_yaw}')
+            print(f'Course: {pos_yaw}')
 
 
 if __name__ == '__main__':
