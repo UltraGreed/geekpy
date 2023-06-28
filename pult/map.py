@@ -20,7 +20,7 @@ OBJECT_COLORS = {
 }
 
 # Max count of detected objects markers.
-OBJ_COUNT = 60
+OBJ_COUNT = 100
 
 # Static markers coordinates.
 MARKERS = {
@@ -44,11 +44,11 @@ ROBOT = [( 0.0, -0.3),
          ( 0.2, -0.4),
          ( 0.0, -0.3)]
 
-REFRESH = 0.2      # Refresh time, sec.
-POINTS  = 20 * 60  # Number of points in trajectories.
+REFRESH = 0.2       # Refresh time, sec.
+POINTS  = 20 * 120  # Number of points in trajectories.
 
 # matplotlib.use('TkAgg')
-setproctitle.setproctitle(sys.argv[0])  # Set filename.py title for process.
+setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 plt.ion()
 fig = plt.figure(num='Map')
 sub = fig.add_subplot(1,1,1)
