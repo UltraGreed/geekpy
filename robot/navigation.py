@@ -7,10 +7,10 @@ from message import AXIS
 
 TIMER = 0.05  # Coordinates publication timer.
 
-setproctitle.setproctitle(sys.argv[0])   # Set filename.py title for process.
-net    = network.Net(timer=TIMER)        # Will send/receive some messages and wait timer ticks.
-coord  = message.Coord()                 # Sended message to all progs.
-offset = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # Position offset from current sensor data.
+setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
+net    = network.Net(timer=TIMER)              # Will send/receive some messages and wait timer ticks.
+coord  = message.Coord()                       # Sended message to all progs.
+offset = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]        # Position offset from current sensor data.
 
 while net.receive():  # Wait for messages or timer
 

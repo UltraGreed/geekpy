@@ -7,9 +7,9 @@ from message import X, Y, YAW
 
 TIMER   = 0.05        # Integration and publication timer period.
 MX, MY  = 1.50, 1.00  # Mass in lateral and longitudinal directions.
-TIMEOUT = 1.0         # Force timeout.
+TIMEOUT = 0.5         # Force timeout.
 
-setproctitle.setproctitle(sys.argv[0])         # Set filename.py title for process.
+setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 net    = network.Net(timer=TIMER)              # Network communication with timer event.
 sensor = message.Sensor(pos_x=0.0, pos_y=0.0,  # Initial robot position
                         vel_x=0.0, vel_y=0.0)  # and velocity.

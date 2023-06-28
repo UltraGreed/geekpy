@@ -40,12 +40,12 @@ def pd_yaw(speed, dif, vel):
 def pd_axel(speed, dif, vel, i):
     speed[i] = pd(mat.to180(dif), vel, P[i], D[i], MIN[i], MAX[i])
 
-setproctitle.setproctitle(sys.argv[0])      # Set filename.py title for process.
-net       = network.Net(timer=TIMER)        # Will wait messages and timer ticks.
-tack      = message.Tack()                  # Incoming Tack message for robot control.
-tack_time = 0.0                             # Time of last Tack message.
-pos       = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # Incoming position
-vel       = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # and velocity data.
+setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
+net       = network.Net(timer=TIMER)           # Will wait messages and timer ticks.
+tack      = message.Tack()                     # Incoming Tack message for robot control.
+tack_time = 0.0                                # Time of last Tack message.
+pos       = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]     # Incoming position
+vel       = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]     # and velocity data.
 
 while net.receive():  # Waiting for timer ticks and messages.
 

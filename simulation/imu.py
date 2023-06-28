@@ -8,9 +8,9 @@ TIMEOUT = 0.50  # Force timeout.
 PERIOD  = 0.05  # Integration period and publication timer.
 MOMENT  = 0.10  # Momement of inertion in yaw axis.
 
-setproctitle.setproctitle(sys.argv[0])  # Set filename.py title for process.
-net    = network.Net(timer=PERIOD)      # Network communication.
-sensor = message.Sensor()               # Sensor class for simulated message with yaw.
+setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
+net    = network.Net(timer=PERIOD)             # Network communication.
+sensor = message.Sensor()                      # Sensor class for simulated message with yaw.
 
 yaw_time        = 0.0         # Timestamp of incoming last control values 'Speed'.
 yaw_speed       = 0.0         # Current yaw speed.

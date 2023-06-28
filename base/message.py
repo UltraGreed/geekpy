@@ -15,6 +15,20 @@ class TestMessage(Message):
     def __init__(self, text="Hello world!"):
         self.text = text
 
+# Test timer dealays
+class TestDelaySend(Message):
+    def __init__(self, name="", num=0, time=0.0, text="TestDelaySend text."):
+        self.name = name
+        self.num  = num
+        self.time = time
+        self.text = text
+class TestDelayReply(Message):
+    def __init__(self, name="", num=0, time=0.0, text="TestDelayReply text."):
+        self.name = name
+        self.num  = num
+        self.time = time
+        self.text = text
+
 
 ########################
 ###### NAVIGATION ######
