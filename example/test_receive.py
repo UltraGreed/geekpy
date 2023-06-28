@@ -10,10 +10,10 @@ i, j = 0, 0
 while net.receive():
 
     if net.id() == 'Timer':
-        print(i, "Got timer:", net.id(), net.msg())
+        print(i, time.time(), "Got timer:", net.id(), net.msg())
         i += 1
 
     elif net.id() == 'TestMessage':
         test_message = net.msg()
-        print(j, "Got message:", test_message.id(), test_message.text)
+        print(j, time.time(), "Got message:", test_message.id(), test_message.text)
         j += 1

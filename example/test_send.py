@@ -13,5 +13,5 @@ while True:
     i += 1
     test_message.text = "Text #" + str(i)
     net.send(test_message)
-    print(test_message.text)
+    print(time.time(), test_message.text)
     time.sleep(1)
