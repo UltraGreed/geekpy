@@ -4,7 +4,7 @@ import mat, network, message
 from message import X, Y, YAW
 
 # Timer period to send 'Tack' message to regulator.
-TIMER = 0.5
+TIMER = 0.25
 
 ## Robot ahead moving function with given yaw
 def move_yaw(origin='Current', yaw=0.0, dist=0.1, speed=0.1, depth=0.0):
