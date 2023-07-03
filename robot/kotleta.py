@@ -10,8 +10,9 @@ from base import message, network
 
 TIMER = 0.05
 _PORT_NAME = 'vcan0'
-_COMMAND_TIMEOUT = 5
+_COMMAND_TIMEOUT = 0.5
 _COMMANDS_PER_SECOND = 10000
+_ECS_RANGE = 8192
 
 
 def handle_recieve(net: network.Net, 
@@ -29,7 +30,15 @@ def handle_recieve(net: network.Net,
 
 
 def send_raw_command(node, power):
-    message = uavcan.equipment.esc.RawCommand(cmd=power.power)
+    msg = [ 0, 0, 0, 0, 0, 0 ]
+    for i in range(len(msg)):
+        current_power = power.power[i] / 100
+        if current_power > 0:
+            msg[i] = round(current_power * (_ECS_RANGE - 1))
+        else:
+            msg[i] = round(current_power * _ECS_RANGE)
+
+    message = uavcan.equipment.esc.RawCommand(cmd=msg)
     node.broadcast(message)
 
 
@@ -48,7 +57,7 @@ def main():
     recieve_thread.start()
 
     def timeout_call():
-        power.power = [0, 0, 0, 0, 0, 0]
+        power.power = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
     
     timeout_handle = node.defer(_COMMAND_TIMEOUT, timeout_call)
     timeout_handle.remove()
