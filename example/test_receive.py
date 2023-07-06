@@ -1,4 +1,4 @@
-#!python3 test_receive.py
+#!python3
 import time, sys
 sys.path.append('../base')
 import network, message

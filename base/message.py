@@ -117,9 +117,9 @@ class DetectionOff(Message):
 
 # Detected object sended to scene
 class DetectedObject(Message):
-    def __init__(self, obj='', x=None, y=None, up=None, yaw=None):
+    def __init__(self, obj='', x=None, y=None, depth=None):
         self.obj = obj
-        self.pos = [x, y, up, yaw]
+        self.pos = [x, y, depth]
 
 # Filtered objects sended from scene
 class FilteredObjects(Message):
@@ -133,7 +133,7 @@ class FilteredObjects(Message):
             "CellR": [-10.0, 12.0, 2.0,   0.0],
             "Frame": [ -3.0, 11.0, 0.0,   0.0],
         }):
-        self.objs = objs
+        self.objs  = objs
 
 
 ###################################
@@ -174,9 +174,9 @@ class PhotoOff(Message):
 
 # Wave delay of received signals
 class SoundDelay(Message):
-    def __init__(self, f=0.0, left=0.0, right=0.0, bottom=0.0, front=0.0):
-        self.freq = freq                          # Signal frequency, Hz.
-        self.dist = [left, right, bottom, front]  # Distance delay, m.
+    def __init__(self, freq=-1.0, left=-0.1, right=-0.1, back=-0.1, front=-0.1):
+        self.freq = freq                        # Signal frequency, Hz.
+        self.dist = [left, right, back, front]  # Distance delay, m.
 
 
 ##########################

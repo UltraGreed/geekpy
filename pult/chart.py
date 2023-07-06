@@ -1,4 +1,4 @@
-#!python3 charts.py
+#!python3
 # Show all mesagges values and charts
 
 #####################################################################################

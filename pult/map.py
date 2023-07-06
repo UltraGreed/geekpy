@@ -1,4 +1,4 @@
-#!python3 map.py
+#!python3
 import time, sys, setproctitle
 import matplotlib
 import matplotlib.pyplot as plt
@@ -86,7 +86,7 @@ while net.receive():
         pos_yaw = pos[YAW] if mat.is_num(pos[YAW]) else 0.0
         # Update robot position.
         for i in range(len(ROBOT)):
-            dx, dy = mat.robot2map(ROBOT[i][X], ROBOT[i][Y], pos_yaw)
+            dx, dy = mat.rotate2map(ROBOT[i][X], ROBOT[i][Y], pos_yaw)
             robot_x[i] = pos_x + dx
             robot_y[i] = pos_y + dy
         robot.set_xdata(robot_x)

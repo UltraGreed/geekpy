@@ -1,29 +1,28 @@
-#!python3 test_square.py
+#!python3
+### DO IT ONCE IN CONSOLE: export PYTHONPATH=$(realpath ..)
 import sys, setproctitle
-sys.path.append('../actions')
-from move_yaw import move_yaw
-setproctitle.setproctitle(sys.argv[0])  # Set filename.py title for process.
+from actions.move_yaw import move_yaw
+setproctitle.setproctitle(' '.join(sys.argv))
 
-print   ("Square trajectory task started...")
-
+print(' '.join(sys.argv), "begin...")
+print("1st square started...")
 move_yaw(origin='Navigation', yaw=  0, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw= 90, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw=180, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw=270, dist=4.0, speed=0.5, depth=0.0)
-
+print("2nd square started...")
 move_yaw(origin='Navigation', yaw=  0, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw= 90, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw=180, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw=270, dist=4.0, speed=0.5, depth=0.0)
-
+print("3rd square started...")
 move_yaw(origin='Navigation', yaw=  0, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw= 90, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw=180, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw=270, dist=4.0, speed=0.5, depth=0.0)
-
+print("4th square started...")
 move_yaw(origin='Navigation', yaw=  0, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw= 90, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw=180, dist=4.0, speed=0.5, depth=0.0)
 move_yaw(origin='Navigation', yaw=270, dist=4.0, speed=0.5, depth=0.0)
-
-print   ("Task end.")
+print(' '.join(sys.argv), "end!")

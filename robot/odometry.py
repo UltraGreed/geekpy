@@ -1,4 +1,4 @@
-#!python3 odometry.py
+#!python3
 import time, math, sys, setproctitle
 sys.path.append('../base')
 import mat, network, message

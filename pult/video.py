@@ -1,1 +1,1 @@
-#!python3 gamepad.py
+#!python3

@@ -1,4 +1,4 @@
-#!python3 test_delay.py
+#!python3
 import time, sys, setproctitle
 sys.path.append('../base')
 import network, message

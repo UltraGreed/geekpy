@@ -31,15 +31,32 @@ def proj_x(x, y, angle):
 def proj_y(x, y, angle):
     return cosd(angle) * y - sind(angle) * x
 
-# Convert dxy vector from map to robot coordinate system
-def map2robot(map_dx, map_dy, robot_yaw):
+# Rotate dxy vector from map to robot coordinate system
+def rotate2robot(map_dx, map_dy, robot_yaw):
     robot_dx = proj_x(map_dx, map_dy, -robot_yaw)
     robot_dy = proj_y(map_dx, map_dy, -robot_yaw)
     return robot_dx, robot_dy
 
-# Convert dxy vector from map to robot coordinate system
-def robot2map(robot_dx, robot_dy, robot_yaw):
+# Rotate dxy vector from robot to map coordinate system
+def rotate2map(robot_dx, robot_dy, robot_yaw):
     map_dx = proj_x(robot_dx, robot_dy, robot_yaw)
     map_dy = proj_y(robot_dx, robot_dy, robot_yaw)
     return map_dx, map_dy
+
+# Convert dxy vector from robot to map coordinate system
+def robot2map(robot, point):
+    dx, dy = rotate2map(point[0], point[1], robot[2])
+    return [robot[0] + dx, robot[1] + dy, robot[2] + point[2]]
+
+# Distance between two points in XY dimensions
+def dist2d(a, b):
+    return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
+
+# Distance between two points in XYZ dimensions
+def dist3d(a, b):
+    return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2 + (a[2] - b[2])**2)
+
+# Direction from point a to point b
+def direction(a, b):
+    return to180(math.degrees(math.atan2(b[0] - a[0], b[1] - a[1])))
 

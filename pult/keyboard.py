@@ -1,4 +1,4 @@
-#!python3 keyboard.py
+#!python3
 import time, tty, termios, sys, setproctitle
 sys.path.append('../base')
 import network, message

@@ -1,4 +1,4 @@
-#!python3 command.py
+#!python3
 # Send selected messages (commands) to system
 
 ####################################################################################################
