@@ -1,5 +1,7 @@
 import math, sys
 
+X, Y, DEPTH, YAW = 0, 1, 2, 3
+
 # Check if value is numerical
 def is_num(x):
     return type(x) == int or type(x) == float
@@ -45,18 +47,20 @@ def rotate2map(robot_dx, robot_dy, robot_yaw):
 
 # Convert dxy vector from robot to map coordinate system
 def robot2map(robot, point):
-    dx, dy = rotate2map(point[0], point[1], robot[2])
-    return [robot[0] + dx, robot[1] + dy, robot[2] + point[2]]
+    dx, dy = rotate2map(point[X], point[Y], robot[YAW])
+    if len(robot) > 2 and len(point) > 2:
+        return [robot[X] + dx, robot[Y] + dy, robot[DEPTH] + point[DEPTH]]
+    return [robot[X] + dx, robot[Y] + dy]
 
 # Distance between two points in XY dimensions
 def dist2d(a, b):
-    return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2)
+    return math.sqrt((a[X] - b[X])**2 + (a[Y] - b[Y])**2)
 
 # Distance between two points in XYZ dimensions
 def dist3d(a, b):
-    return math.sqrt((a[0] - b[0])**2 + (a[1] - b[1])**2 + (a[2] - b[2])**2)
+    return math.sqrt((a[X] - b[X])**2 + (a[Y] - b[Y])**2 + (a[DEPTH] - b[DEPTH])**2)
 
 # Direction from point a to point b
 def direction(a, b):
-    return to180(math.degrees(math.atan2(b[0] - a[0], b[1] - a[1])))
+    return to180(math.degrees(math.atan2(b[X] - a[X], b[Y] - a[Y])))
 
