@@ -5,49 +5,54 @@ sys.path.append('../base')
 import network, message, mat
 
 # Constants.
-PERIOD     = 1.0                       # Publication period.
-DISP_FALSE = [ 0.5,  0.5,  0.5,  0.5]  # Phone onboard positions.
-LEFT       = [-0.2,  0.0,  0.0]        # Coordinates of left,
-RIGHT      = [ 0.2,  0.0,  0.0]        # right,
-BACK       = [ 0.0, -0.2,  0.0]        # back and
-FRONT      = [ 0.0, -0.2,  0.0]        # front phones.
+PERIOD      = 1.0                       # Publication period.
+DISP_FALSE  = [ 0.5,  0.5,  0.5,  0.5]  # Phone onboard positions.
+PHONE_LEFT  = [-0.2,  0.0,  0.0]        # Coordinates of left,
+PHONE_RIGHT = [ 0.2,  0.0,  0.0]        # right,
+PHONE_BACK  = [ 0.0, -0.2,  0.0]        # back and
+PHONE_FRONT = [ 0.0,  0.2,  0.0]        # front phones.
 
 # Input parameters.
-OBJ  = [float(sys.argv[1]),
-        float(sys.argv[2]),
-        float(sys.argv[3])]
-DISP =  float(sys.argv[4])
-FREQ =  float(sys.argv[5])
-PROB =  float(sys.argv[6])
-DIST =  float(sys.argv[7])
+PINGER = [float(sys.argv[1]),
+          float(sys.argv[2]),
+          float(sys.argv[3])]
+DISP = float(sys.argv[4])
+FREQ = float(sys.argv[5])
+PROB = float(sys.argv[6])
+DIST = float(sys.argv[7])
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 net = network.Net(timer=PERIOD)  # Network communication.
-pos = message.Coord().pos        # Robot position.
+robot = message.Coord().pos        # Robot position.
 
 # Define random function for distance fluctuations.
 def rnd(disp):
     return np.random.normal(0, disp)
 
+# Distance from phone to pinger.
+def dist(robot, phone):
+    return mat.dist3d(mat.robot2map(robot, phone), PINGER)
+
 # Send object coordinates by timer.
 while net.receive():
 
-    if net.id() == 'Timer':                                                 # Send data on timer if necessary.
-        is_near  = mat.dist2d(pos, OBJ) < DIST                              # Is robot in the near zone?
-        is_false = np.random.random()   > PROB                              # Is it false solution?
-        if is_near or is_false:                                             # Send message in this case.
-            disp  = DISP_FALSE if is_false else DISP                        # Chose disp depend on conditions.
-            left  = mat.dist3d(mat.robot2map(pos, LEFT ), OBJ) + rnd(disp)  # Calculate distance for left,
-            right = mat.dist3d(mat.robot2map(pos, RIGHT), OBJ) + rnd(disp)  # right,
-            back  = mat.dist3d(mat.robot2map(pos, BACK ), OBJ) + rnd(disp)  # back and
-            front = mat.dist3d(mat.robot2map(pos, FRONT), OBJ) + rnd(disp)  # front phones with noise.
-            mini  = min(min(left, right), min(back, front))                 # Calc minimal distance.
-            net.send(message.SoundDelay(                                    # Send message
-                freq  = FREQ,                                               # with config frequecy and
-                left  = left  - mini,                                       # left,
-                right = right - mini,                                       # right,
-                back  = back  - mini,                                       # back and
-                front = front - mini))                                      # front distance diffrences.
+    # Send data on timer if necessary.
+    if net.id() == 'Timer':
+        is_near  = mat.dist2d(robot, PINGER) < DIST             # Is robot in the near zone?
+        is_false = np.random.random()        > PROB             # Is it false solution?
+        if is_near or is_false:                                 # Send message in this case.
+            disp  = DISP_FALSE if is_false else DISP            # Choose disp depend on conditions.
+            left  = dist(robot, PHONE_LEFT ) + rnd(disp)        # Calculate distance for left,
+            right = dist(robot, PHONE_RIGHT) + rnd(disp)        # right,
+            back  = dist(robot, PHONE_BACK ) + rnd(disp)        # back and
+            front = dist(robot, PHONE_FRONT) + rnd(disp)        # front phones with noise.
+            mini  = min(min(left, right), min(back, front))     # Calc minimal distance.
+            net.send(message.SoundDelay(freq  = FREQ,           # Send message with config frequecy and
+                                        left  = left  - mini,   # left,
+                                        right = right - mini,   # right,
+                                        back  = back  - mini,   # back and
+                                        front = front - mini))  # front distance diffrences.
 
-    elif net.id() == 'Coord':  # If robot coordinates has come
-        pos = net.msg().pos    # then save its position.
+    # If robot coordinates has come then save its position.
+    elif net.id() == 'Coord':
+        robot = net.msg().pos

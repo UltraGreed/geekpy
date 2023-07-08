@@ -6,7 +6,7 @@ import mat, network, message
 from message import X, Y, YAW, AXIS
 
 ########### X ##### Y # DEPTH ### YAW # PITCH ## ROLL
-P   = [ 10.00,  10.00, 000.00,   5.00, 000.00, 000.00]  # Proportional coefficients of regulator
+P   = [100.00, 100.00, 000.00,   5.00, 000.00, 000.00]  # Proportional coefficients of regulator
 D   = [  1.00,   1.00, 000.00,   5.00, 000.00, 000.00]  # Differential coefficients of regulator
 MAX = [  0.70,   0.70, 000.00,  30.00, 000.00, 000.00]  # Maximal possible velocity in stabilization mode
 MIN = [ -0.70,  -0.70, 000.00, -30.00, 000.00, 000.00]  # Minimal possible velocity in stabilization mode
