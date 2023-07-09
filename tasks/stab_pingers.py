@@ -13,9 +13,7 @@ setproctitle.setproctitle(' '.join(sys.argv))
 # stab_xy (origin='Frame', x=0.0,  y=0.0, yaw=None, dt=40.0, depth=None)
 
 print(' '.join(sys.argv), "begin...")
-print("Move to Cells..."); move_object(origin='Cells', radius=0.5, speed=0.5, depth=0.2)
-print("Stab Cells...");    stab_xy    (origin='Cells', x=0.0, y=0.0, yaw=0.0, dt=30.0, depth=0.2)
-print("Move to Frame..."); move_object(origin='Frame', radius=0.5, speed=0.5, depth=0.2)
-print("Stab Frame...");    stab_xy    (origin='Frame', x=0.0, y=0.0, yaw=0.0, dt=30.0, depth=0.2)
+print("Stab Cells..."); stab_xy(origin='Cells', x=0.0, y=0.0, yaw=-90.0, dt=60.0, depth=0.2)
+print("Stab Frame..."); stab_xy(origin='Frame', x=0.0, y=0.0, yaw= 90.0, dt=60.0, depth=0.2)
 print(' '.join(sys.argv), "end!")
 

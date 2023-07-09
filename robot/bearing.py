@@ -32,16 +32,25 @@ pinger = network.wait_message("FilteredObjects").objs[OBJ]  # Initial pinger pos
 #     dy = height * proj(PHONE_Y[FRONT] - PHONE_Y[BACK], dist[BACK] - dist[FRONT])  # on two projections.
 #     return [dx, dy]
 
-# Offset projection to one axel.
-def proj(base, diff):
-    return diff / base
+# SECOND VERSION:
+# # Offset projection to one axel.
+# def proj(base, diff):
+#     return diff / base
+# Object offset in robot coordinates.
+# def offset(dist, height):
+#     dx = proj(PHONE_X[RIGHT] - PHONE_X[LEFT], dist[LEFT] - dist[RIGHT])  # X&Y offset based
+#     dy = proj(PHONE_Y[FRONT] - PHONE_Y[BACK], dist[BACK] - dist[FRONT])  # on two projections.
+#     dr = mat.sat(math.sqrt(dx**2 + dy**2), -0.9, 0.9)
+#     scale = height * (1.0 + 0.5 * math.tan(math.asin(dr)))
+#     return [scale * dx, scale * dy]
 
 # Object offset in robot coordinates.
 def offset(dist, height):
-    dx = proj(PHONE_X[RIGHT] - PHONE_X[LEFT], dist[LEFT] - dist[RIGHT])  # X&Y offset based
-    dy = proj(PHONE_Y[FRONT] - PHONE_Y[BACK], dist[BACK] - dist[FRONT])  # on two projections.
-    dr = mat.sat(math.sqrt(dx**2 + dy**2), -0.9, 0.9)
-    scale = height * (1.0 + 0.5 * math.tan(math.asin(dr)))
+    dx = (dist[LEFT] - dist[RIGHT]) / (PHONE_X[RIGHT] - PHONE_X[LEFT])  # X&Y offset based
+    dy = (dist[BACK] - dist[FRONT]) / (PHONE_Y[FRONT] - PHONE_Y[BACK])  # on two projections.
+    dr = math.sqrt(dx**2 + dy**2)
+    dr_sat = mat.sat(dr, -0.999, 0.999)
+    scale = (height * math.tan(math.asin(dr_sat)) / dr) if abs(dr) > 0.000001 else height
     return [scale * dx, scale * dy]
 
 # Send object coordinates by timer.
