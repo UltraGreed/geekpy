@@ -20,7 +20,7 @@ OBJECT_COLORS = {
 }
 
 # Max count of detected objects markers.
-OBJ_COUNT = 100
+OBJ_COUNT = 600
 
 # Static markers coordinates.
 MARKERS = {
