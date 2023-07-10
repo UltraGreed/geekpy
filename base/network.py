@@ -6,6 +6,9 @@ import time
 
 DELAY_OSError = 5.0
 
+if not hasattr(socket, "SO_REUSEPORT"):
+    socket.SO_REUSEPORT = socket.SO_REUSEADDR
+
 
 # Network communication class
 class Net:
