@@ -14,7 +14,7 @@ import json
 
 def update_plot(*_):
     plt.cla()
-    for entry in [data[listbox_list[selected_i]] for selected_i in listbox.curselection()]:
+    for entry in [plot_data[listbox_list[selected_i]] for selected_i in listbox.curselection()]:
         color = entry.color
         entry_data = entry.data[-1000:]
         ax_plot.plot(*reversed(list(zip(*entry_data))), color=color)
@@ -33,12 +33,16 @@ class ListboxEntry:
         self.data.append(entry)
 
 
-def handle_field(field_value, field_name):
-    if not data.get(field_name):
-        data[field_name] = ListboxEntry(cmap(len(listbox_list) % N_PLT_COLORS))
+def handle_new_entry(class_name, field_name, field_value):
+    if not plot_data.get(class_name):
+        plot_data[class_name] = ListboxEntry(color=cmap(0))
+        listbox_list.append(class_name)
+
+    if not plot_data.get(field_name):
+        plot_data[field_name] = ListboxEntry(color=cmap(len(listbox_list) % N_PLT_COLORS))
         listbox_list.append(field_name)  # todo: this causes infinite memory losses
 
-    data[field_name].add((field_value, time.time() - start_time))
+    plot_data[field_name].add((field_value, time.time() - start_time))
 
 
 def change_pause():
@@ -46,7 +50,7 @@ def change_pause():
     is_paused = not is_paused
 
 
-N_PLT_COLORS = 10
+N_PLT_COLORS = 5
 
 start_time = time.time()
 
@@ -98,7 +102,7 @@ toolbar = NavigationToolbar2Tk(canvas_plot, toolbar_frame)
 
 plt.tight_layout()
 
-data = {}
+plot_data = {}
 net = network.Net(timer=0.2)
 is_paused = False
 while net.receive():
@@ -116,15 +120,17 @@ while net.receive():
             if value is None:
                 continue
             try:
-                for i, field in enumerate(value):
-                    if field is None:
+                for i, field_value in enumerate(value):
+                    if field_value is None:
                         continue
 
                     field_type = {X: 'x', Y: 'y', DEPTH: 'depth', YAW: 'yaw', PITCH: 'pitch', ROLL: 'roll'}[i]
-                    name = f'{net.id}_{key}_{field_type}'
+                    field_name = f'    {key}.{field_type}'
 
-                    handle_field(field, name)
+                    handle_new_entry(net.id, field_name, field_value)
             except TypeError:
-                name = f'{net.id}_{key}'
+                field_value = value
 
-                handle_field(value, name)
+                field_name = f'    {key}'
+
+                handle_new_entry(net.id, field_name, field_value)

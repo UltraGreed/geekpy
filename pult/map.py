@@ -122,7 +122,7 @@ while net.receive():
         objs.set_ydata(objs_y)
 
     # Show detected object coordinates.
-    elif net.id() == 'DetectedObject':
+    elif net.id == 'DetectedObject':
         data  = net.msg().pos
         obj_x = np.append(obj_x, data[X])
         obj_y = np.append(obj_y, data[Y])

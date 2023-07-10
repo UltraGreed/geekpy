@@ -27,7 +27,6 @@ def move_yaw(origin='Current', yaw=0.0, dist=0.1, speed=0.1, depth=None):
     while net.receive():  # Wait for timer ticks and messages.
         if net.id == 'Timer':  # If timer tick occures then:
             d = mat.dist2d(start, pos)  # Calc distance
-                           from start.
             net.send(message.Tack(time       = 1.0,         # Control time.speed_x=0.0,  # Send 'Tack'
                                   speed_y=speed,  # message to
                                   stab_depth=depth,  # regulator
