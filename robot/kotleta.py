@@ -1,6 +1,5 @@
 import sys
 import setproctitle
-import threading
 
 import dronecan
 from dronecan import uavcan
@@ -10,74 +9,24 @@ from base import message, network
 
 TIMER = 0.05
 _PORT_NAME = 'vcan0'
-_COMMAND_TIMEOUT = 0.5
-_COMMANDS_PER_SECOND = 10000
-_ECS_RANGE = 8192
-
-
-def handle_recieve(net: network.Net, 
-                   power: message.Control, 
-                   timeout_event: threading.Event,
-                   close_event: threading.Event):
-    while net.receive():
-
-        if close_event.is_set():
-            break;
-
-        if net.id() == "Control":
-            power.power = net.msg().power
-            timeout_event.set()
 
 
 def send_raw_command(node, power):
-    msg = [ 0, 0, 0, 0, 0, 0 ]
-    for i in range(len(msg)):
-        current_power = power.power[i] / 100
-        if current_power > 0:
-            msg[i] = round(current_power * (_ECS_RANGE - 1))
-        else:
-            msg[i] = round(current_power * _ECS_RANGE)
-
-    message = uavcan.equipment.esc.RawCommand(cmd=msg)
+    message = uavcan.equipment.esc.RawCommand(cmd=power.power)
     node.broadcast(message)
 
 
 def main():
-# setproctitle.setproctitle(sys.argv[0])
-
     net = network.Net(timer=TIMER)
     power = message.Control()
-    timeout_event = threading.Event()
-    close_event = threading.Event()
 
-    node = dronecan.make_node(_PORT_NAME, node_id=123, bitrate=100)
+    node = dronecan.make_node(_PORT_NAME, node_id=100, bitrate=500000)
 
-    recieve_thread = threading.Thread(target=handle_recieve, 
-                                      args=(net, power, timeout_event, close_event))
-    recieve_thread.start()
+    while net.receive():
 
-    def timeout_call():
-        power.power = [ 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 ]
-    
-    timeout_handle = node.defer(_COMMAND_TIMEOUT, timeout_call)
-    timeout_handle.remove()
-
-    while True:
-        try:
-            node.spin(1 / _COMMANDS_PER_SECOND)
+        if net.id() == "Control":
+            power.power = net.msg().power
             send_raw_command(node, power)
-
-            if timeout_event.is_set():
-                timeout_event.clear()
-                timeout_handle.try_remove()
-                timeout_handle = node.defer(_COMMAND_TIMEOUT, timeout_call)
-
-        except KeyboardInterrupt:
-            break
-    
-    close_event.set()
-
-    recieve_thread.join()
 
     node.close()
 
