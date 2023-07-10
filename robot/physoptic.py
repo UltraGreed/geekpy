@@ -29,7 +29,6 @@ class DataUnit:
 
 
 class DataSet:
-    units: list[DataUnit]
     average_rate: float
     course_change: float
     temperature: float
@@ -70,7 +69,11 @@ class PhysopticSerial(serial.Serial):
 
     @staticmethod
     def bytes_to_unit(data):
-        rate = (2.5 * int.from_bytes((data[2], data[3], data[1]), byteorder='big', signed=True) / 2 ** 23 - earth_rotation) / math.pi * 180
+        rate = int.from_bytes((data[2], data[3], data[1]), byteorder='big', signed=True) * 5 / 2 ** 24 / math.pi * 180
+
+        if abs(rate) < sensor_error:
+            rate = 0
+
         counter = data[4]
         extra = data[5]
         return DataUnit(rate, counter, extra)
@@ -138,7 +141,7 @@ read_interval = 0
 port_name = '/dev/ttyUSB0'
 baudrate = 115000
 package_freq = 1200  # Packages per second
-earth_rotation = 2.6656648454566797e-05
+sensor_error = 0.006
 
 
 def main():

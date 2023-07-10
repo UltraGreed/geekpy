@@ -94,7 +94,7 @@ while True:
     else:
         tack_params['speed_depth'] = 0.0
 
-    net.send(message.Tack(priority=2, time=0.1, **tack_params))
+    net.send(message.Tack(priority=2, time=1, **tack_params))
 
     # Resets all the values to default (debug purposes)
     if button[BUTTON_PS]:

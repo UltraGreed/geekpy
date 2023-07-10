@@ -34,12 +34,16 @@ class ListboxEntry:
 
 
 def handle_new_entry(class_name, field_name, field_value):
-    if not plot_data.get(class_name):
+    if class_name not in plot_data:
         plot_data[class_name] = ListboxEntry(color=cmap(0))
         listbox_list.append(class_name)
 
-    if not plot_data.get(field_name):
+    if field_name not in plot_data:
         plot_data[field_name] = ListboxEntry(color=cmap(len(listbox_list) % N_PLT_COLORS))
+
+        class_in_field_ind = field_name.find('.')
+        field_name_shown = '    ' + field_name[class_in_field_ind + 1:]
+
         listbox_list.append(field_name)  # todo: this causes infinite memory losses
 
     plot_data[field_name].add((field_value, time.time() - start_time))
@@ -50,7 +54,7 @@ def change_pause():
     is_paused = not is_paused
 
 
-N_PLT_COLORS = 5
+N_PLT_COLORS = 20
 
 start_time = time.time()
 
@@ -125,12 +129,12 @@ while net.receive():
                         continue
 
                     field_type = {X: 'x', Y: 'y', DEPTH: 'depth', YAW: 'yaw', PITCH: 'pitch', ROLL: 'roll'}[i]
-                    field_name = f'    {key}.{field_type}'
+                    field_name = f'{net.id}.{key}.{field_type}'
 
                     handle_new_entry(net.id, field_name, field_value)
             except TypeError:
                 field_value = value
 
-                field_name = f'    {key}'
+                field_name = f'{net.id}.{key}'
 
                 handle_new_entry(net.id, field_name, field_value)
