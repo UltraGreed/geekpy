@@ -44,8 +44,8 @@ class TestDelayReply(Message):
 # Input navigation sensor data
 class Sensor(Message):
     def __init__(self, pos_x=None, pos_y=None, pos_depth=None, pos_yaw=None, pos_pitch=None, pos_roll=None,
-                 vel_x=None, vel_y=None, vel_depth=None, vel_yaw=None, vel_pitch=None, vel_roll=None,
-                 acc_x=None, acc_y=None, acc_depth=None, acc_yaw=None, acc_pitch=None, acc_roll=None):
+                       vel_x=None, vel_y=None, vel_depth=None, vel_yaw=None, vel_pitch=None, vel_roll=None,
+                       acc_x=None, acc_y=None, acc_depth=None, acc_yaw=None, acc_pitch=None, acc_roll=None):
         self.pos = [pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll]  # Vehicle position
         self.vel = [vel_x, vel_y, vel_depth, vel_yaw, vel_pitch, vel_roll]  # Vehicle velocity
         self.acc = [acc_x, acc_y, acc_depth, acc_yaw, acc_pitch, acc_roll]  # Vehicle acceleration
@@ -54,8 +54,8 @@ class Sensor(Message):
 # Used navigation data
 class Coord(Message):
     def __init__(self, pos_x=0.0, pos_y=0.0, pos_depth=0.0, pos_yaw=0.0, pos_pitch=0.0, pos_roll=0.0,
-                 vel_x=0.0, vel_y=0.0, vel_depth=0.0, vel_yaw=0.0, vel_pitch=0.0, vel_roll=0.0,
-                 acc_x=0.0, acc_y=0.0, acc_depth=0.0, acc_yaw=0.0, acc_pitch=0.0, acc_roll=0.0):
+                       vel_x=0.0, vel_y=0.0, vel_depth=0.0, vel_yaw=0.0, vel_pitch=0.0, vel_roll=0.0,
+                       acc_x=0.0, acc_y=0.0, acc_depth=0.0, acc_yaw=0.0, acc_pitch=0.0, acc_roll=0.0):
         self.pos = [pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll]  # Vehicle position
         self.vel = [vel_x, vel_y, vel_depth, vel_yaw, vel_pitch, vel_roll]  # Vehicle velocity
         self.acc = [acc_x, acc_y, acc_depth, acc_yaw, acc_pitch, acc_roll]  # Vehicle acceleration
@@ -83,13 +83,13 @@ class Motion(Message):  # Motion speed, m/s, deg/s
 
 
 # Control vector of each truster power, % (from spreader to electronic speed controller)
-class Control(Message):  # Thruster control power, %         #####
-    def __init__(self, bow_left=0.0, bow_right=0.0,  # BL BR#
-                 middle_left=0.0, middle_right=0.0,  # #
-                 stern_left=0.0, stern_right=0.0):  # ML   MR #
-        self.power = [bow_left, bow_right,  # ROBOT   #
-                      middle_left, middle_right,  # SL     SR #
-                      stern_left, stern_right]  ###########
+class Control(Message):  # Thruster control power, %        #######
+    def __init__(self, bow_left=0.0, bow_right=0.0,        # BL BR #
+                    middle_left=0.0, middle_right=0.0,    #         #
+                     stern_left=0.0, stern_right=0.0):   # ML     MR #
+        self.power = [bow_left, bow_right,              #    ROBOT    #
+                   middle_left, middle_right,            # SL     SR #
+                    stern_left, stern_right]              ###########
 
 
 #####################################
@@ -141,15 +141,15 @@ class FilteredObjects(Message):
     def __init__(self, objs=None):
         if objs is None:
             objs = {
-                "Zero": [0.0, 0.0, 0.0, 0.0],
-                "BallR": [-5.0, 5.0, 2.0, -45.0],
-                "BallY": [-6.0, 6.0, 2.0, -45.0],
-                "BallG": [-7.0, 5.0, 2.0, -45.0],
-                "CellB": [-10.0, 10.0, 2.0, 0.0],
-                "CellY": [-10.0, 11.0, 2.0, 0.0],
-                "CellR": [-10.0, 12.0, 2.0, 0.0],
-                "Cells": [-9.5, 11.5, 2.0, 0.0],
-                "Frame": [-3.0, 11.0, 2.0, 0.0],
+                "Zero":  [  0.0,  0.0, 0.0,   0.0],
+                "BallR": [ -5.0,  5.0, 2.0, -45.0],
+                "BallY": [ -6.0,  6.0, 2.0, -45.0],
+                "BallG": [ -7.0,  5.0, 2.0, -45.0],
+                "CellB": [-10.0, 10.0, 2.0,   0.0],
+                "CellY": [-10.0, 11.0, 2.0,   0.0],
+                "CellR": [-10.0, 12.0, 2.0,   0.0],
+                "Cells": [ -9.5, 11.5, 2.0,   0.0],
+                "Frame": [ -3.0, 11.0, 2.0,   0.0],
             }
         self.objs = objs
 

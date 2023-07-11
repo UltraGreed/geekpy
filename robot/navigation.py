@@ -1,8 +1,6 @@
 #!python3
 # @todo: Need to fix bag with InitRobot offset.
-import setproctitle
-import sys
-
+import sys, setproctitle
 from base import mat, network, message
 from base.message import AXIS
 
