@@ -2,9 +2,7 @@
 # @todo: need save only necessary position values (if is_number)!
 # @todo: need filtration and avg!!!
 import sys, setproctitle
-sys.path.append('../base')
-import mat, network, message
-# from message import AXIS
+from base import network, message
 
 TIMER = 0.25  # Filtered objects publication timer.
 
@@ -15,7 +13,8 @@ new = message.FilteredObjects()                # Sended array with all filtered 
 old = message.FilteredObjects()                # Sended array with all filtered objects.
 ini = message.FilteredObjects()                # Sended array with all filtered objects.
 
-while net.receive():  # Wait for messages or timer
+# Wait for messages or timer.
+while net.receive():
 
     if net.id == 'Timer':  # If timer has come then
         net.send(out)      # send output objects array.

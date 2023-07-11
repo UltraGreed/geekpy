@@ -1,9 +1,8 @@
 #!python3
 import time, math, sys, setproctitle
-sys.path.append('../base')
-import mat, network, message
-from mat import sind, cosd
-from message import X, Y, YAW
+from base import mat, network, message
+from base.mat import sind, cosd
+from base.message import X, Y, YAW
 
 TIMER   = 0.05        # Integration and publication timer period.
 MX, MY  = 1.50, 1.00  # Mass in lateral and longitudinal directions.
@@ -42,5 +41,5 @@ while net.receive():  # Wait for messages and timer ticks.
         speed      = net.msg.speed  # then save speed vector
         speed_time = time.time()    # and current time.
 
-    elif net.id == 'Coord':       # If robot cordinates obtained
-        yaw = net.msg().pos[YAW]  # then save robot yaw.
+    elif net.id == 'Coord':     # If robot cordinates obtained
+        yaw = net.msg.pos[YAW]  # then save robot yaw.

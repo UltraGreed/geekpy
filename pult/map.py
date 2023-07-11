@@ -1,13 +1,8 @@
 #!python3 map.py
-import setproctitle
-import sys
-
-import matplotlib
+import sys, setproctitle, matplotlib
+import numpy as np
 import matplotlib.pyplot as plt
 from base import network, mat
-
-import numpy as np
-
 from base.message import X, Y, YAW
 
 OBJECT_COLORS = {
@@ -123,7 +118,7 @@ while net.receive():
 
     # Show detected object coordinates.
     elif net.id == 'DetectedObject':
-        data  = net.msg().pos
+        data  = net.msg.pos
         obj_x = np.append(obj_x, data[X])
         obj_y = np.append(obj_y, data[Y])
         while len(obj_x) > OBJ_COUNT: obj_x = obj_x[1:]

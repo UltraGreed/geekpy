@@ -1,24 +1,23 @@
 #!python3
 import time, sys, setproctitle
 import numpy as np
-sys.path.append('../base')
-import network, message, mat
+from base import network, message, mat
 
 # Constants.
 PERIOD      = 1.0                       # Publication period.
-DISP_FALSE  = [ 0.5,  0.5,  0.5,  0.5]  # Phone onboard positions.
+DISP_FALSE  = [ 0.5,  0.5,  0.5,  0.5]  # Dispersion of false distances.
 PHONE_LEFT  = [-0.2,  0.0,  0.0]        # Coordinates of left,
 PHONE_RIGHT = [ 0.2,  0.0,  0.0]        # right,
 PHONE_BACK  = [ 0.0, -0.2,  0.0]        # back and
 PHONE_FRONT = [ 0.0,  0.2,  0.0]        # front phones.
 
 # Input parameters.
-PINGER = [float(sys.argv[1]),
-          float(sys.argv[2]),
-          float(sys.argv[3])]
-DISP = float(sys.argv[4])
-FREQ = float(sys.argv[5])
-PROB = float(sys.argv[6])
+PINGER = [float(sys.argv[1]),  # Pinger
+          float(sys.argv[2]),  # XYZ
+          float(sys.argv[3])]  # coordinates.
+DISP = float(sys.argv[4])      # Distance measurement dispersion.
+FREQ = float(sys.argv[5])      # Signal frequency.
+PROB = float(sys.argv[6])      #
 DIST = float(sys.argv[7])
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
@@ -55,4 +54,4 @@ while net.receive():
 
     # If robot coordinates has come then save its position.
     elif net.id == 'Coord':
-        robot = net.msg().pos
+        robot = net.msg.pos

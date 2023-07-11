@@ -1,8 +1,5 @@
 #!python3 imu.py
-import setproctitle
-import sys
-import time
-
+import sys, time, setproctitle
 from base import network, message
 from base.message import YAW
 
@@ -21,7 +18,9 @@ sensor.vel[YAW] = 0.0         # Redefine initial yaw velocity (None by default).
 sensor.acc[YAW] = 0.0         # Redefine initial yaw accelerarion (None by default).
 integrator_time = time.time() # Last integration time.
 
-while net.receive():  # Wait for messages and ticks.
+# Wait for messages and ticks.
+while net.receive():
+    
     if net.id == 'Timer':                                               # On timer:
         now = time.time()                                               # Measuring
         dt = now - integrator_time                                      # real

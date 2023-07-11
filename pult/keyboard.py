@@ -1,7 +1,6 @@
 #!python3
 import time, tty, termios, sys, setproctitle
-sys.path.append('../base')
-import network, message
+from base import network, message
 
 def getchar():
     fd = sys.stdin.fileno()

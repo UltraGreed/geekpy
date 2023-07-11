@@ -1,7 +1,6 @@
 import math, sys, time
-sys.path.append('../base')
-import mat, network, message
-from message import X, Y, YAW
+from base import mat, network, message
+from base.message import X, Y, YAW
 
 # Timer period to send 'Tack' message to regulator.
 TIMER = 0.25
@@ -42,6 +41,6 @@ def stab_xy(origin='Current', x=0.0, y=0.0, yaw=None, dt=0.0, depth=None):
         # If filtered objects has come, then update stab point.
         elif net.id == 'FilteredObjects':
             if origin != 'Navigation' and origin != 'Current':
-                objs = net.msg().objs
+                objs = net.msg.objs
                 stab = [x + objs[origin][X], y + objs[origin][Y]]
 

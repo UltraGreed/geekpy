@@ -1,9 +1,8 @@
 #!python3
 import time, sys, setproctitle, math
 import numpy as np
-sys.path.append('../base')
-import network, message, mat
-from message import X, Y, DEPTH
+from base import network, message, mat
+from base.message import X, Y, DEPTH
 
 # Constants.
 LEFT, RIGHT, BACK, FRONT = 0, 1, 2, 3  # Phones ailases.

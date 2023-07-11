@@ -1,9 +1,8 @@
 #!python3
 import time, sys, setproctitle, random, math
 import numpy as np
-sys.path.append('../base')
-import mat, network, message
-from message import X, Y
+from base import mat, network, message
+from base.message import X, Y
 
 # Input parameters.
 REAL_X = float(sys.argv[1])
@@ -39,4 +38,4 @@ while net.receive():
             net.send(message.DetectedObject(obj=OBJ, x=x, y=y))
 
     elif net.id == 'Coord':
-        pos = net.msg().pos
+        pos = net.msg.pos

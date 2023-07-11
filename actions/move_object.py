@@ -1,8 +1,7 @@
 # @todo: Need to make lead_distance instead radius & wait time.
 import math, sys
-sys.path.append('../base')
-import mat, network, message
-from message import X, Y, YAW
+from base import mat, network, message
+from base.message import X, Y, YAW
 
 # Timer period to send 'Tack' message to regulator.
 TIMER = 0.25
@@ -30,8 +29,8 @@ def move_object(origin='', radius=1.0, speed=0.1, depth=None):
 
         # Save robot position.
         elif net.id == 'Coord':
-            pos = net.msg().pos
+            pos = net.msg.pos
 
         # Save objects position.
         elif net.id == 'FilteredObjects':
-            obj = net.msg().objs[origin]
+            obj = net.msg.objs[origin]
