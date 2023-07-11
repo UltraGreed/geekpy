@@ -38,9 +38,9 @@ while net.receive():  # Wait for messages and timer ticks.
         sensor.vel[Y]  = vel_west * sind(yaw) + vel_north * cosd(yaw)   # outgoing message.
         net.send(sensor)
 
-    elif net.id == 'Motion':          # If Motion message has come
-        speed      = net.msg().speed  # then save speed vector
-        speed_time = time.time()      # and current time.
+    elif net.id == 'Motion':        # If Motion message has come
+        speed      = net.msg.speed  # then save speed vector
+        speed_time = time.time()    # and current time.
 
     elif net.id == 'Coord':       # If robot cordinates obtained
         yaw = net.msg().pos[YAW]  # then save robot yaw.
