@@ -83,13 +83,13 @@ class Motion(Message):  # Motion speed, m/s, deg/s
 
 
 # Control vector of each truster power, % (from spreader to electronic speed controller)
-class Control(Message):  # Thruster control power, %        #######
-    def __init__(self, bow_left=0.0, bow_right=0.0,        # BL BR #
-                    middle_left=0.0, middle_right=0.0,    #         #
-                     stern_left=0.0, stern_right=0.0):   # ML     MR #
-        self.power = [bow_left, bow_right,              #    ROBOT    #
-                   middle_left, middle_right,            # SL     SR #
-                    stern_left, stern_right]              ###########
+class Control(Message):  # Thruster control power, %        #####
+    def __init__(self, bow_left=0.0, bow_right=0.0,        #BL BR#
+                    middle_left=0.0, middle_right=0.0,    #       #
+                     stern_left=0.0, stern_right=0.0):   # ML   MR #
+        self.power = [bow_left, bow_right,              #   ROBOT   #
+                   middle_left, middle_right,            # SL   SR #
+                    stern_left, stern_right]              #########
 
 
 #####################################
@@ -140,16 +140,16 @@ class DetectedObject(Message):
 class FilteredObjects(Message):
     def __init__(self, objs=None):
         if objs is None:
-            objs = {
-                "Zero":  [  0.0,  0.0, 0.0,   0.0],
-                "BallR": [ -5.0,  5.0, 2.0, -45.0],
-                "BallY": [ -6.0,  6.0, 2.0, -45.0],
-                "BallG": [ -7.0,  5.0, 2.0, -45.0],
-                "CellB": [-10.0, 10.0, 2.0,   0.0],
-                "CellY": [-10.0, 11.0, 2.0,   0.0],
-                "CellR": [-10.0, 12.0, 2.0,   0.0],
-                "Cells": [ -9.5, 11.5, 2.0,   0.0],
-                "Frame": [ -3.0, 11.0, 2.0,   0.0],
+            objs = {     #### X,    Y, DEPTH,   YAW, PITCH, ROLL, COLOR
+                "Zero":  [  0.0,  0.0,   0.0,   0.0,   0.0,  0.0, "#00000033"],
+                "BallR": [ -5.0,  5.0,   2.0, -45.0,   0.0,  0.0, "#EE000099"],
+                "BallY": [ -6.0,  6.0,   2.0, -45.0,   0.0,  0.0, "#EEEE0099"],
+                "BallG": [ -7.0,  5.0,   2.0, -45.0,   0.0,  0.0, "#00EE0099"],
+                "CellB": [-10.0, 10.5,   2.0,   0.0,   0.0,  0.0, "#0000AA99"],
+                "CellY": [-10.0, 11.0,   2.0,   0.0,   0.0,  0.0, "#AAAA0099"],
+                "CellR": [-10.0, 11.5,   2.0,   0.0,   0.0,  0.0, "#AA000099"],
+                "Cells": [ -9.5, 10.8,   2.0,   0.0,   0.0,  0.0, "#00CCCC99"],
+                "Frame": [ -3.0, 11.0,   2.0,   0.0,   0.0,  0.0, "#CC00CC99"],
             }
         self.objs = objs
 

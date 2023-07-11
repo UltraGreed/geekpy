@@ -3,26 +3,13 @@ import sys, setproctitle, matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 from base import network, mat
-from base.message import X, Y, YAW
-
-OBJECT_COLORS = {
-    "Zero":  "#00000033",
-    "BallR": "#EE000099",
-    "BallY": "#EEEE0099",
-    "BallG": "#00EE0099",
-    "CellR": "#AA000099",
-    "CellY": "#AAAA0099",
-    "CellB": "#0000AA99",
-    "Frame": "#FF00FF99",
-}
+from base.message import X, Y, YAW, AXIS
 
 # Max count of detected objects markers.
 OBJ_COUNT = 600
 
 # Static markers coordinates.
 MARKERS = {
-    # "Start":        ([0],
-    #                  [0]),
     "Pool":         ([-13,   3, -13,   3],
                      [ -3,  -3,  14,  14]),
     "StartAndStab": ([ -2,   2,  -2,   2],
@@ -59,7 +46,7 @@ objs,  = sub.plot([], [], 'o', color='#00000033') #color='#00FF6644')
 way,   = sub.plot([], [], '-', color='#FF330066', linewidth=1)
 robot, = sub.plot([], [], '-', color='#FF330099', linewidth=2)
 
-# Connect to network and start to redresh data.
+# Connect to network and start to refresh data.
 net = network.Net(timer=REFRESH)
 robot_x, robot_y = [0] * len(ROBOT), [0] * len(ROBOT)
 way_x,   way_y   = [], []
@@ -106,12 +93,7 @@ while net.receive():
         for i in data:
             objs_x = np.append(objs_x, data[i][X])
             objs_y = np.append(objs_y, data[i][Y])
-            color = OBJECT_COLORS[i] if i in OBJECT_COLORS else '#000000AA'
-            # color = '#000000AA'
-            # if i in OBJECT_COLORS:
-            #     color = OBJECT_COLORS[i]
-            # else:
-            #     color = '#000000AA'
+            color = data[i][AXIS]
             sub.text(data[i][X], data[i][Y], i, color=color, fontsize='small')
         objs.set_xdata(objs_x)
         objs.set_ydata(objs_y)
