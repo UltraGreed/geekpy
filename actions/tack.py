@@ -6,7 +6,7 @@ from base.message import X, Y, YAW
 TIMER = 0.25
 
 ## Robot ahead moving function with given yaw
-def move_yaw(origin='Current', yaw=0.0, dist=0.1, speed=0.1, depth=None):
+def tack(origin='Current', yaw=0.0, dist=0.1, speed=0.1, depth=None):
     # Initial and current robot positions and objects data.
     start = network.wait_message('Coord').pos
     pos   = network.wait_message('Coord').pos

@@ -1,0 +1,1 @@
+# Turn on pult soft with bottom and front video
