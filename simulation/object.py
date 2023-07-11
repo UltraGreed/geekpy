@@ -21,7 +21,7 @@ pos = message.Coord().pos                      # Robot position.
 # Send object coordinates by timer.
 while net.receive():
 
-    if net.id() == 'Timer':
+    if net.id == 'Timer':
         x = np.random.normal(0, DISP)
         y = np.random.normal(0, DISP)
         prob = random.random()
@@ -38,5 +38,5 @@ while net.receive():
             y += pos[Y]
             net.send(message.DetectedObject(obj=OBJ, x=x, y=y))
 
-    elif net.id() == 'Coord':
+    elif net.id == 'Coord':
         pos = net.msg().pos

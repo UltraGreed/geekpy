@@ -22,12 +22,12 @@ sensor.acc[YAW] = 0.0         # Redefine initial yaw accelerarion (None by defau
 integrator_time = time.time() # Last integration time.
 
 while net.receive():  # Wait for messages and ticks.
-    if net.id == 'Timer':                                                 # On timer:
+    if net.id == 'Timer':                                               # On timer:
         now = time.time()                                               # Measuring
         dt = now - integrator_time                                      # real
         integrator_time = now                                           # timeout.
-        if time.time() - yaw_time > TIMEOUT:                                # If yaw data too old
-            yaw_speed = 0.0                                                 # then make speed zero.
+        if time.time() - yaw_time > TIMEOUT:                            # If yaw data too old
+            yaw_speed = 0.0                                             # then make speed zero.
         sensor.acc[YAW]  = dt * (yaw_speed - sensor.vel[YAW]) / MOMENT  # Calculate acceleration,
         sensor.vel[YAW] += dt * sensor.acc[YAW]                         # velocity and
         sensor.pos[YAW] += dt * sensor.vel[YAW]                         # position.
@@ -35,4 +35,4 @@ while net.receive():  # Wait for messages and ticks.
 
     elif net.id == 'Motion':            # If Motion message has come then
         yaw_speed = net.msg.speed[YAW]  # save yaw speed
-        yaw_time  = time.time()           # and timestamp.
+        yaw_time  = time.time()         # and timestamp.

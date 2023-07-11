@@ -28,7 +28,7 @@ def stab_xy(origin='Current', x=0.0, y=0.0, yaw=None, dt=0.0, depth=None):
     while net.receive():
 
         # If timer tick occures then:
-        if net.id() == 'Timer':                             
+        if net.id == 'Timer':                             
             net.send(message.Tack(time       = 1.0,      # Send 'Tack'
                                   stab_x     = stab[X],  # message
                                   stab_y     = stab[Y],  # to
@@ -40,7 +40,7 @@ def stab_xy(origin='Current', x=0.0, y=0.0, yaw=None, dt=0.0, depth=None):
                 return                                   # then exit.
 
         # If filtered objects has come, then update stab point.
-        elif net.id() == 'FilteredObjects':
+        elif net.id == 'FilteredObjects':
             if origin != 'Navigation' and origin != 'Current':
                 objs = net.msg().objs
                 stab = [x + objs[origin][X], y + objs[origin][Y]]

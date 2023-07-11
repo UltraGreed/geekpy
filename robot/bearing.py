@@ -57,8 +57,8 @@ def offset(dist, height):
 while net.receive():
 
     # Calculate Sound delays to pinger position.
-    if net.id() == 'SoundDelay':                                         # If sound delays has come
-        msg = net.msg()                                                  # then read message.
+    if net.id == 'SoundDelay':                                           # If sound delays has come
+        msg = net.msg                                                    # then read message.
         if msg.freq < FREQ_MIN or msg.freq > FREQ_MAX:                   # If frequence not in the range
             continue                                                     # then exit from processing.
         local = offset(msg.dist, abs(pinger[DEPTH] - robot[DEPTH]))      # Calculate pinger position in local
@@ -66,5 +66,5 @@ while net.receive():
         net.send(message.DetectedObject(obj=OBJ, x=glob[X], y=glob[Y]))  # Send message to whom it may cocern.
 
     # Save robot position.
-    elif net.id() == 'Coord':  # If robot coordinates has come
-        robot = net.msg().pos  # then save its position.
+    elif net.id == 'Coord':  # If robot coordinates has come
+        robot = net.msg.pos  # then save its position.

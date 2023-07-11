@@ -7,9 +7,9 @@
   python3 odometry.py &
   python3 regulator.py &
   python3 scene.py &
-# Acoustic objects detection:
-python3 bearing.py  36000 37000 Cells &
-python3 bearing.py  37000 38000 Frame &
+  # Acoustic objects detection:
+  python3 bearing.py  36000 37000 Cells &
+  python3 bearing.py  37000 38000 Frame &
 
   cd ../simulation
   python3 imu.py &
@@ -22,8 +22,8 @@ python3 bearing.py  37000 38000 Frame &
 # python3 object.py   -10 10 CellB  0.10   0.25 0.99  90.0 &
 # python3 object.py  -3 11 Frame  0.50   1.00 1.00  90.0 &
 # SoundDelay simulation:
-python3 acoustic.py -9.5 10.5 2.0      0.01 36500 1.00  90.0 &
-python3 acoustic.py  0.0 11.0 2.0      0.01 37500 1.00  90.0 &
+  python3 acoustic.py -9.5 10.5 2.0      0.01 36500 1.00  90.0 &
+  python3 acoustic.py  0.0 11.0 2.0      0.01 37500 1.00  90.0 &
 
   cd ../pult
   python3 map.py &

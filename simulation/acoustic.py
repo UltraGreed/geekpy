@@ -22,8 +22,8 @@ PROB = float(sys.argv[6])
 DIST = float(sys.argv[7])
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
-net = network.Net(timer=PERIOD)  # Network communication.
-robot = message.Coord().pos        # Robot position.
+net = network.Net(timer=PERIOD)                # Network communication.
+robot = message.Coord().pos                    # Robot position.
 
 # Define random function for distance fluctuations.
 def rnd(disp):
@@ -37,7 +37,7 @@ def dist(robot, phone):
 while net.receive():
 
     # Send data on timer if necessary.
-    if net.id() == 'Timer':
+    if net.id == 'Timer':
         is_near  = mat.dist2d(robot, PINGER) < DIST             # Is robot in the near zone?
         is_false = np.random.random()        > PROB             # Is it false solution?
         if is_near or is_false:                                 # Send message in this case.
@@ -54,5 +54,5 @@ while net.receive():
                                         front = front - mini))  # front distance diffrences.
 
     # If robot coordinates has come then save its position.
-    elif net.id() == 'Coord':
+    elif net.id == 'Coord':
         robot = net.msg().pos

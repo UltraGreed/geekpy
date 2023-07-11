@@ -19,7 +19,7 @@ def move_object(origin='', radius=1.0, speed=0.1, depth=None):
     while net.receive():            # Wait for timer ticks and messages.
         
         # Send Tacks on timer and check conditions.
-        if net.id() == 'Timer':
+        if net.id == 'Timer':
             yaw = mat.direction(pos, obj)                      # Calculate robot yaw to object position.
             net.send(message.Tack(                             # Send Tack message
                 time=1.0,                                      # with this timeout
@@ -29,9 +29,9 @@ def move_object(origin='', radius=1.0, speed=0.1, depth=None):
                 return                                         # then exit forever.
 
         # Save robot position.
-        elif net.id() == 'Coord':
+        elif net.id == 'Coord':
             pos = net.msg().pos
 
         # Save objects position.
-        elif net.id() == 'FilteredObjects':
+        elif net.id == 'FilteredObjects':
             obj = net.msg().objs[origin]
