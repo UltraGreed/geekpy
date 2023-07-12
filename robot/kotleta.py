@@ -17,6 +17,7 @@ def send_raw_command(node, power):
     cmd = [ 0, 0, 0, 0, 0, 0]
     rotation_params = [ 1, 1, -1, 1, -1, 1 ]
 
+    for i in range(len(cmd)):
         current_power = round(power.power[i] / 100 * (_MAX_POWER - _MIN_POWER))
 
         if current_power > 0:
