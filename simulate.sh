@@ -6,6 +6,8 @@
   python3 navigation.py &
   python3 odometry.py &
   python3 regulator.py &
+  python3 spreader.py &
+  python3 kotleta.py &
   python3 scene.py &
   # Acoustic objects detection:
   python3 bearing.py  29500 30500 Cells &
