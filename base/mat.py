@@ -5,7 +5,7 @@ X, Y, DEPTH, YAW = 0, 1, 2, 3
 
 # Check if value is numerical
 def is_num(x):
-    return type(x) == int or type(x) == float
+    return type(x) is int or type(x) is float
 
 
 # Saturation function of some value
