@@ -65,7 +65,7 @@ class DepthMeterSerial(serial.Serial):
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 read_interval = 0
-port_name = '/dev/ttyUSB0'
+port_name = '/dev/ttyTHS1'
 baudrate = 115200
 package_freq = 10  # Packages per second
 

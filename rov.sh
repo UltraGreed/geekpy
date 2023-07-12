@@ -11,6 +11,8 @@
   # python spreader.py &
   # python kotleta.py &
 
+  python depth_meter.py &
+
   python3 zed.py bottom 24827734 True &
-#  python3 zed.py front 16909428 False &
+  # python3 zed.py front 16909428 False &
 )
