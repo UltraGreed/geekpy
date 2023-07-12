@@ -217,6 +217,19 @@ class KeyOff(Message):
         self.key = key  # Turn off key of 'Grabber', 'BallLeft' or 'BallRight'
 
 
+#################################
+###### RAW DATA OF MODULES ######
+#################################
+
+# Raw odometry data message
+class OdometryRaw(Message):
+    def __init__(self):
+        self.vel_west=0.0
+        self.vel_north=0.0
+        self.acc_x=0.0
+        self.acc_y=0.0
+
+
 #####################
 ###### LOGGING ######
 #####################

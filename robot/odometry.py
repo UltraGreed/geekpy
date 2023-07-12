@@ -1,41 +1,41 @@
 #!python3
 import time, math, sys, setproctitle
 from base import mat, network, message
-from base.mat import sind, cosd
 from base.message import X, Y, YAW
 
 TIMER   = 0.05        # Integration and publication timer period.
 MX, MY  = 1.50, 1.00  # Mass in lateral and longitudinal directions.
 TIMEOUT = 0.5         # Force timeout.
 
-setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
-net    = network.Net(timer=TIMER)              # Network communication with timer event.
-sensor = message.Sensor(pos_x=0.0, pos_y=0.0,  # Initial robot position
-                        vel_x=0.0, vel_y=0.0)  # and velocity.
+setproctitle.setproctitle(' '.join(sys.argv))                        # Set filename.py title for process.
+net    = network.Net(timer=TIMER)                                    # Network communication with timer event.
+sensor = message.Sensor(pos_x=0.0, pos_y=0.0, vel_x=0.0, vel_y=0.0)  # Initial robot position and velocity.
+raw    = message.OdometryRaw()                                       # Self raw data.
 
-speed               = [0.0, 0.0]  # Last known Motion.speed data.
-speed_time          = 0.0         # Time of Motion.speed refreshing.
-vel_west, vel_north = 0.0, 0.0    # Calculated robot velocity.
-yaw                 = 0.0         # Last known robot yaw position.
-integrator_time     = time.time() # Last integration time.
+speed           = [0.0, 0.0]  # Last known Motion.speed data.
+speed_time      = 0.0         # Time of Motion.speed refreshing.
+yaw             = 0.0         # Last known robot yaw position.
+integrator_time = time.time() # Last integration time.
 
-while net.receive():  # Wait for messages and timer ticks.
+# Wait for messages and timer ticks.
+while net.receive():
 
-    if net.id == 'Timer':                                               # If timesr has come:
-        now = time.time()                                               # Measuring
-        dt = now - integrator_time                                      # real
-        integrator_time = now                                           # timeout.
-        if (time.time() - speed_time) > TIMEOUT:                        # If motion speed old
-            speed = [0.0, 0.0]                                          # then stop.
-        acc_x          = (speed[X] - sensor.vel[X]) / MX                # Calculate new acceleration
-        acc_y          = (speed[Y] - sensor.vel[Y]) / MY                # in X and Y axis.
-        vel_west      += dt * ( acc_x * cosd(yaw) + acc_y * sind(yaw))  # Calculate new
-        vel_north     += dt * (-acc_x * sind(yaw) + acc_y * cosd(yaw))  # velocity.
-        sensor.pos[X] += dt * vel_west                                  # Update position in
-        sensor.pos[Y] += dt * vel_north                                 # outgoing message.
-        sensor.vel[X]  = vel_west * cosd(yaw) - vel_north * sind(yaw)   # Update velocity in
-        sensor.vel[Y]  = vel_west * sind(yaw) + vel_north * cosd(yaw)   # outgoing message.
-        net.send(sensor)
+    if net.id == 'Timer':                                                # If timesr has come:
+        now = time.time()                                                # Measuring
+        dt = now - integrator_time                                       # real
+        integrator_time = now                                            # timeout.
+        if (time.time() - speed_time) > TIMEOUT:                         # If motion speed old
+            speed = [0.0, 0.0]                                           # then stop.
+        raw.acc_x           = (speed[X] - sensor.vel[X]) / MX            # Calculate new acceleration
+        raw.acc_y           = (speed[Y] - sensor.vel[Y]) / MY            # in X and Y axis.
+        acc_west, acc_north = mat.rotate2map(raw.acc_x, raw.acc_y, yaw)  # Rotate acceleration to map.
+        raw.vel_west       += dt * acc_west                              # Calculate new
+        raw.vel_north      += dt * acc_north                             # velocity.
+        sensor.pos[X]      += dt * raw.vel_west                          # Update position
+        sensor.pos[Y]      += dt * raw.vel_north                         # and velocity in message.
+        sensor.vel[X], sensor.vel[Y] = mat.rotate2robot(raw.vel_west, raw.vel_north, yaw)
+        net.send(sensor)                                                 # Send sensor data to consumers
+        net.send(raw)                                                    # and raw data to charts.
 
     elif net.id == 'Motion':        # If Motion message has come
         speed      = net.msg.speed  # then save speed vector
