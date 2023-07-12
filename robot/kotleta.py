@@ -43,8 +43,8 @@ def main():
 
     while net.receive():
 
-        if net.id() == "Control":
-            power.power = net.msg().power
+        if net.id == "Control":
+            power.power = net.msg.power
             send_raw_command(node, power)
 
     node.close()
