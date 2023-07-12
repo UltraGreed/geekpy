@@ -1,9 +1,13 @@
 import sys
+import os
+import setproctitle
 
 import numpy as np
 
 sys.path.append('./')
 from base import network, message
+
+setproctitle.setproctitle(' '.join(sys.argv))
 
 # Linear (1) & quadric (2) thrusters' spread by axis
 #######     X       Y       DEPTH   YAW     PITCH   ROLL

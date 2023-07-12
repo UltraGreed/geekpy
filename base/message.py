@@ -60,9 +60,9 @@ class Motion(Message):  # Motion speed, m/s, deg/s
 
 # Control vector of each truster power, % (from spreader to electronic speed controller)
 class Control(Message):  # Thruster control power, %         #####
-    def __init__(self, bow_left=0,    bow_right=0,          #BL BR#
-                    middle_left=0, middle_right=0,         #       #
-                     stern_left=0,  stern_right=0):       # ML   MR #
+    def __init__(self, bow_left=0.0,    bow_right=0.0,      #BL BR#
+                    middle_left=0.0, middle_right=0.0,     #       #
+                     stern_left=0.0,  stern_right=0.0):   # ML   MR #
         self.power = [bow_left,    bow_right,            #   ROBOT   #
                    middle_left, middle_right,            # SL     SR #
                     stern_left,  stern_right]             ###########

@@ -14,7 +14,9 @@ Y      = float(sys.argv[2])
 OBJ    =       sys.argv[3]
 DISP   = float(sys.argv[4])
 PERIOD = float(sys.argv[5])
-
+print(sys.argv[0])
+print(sys.argv[1])
+print("........")
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 net = network.Net(timer=PERIOD)                # Network communication.
 
