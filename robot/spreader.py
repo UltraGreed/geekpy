@@ -11,12 +11,12 @@ setproctitle.setproctitle(' '.join(sys.argv))
 
 # Linear (1) & quadric (2) thrusters' spread by axis
 #######     X       Y       DEPTH   YAW     PITCH   ROLL
-SPREAD1 = [[  1.00, 000.00, 000.00, 000.00, 1.00, 000.00],  # Thruster 0: bow_left
-           [ -1.00, 000.00, 000.00, 000.00, 1.00, 000.00],  # Thruster 1: bow_right
-           [ 000.00, 000.00, 1.00, 000.00, 000.00, -1.00],  # Thruster 2: middle_left
-           [ 000.00, 000.00, 1.00, 000.00, 000.00,  1.00],  # Thruster 3: middle_right
-           [ 000.00, 1.00, 000.00,  1.00, 000.00, 000.00],  # Thruster 4: stern_left
-           [ 000.00, 1.00, 000.00, -1.00, 000.00, 000.00]]  # Thruster 5: stern_right
+SPREAD1 = [[ -1.00,  0.00,  0.00, -1.00,  1.00,  0.00],  # Thruster 0: bow_left
+           [  1.00,  0.00,  0.00,  1.00,  1.00,  0.00],  # Thruster 1: bow_right
+           [  1.00,  0.00,  1.00,  1.00,  0.00, -1.00],  # Thruster 2: middle_left
+           [ -1.00,  0.00,  1.00, -1.00,  0.00,  1.00],  # Thruster 3: middle_right
+           [ -1.00,  1.00,  0.00, -1.00,  0.00, -1.00],  # Thruster 4: stern_left
+           [  1.00,  1.00,  0.00,  1.00,  0.00,  1.00]]  # Thruster 5: stern_right
 #######     X       Y       DEPTH   YAW     PITCH   ROLL
 SPREAD2 = [[000.00, 000.00, 000.00, 000.00, 000.00, 000.00],  # Thruster 0: bow_left
            [000.00, 000.00, 000.00, 000.00, 000.00, 000.00],  # Thruster 1: bow_right

@@ -22,7 +22,7 @@ def send_raw_command(node, power):
 
         if current_power > 0:
             current_power += _MIN_POWER
-        else:
+        elif current_power < 0:
             current_power -= _MIN_POWER
 
         cmd[i] = current_power * rotation_params[i]
