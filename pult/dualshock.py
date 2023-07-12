@@ -21,9 +21,9 @@ xy_coef = 1
 depth_coef = 0.5
 yaw_coef = 50
 
-stab_xy_step = 5
+stab_xy_step = 0.1
 stab_depth_step = 0.1
-stab_yaw_step = 90
+stab_yaw_step = 5
 
 DEBUG = False
 ############################

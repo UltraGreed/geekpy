@@ -5,6 +5,6 @@
   cd pult
 
   python dualshock.py &
-  python debugger.py &
+  python chart.py &
   python map.py &
 )

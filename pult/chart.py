@@ -126,20 +126,20 @@ while net.receive():
                     # Add class name
                     if net.id not in plot_data:
                         plot_data[net.id] = ListboxEntry(color=cmap(0))
-                        listbox_list.append(field_name)
+                        listbox_list.append(net.id)
                         listbox_shown.append(net.id)
 
                     # Add field name
                     if field_name not in plot_data:
                         plot_data[field_name] = ListboxEntry(color=cmap(len(listbox_shown) % N_PLT_COLORS))
 
-                        field_name_shown = f'   {field_name[field_name.find(".") + 1:]}'
+                        field_name_shown = f'    {field_name[field_name.find(".") + 1:]}'
 
                         listbox_list.append(field_name)
                         listbox_shown.append(field_name_shown)  # TODO: this causes infinite memory losses
 
                     if mat.is_num(field_value):
-                        field_name_shown = f'   {field_name[field_name.find(".") + 1:]}   {field_value}'
+                        field_name_shown = f'    {field_name[field_name.find(".") + 1:]}   {field_value}'
                         listbox_shown[listbox_list.index(field_name)] = field_name_shown
 
                         plot_data[field_name].add((field_value, time.time() - start_time))
