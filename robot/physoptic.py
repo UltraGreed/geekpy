@@ -142,7 +142,7 @@ read_interval = 0
 port_name = '/dev/ttyUSB0'
 baudrate = 115000
 package_freq = 1200  # Packages per second
-sensor_error = 0.006
+sensor_error = 2.6656648454566797e-05
 
 
 def main():
@@ -162,7 +162,7 @@ def main():
             vel_yaw = sum(data_set.average_rate for data_set in data_sets) / 4
             pos_yaw += sum(data_set.course_change for data_set in data_sets)
 
-            net.send(message.Coord(pos_yaw=pos_yaw, vel_yaw=vel_yaw))
+            net.send(message.Sensor(pos_yaw=pos_yaw, vel_yaw=vel_yaw))
             print(f'Course change: {vel_yaw}')
             print(f'Course: {pos_yaw}')
 

@@ -1,8 +1,13 @@
 #!python3
 # @todo: need save only necessary position values (if is_number)!
 # @todo: need filtration and avg!!!
-import sys, setproctitle, time
-from base import network, message, mat
+import setproctitle
+import sys
+import time
+
+from base import network, message
+
+# from message import AXIS
 
 TIMER   = 0.25  # Filtered objects publication timer.
 TIMEOUT = 5.00  # Timeout of old data.

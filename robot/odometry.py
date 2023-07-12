@@ -1,6 +1,9 @@
 #!python3
-import time, math, sys, setproctitle
-from base import mat, network, message
+import setproctitle
+import sys
+import time
+
+from base import network, message
 from base.message import X, Y, YAW
 
 TIMER   = 0.05        # Integration and publication timer period.
