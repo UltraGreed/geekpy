@@ -34,6 +34,12 @@ while True:
     elif ch == "w": net.send(message.Tack(speed_y=  0.9))
     elif ch == "-": net.send(message.Tack(speed_yaw=-30))
     elif ch == "=": net.send(message.Tack(speed_yaw= 30))
+    elif ch == "z": net.send(message.Tack(speed_depth= 0.3))
+    elif ch == "x": net.send(message.Tack(speed_depth=-0.3))
+    elif ch == "e": net.send(message.Tack(speed_roll= 10))
+    elif ch == "q": net.send(message.Tack(speed_roll=-10))
+    elif ch == "c": net.send(message.Tack(speed_pitch=-10))
+    elif ch == "v": net.send(message.Tack(speed_pitch= 10))
 
     elif ch == "0": net.send(message.InitRobot(x=0.0, y=0.0, depth=0.0, yaw=0.0))
 
