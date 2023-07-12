@@ -98,29 +98,47 @@ while net.receive():
                 hat = event.value
 
         if button_click[BUTTON_R1]:
-            is_stab_yaw = True
-            stab_yaw = pos_yaw + stab_yaw_step
+            if is_stab_yaw:
+                stab_yaw += stab_yaw_step
+            else:
+                stab_yaw = pos_yaw + stab_yaw_step
+                is_stab_yaw = True
 
         if button_click[BUTTON_L1]:
-            is_stab_yaw = True
-            stab_yaw = pos_yaw - stab_yaw_step
+            if is_stab_yaw:
+                stab_yaw -= stab_yaw_step
+            else:
+                stab_yaw = pos_yaw - stab_yaw_step
+                is_stab_yaw = True
 
         if button_click[BUTTON_TRIANGLE]:
-            is_stab_depth = True
-            stab_depth = pos_depth - stab_depth_step
+            if is_stab_depth:
+                stab_depth -= stab_depth_step
+            else:
+                is_stab_depth = True
+                stab_depth = pos_depth - stab_depth_step
 
         if button_click[BUTTON_CROSS]:
-            is_stab_depth = True
-            stab_depth = pos_depth + stab_depth_step
+            if is_stab_depth:
+                stab_depth += stab_depth_step
+            else:
+                is_stab_depth = True
+                stab_depth = pos_depth + stab_depth_step
 
         # TODO: stabilization for xy
         if hat[0]:
-            # is_stab_x = True
-            stab_x = pos_x + stab_xy_step * hat[0]
+            if is_stab_x:
+                stab_x += stab_xy_step * hat[0]
+            else:
+                # is_stab_x = True
+                stab_x = pos_x + stab_xy_step * hat[0]
 
         if hat[1]:
-            # is_stab_y = True
-            stab_y = pos_y + stab_xy_step * hat[1]
+            if is_stab_y:
+                stab_y += stab_xy_step * hat[1]
+            else:
+                # is_stab_y = True
+                stab_y = pos_y + stab_xy_step * hat[1]
 
         # Sticks are not ideal, so we have to use this
         if abs(axis[AXIS_LEFT_STICK_X]) > threshold:

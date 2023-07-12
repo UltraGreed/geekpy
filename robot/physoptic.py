@@ -1,6 +1,4 @@
-# TODO fix this cause the lib changed
 import math
-
 import serial
 import setproctitle
 import sys
@@ -143,13 +141,13 @@ class PhysopticSerial(serial.Serial):
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 read_interval = 0
 port_name = '/dev/ttyUSB0'
-baudrate = 115000
+baudrate = 115200
 package_freq = 1200  # Packages per second
 sensor_error = 2.6656648454566797e-05
 
 
 def main():
-    net = network.Net(timer=1)  # TODO: msg?
+    net = network.Net(timer=1)
 
     net.receive()
     if net.id == message.InitRobot:
@@ -161,7 +159,7 @@ def main():
     with PhysopticSerial(port=port_name, baudrate=baudrate) as ser:
         # 18.75 times per second we send 1 UDP package, containing an average of 4 data sets or 64 packages
         while True:
-            data_sets = [ser.get_data_set() for _ in range(4)]
+            data_sets = [ser.get_data_set() for _ in range(4)]  # TODO: handle error.
             vel_yaw = sum(data_set.average_rate for data_set in data_sets) / 4
             pos_yaw += sum(data_set.course_change for data_set in data_sets)
 
