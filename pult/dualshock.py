@@ -17,8 +17,8 @@ from base.message import X, Y, DEPTH, YAW
 # Configuration parameters #
 threshold = 0.1
 
-xy_coef = 1
-depth_coef = 0.5
+xy_coef = 0.2
+depth_coef = 0.2
 yaw_coef = 50
 
 stab_xy_step = 0.1

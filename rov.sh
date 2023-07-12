@@ -6,10 +6,10 @@
 
   # python physoptic.py &
   python navigation.py &
-  # python odometry.py &
-  # python regulator.py &
-  # python spreader.py &
-  # python kotleta.py &
+  python odometry.py &
+  python regulator.py &
+  python spreader.py &
+  python kotleta.py &
 
   python depth_meter.py &
 

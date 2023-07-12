@@ -128,7 +128,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
             
             net.send(Sensor(
                 pos_yaw=-x.item(), pos_pitch=z.item(), pos_roll=y,
-                vel_yaw=-vx.item(), vel_pitch=vz.item(), vel_roll=vy.item(),
+                vel_yaw=vy.item(), vel_pitch=vz.item(), vel_roll=-vx.item(),
             ))
 
     if is_stream:
