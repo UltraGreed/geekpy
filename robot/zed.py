@@ -120,14 +120,15 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
 
             x, y, z = quat2eul(*zed_imu.get_pose().get_orientation().get())
 
-            y = -y - 90
+            y = -y.item() - 90
             if y < -90:
                 y = -90
             if y > 90:
                 y = 90
+            
             net.send(Sensor(
-                pos_yaw=-x, pos_pitch=z, pos_roll=-y,
-                vel_yaw=-vx, vel_pitch=vz, vel_roll=-vy,
+                pos_yaw=-x.item(), pos_pitch=z.item(), pos_roll=-y,
+                vel_yaw=-vx.item(), vel_pitch=vz.item(), vel_roll=-vy.item(),
             ))
 
     if is_stream:
