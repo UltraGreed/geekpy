@@ -2,6 +2,8 @@
 import math
 
 import serial
+import setproctitle
+import sys
 
 from base import message, network
 
@@ -138,6 +140,7 @@ class PhysopticSerial(serial.Serial):
         return DataSet(units, temperature, voltage, current, diagnostics)
 
 
+setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 read_interval = 0
 port_name = '/dev/ttyUSB0'
 baudrate = 115000

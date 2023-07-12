@@ -3,7 +3,7 @@ import setproctitle
 import sys
 import time
 
-from base import network, message
+from base import network, message, mat
 from base.message import X, Y, YAW
 
 TIMER   = 0.05        # Integration and publication timer period.

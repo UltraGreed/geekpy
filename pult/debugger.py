@@ -1,15 +1,16 @@
+import setproctitle
+import time
+import sys
+import json
+
 from base import network
 from base.message import X, Y, DEPTH, YAW, PITCH, ROLL
 
 import tkinter
 from tkinter import ttk
 
-import time
-
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-
-import json
 
 
 def update_plot(*_):
@@ -53,6 +54,8 @@ def change_pause():
     global is_paused
     is_paused = not is_paused
 
+
+setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
 N_PLT_COLORS = 20
 
@@ -128,7 +131,7 @@ while net.receive():
                     if field_value is None:
                         continue
 
-                    field_type = {X: 'x', Y: 'y', DEPTH: 'depth', YAW: 'yaw', PITCH: 'pitch', ROLL: 'roll'}[i]
+                    field_type = str(i)
                     field_name = f'{net.id}.{key}.{field_type}'
 
                     handle_new_entry(net.id, field_name, field_value)

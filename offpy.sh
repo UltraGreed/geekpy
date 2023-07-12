@@ -1,2 +1,2 @@
 # Kill all local python scripts
-killall -r ".*.py"
+killall -r -9 ".*.py"

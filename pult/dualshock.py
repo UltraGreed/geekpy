@@ -5,6 +5,9 @@ import time
 
 import pygame
 import os
+import sys
+
+import setproctitle
 
 from base import message, network
 from base.message import X, Y, DEPTH, YAW
@@ -21,6 +24,8 @@ yaw_coef = 50
 stab_xy_step = 5
 stab_depth_step = 0.1
 stab_yaw_step = 90
+
+DEBUG = False
 ############################
 
 pygame.init()
@@ -66,6 +71,7 @@ BUTTON_LEFT_STICK = 11
 BUTTON_RIGHT_STICK = 12
 # BUTTON_PAD = 13
 
+setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 net = network.Net(timer=0.1)  # TODO: msg?
 
 is_stab_yaw = False
@@ -157,26 +163,27 @@ while net.receive():
             init = message.InitRobot()
             net.send(init)
 
-        # Print out results
-        os.system('clear')
-        # Axes
-        print("Left stick X:", axis[AXIS_LEFT_STICK_X])
-        print("Left stick Y:", axis[AXIS_LEFT_STICK_Y])
+        if DEBUG:
+            # Print out results
+            os.system('clear')
+            # Axes
+            print("Left stick X:", axis[AXIS_LEFT_STICK_X])
+            print("Left stick Y:", axis[AXIS_LEFT_STICK_Y])
 
-        print("Right stick Y:", axis[AXIS_RIGHT_STICK_Y])
+            print("Right stick Y:", axis[AXIS_RIGHT_STICK_Y])
 
-        print("Hat:", hat)
+            print("Hat:", hat)
 
-        print("L2 strength:", axis[AXIS_L2])
-        print("R2 strength:", axis[AXIS_R2], "\n")
-        # Buttons
-        print("L1:", button[BUTTON_L1])
-        print("R1:", button[BUTTON_R1])
+            print("L2 strength:", axis[AXIS_L2])
+            print("R2 strength:", axis[AXIS_R2], "\n")
+            # Buttons
+            print("L1:", button[BUTTON_L1])
+            print("R1:", button[BUTTON_R1])
 
-        print("L2:", button[BUTTON_L2])
-        print("R2:", button[BUTTON_R2])
+            print("L2:", button[BUTTON_L2])
+            print("R2:", button[BUTTON_R2])
 
-        print("PS:", button[BUTTON_PS])
+            print("PS:", button[BUTTON_PS])
     elif net.id == "Sensor":
         if net.msg.pos[X] is not None:
             pos_x = net.msg.pos[X]

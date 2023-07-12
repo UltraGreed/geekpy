@@ -6,8 +6,6 @@
   python3 navigation.py &
   python3 odometry.py &
   python3 regulator.py &
-  python3 spreader.py &
-  python3 kotleta.py &
   python3 scene.py &
   # Acoustic objects detection:
   python3 bearing.py  29500 30500 Cells &
@@ -26,8 +24,4 @@
   # SoundDelay simulation:
   python3 acoustic.py -9.5 10.5 2.0      0.01 30000 9.95  50.0 &
   python3 acoustic.py  0.0 11.0 2.0      0.01 37500 9.95  50.0 &
-
-  cd ../pult
-  python3 map.py &
-  python3 keyboard.py
 )
