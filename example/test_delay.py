@@ -22,14 +22,14 @@ while net.receive():
 
     elif net.id() == 'TestDelaySend':
         msg = net.msg
-        if msg.field_name == name:
+        if msg.field_id == name:
             if cycle % Hz == 0:
                 print("s={:d}:{:.4f}  ".format(msg.num, time.time() - msg.time), end=" ", flush=True)
         else:
-            net.send(message.TestDelayReply(name=msg.field_name, num=num, time=msg.time, text="TestDelayReply generated."))
+            net.send(message.TestDelayReply(name=msg.field_id, num=num, time=msg.time, text="TestDelayReply generated."))
 
     elif net.id() == 'TestDelayReply':
         msg = net.msg
-        if msg.field_name == name:
+        if msg.field_id == name:
             if cycle % Hz == 0:
                 print("r={:d}:{:.4f}  ".format(msg.num, time.time() - msg.time), end=" ", flush=True)

@@ -18,7 +18,7 @@ def update_plot(*_):
     for entry in [plot_data[listbox_list[selected_i]] for selected_i in listbox.curselection()]:
         color = entry.color
         entry_data = entry.data[-1000:]
-        ax_plot.plot(*reversed(list(zip(*entry_data))), color=color)
+        ax_plot.plot(*reversed(list(zip(*entry_data))))
 
     canvas_plot.draw()
 
@@ -26,12 +26,17 @@ def update_plot(*_):
 class ListboxEntry:
     data: list[tuple[float, float]]
 
-    def __init__(self, color):
+    def __init__(self, color="Black"):
         self.color = color
         self.data = []
 
     def add(self, entry):
         self.data.append(entry)
+
+
+def clear_pause():
+    for entry in [plot_data[listbox_list[selected_i]] for selected_i in listbox.curselection()]:
+        entry.data.clear()
 
 
 def change_pause():
@@ -60,26 +65,29 @@ btn_frame.grid(row=0, column=0, sticky='ns')
 listbox = tkinter.Listbox(master=btn_frame, listvariable=listbox_var, selectmode='multiple')
 listbox.pack(expand=True, fill='y')
 
-plot_button = ttk.Button(master=btn_frame, command=change_pause, width=10, text="Pause")
-plot_button.pack()
+clear_button = ttk.Button(master=btn_frame, command=clear_pause, width=10, text="Clear")
+clear_button.pack()
+pause_button = ttk.Button(master=btn_frame, command=change_pause, width=10, text="Pause")
+pause_button.pack()
 
-cmap = plt.cm.get_cmap('hsv', N_PLT_COLORS)
+# cmap = plt.cm.get_cmap('hsv', N_PLT_COLORS)
+#
+# fig_cmap = plt.figure()
+# fig_cmap.set_size_inches(1, 7)
+#
+# ax_cmap = fig_cmap.add_subplot()
+#
+# n_rect = 43
+# ax_cmap.set_xlim([-0.5, 0.5])
+# ax_cmap.set_ylim([0, n_rect])
+# for i in range(n_rect):
+#     rect = plt.Rectangle((-0.5, n_rect - i - 1), 1, 1, facecolor=cmap(i % (N_PLT_COLORS - 1)))
+#     ax_cmap.add_artist(rect)
+#
+# ax_cmap.set_position((0, 0, 0.1, 1))
 
-fig_cmap = plt.figure()
-fig_cmap.set_size_inches(1, 7)
-ax_cmap = fig_cmap.add_subplot()
-
-n_rect = 43
-ax_cmap.set_xlim([-0.5, 0.5])
-ax_cmap.set_ylim([0, n_rect])
-for i in range(n_rect):
-    rect = plt.Rectangle((-0.5, n_rect - i - 1), 1, 1, facecolor=cmap(i % (N_PLT_COLORS - 1)))
-    ax_cmap.add_artist(rect)
-
-ax_cmap.set_position((0, 0, 0.1, 1))
-
-canvas_cmap = FigureCanvasTkAgg(fig_cmap, master=root)
-canvas_cmap.get_tk_widget().grid(row=0, column=1, sticky='n', pady=1)
+# canvas_cmap = FigureCanvasTkAgg(fig_cmap, master=root)
+# canvas_cmap.get_tk_widget().grid(row=0, column=1, sticky='n', pady=1)
 
 fig_plot = plt.figure()
 fig_plot.set_size_inches(10, 7)
@@ -108,7 +116,11 @@ while net.receive():
         root.update()
         root.update_idletasks()
     else:
-        for key, value in json.loads(str(net.msg)).items():
+        try:
+            msg_dict = json.loads(str(net.msg))
+        except json.JSONDecodeError:
+            print(str(net.msg))
+        for key, value in msg_dict.items():
             if value is None:
                 continue
             try:
@@ -121,25 +133,25 @@ while net.receive():
                         field_type = {X: 'X', Y: 'Y', DEPTH: 'DEPTH', YAW: 'YAW', PITCH: 'PITCH', ROLL: 'ROLL'}[i]
                     else:
                         field_type = str(i)  # TODO: hardcode sensor, tack, and others with X Y DEPTH YAW PITCH ROLL
-                    field_name = f'{net.id}.{key}.{field_type}'
+                    field_id = f'{net.id}.{key}.{field_type}'
 
                     # Add class name
                     if net.id not in plot_data:
-                        plot_data[net.id] = ListboxEntry(color=cmap(0))
+                        plot_data[net.id] = ListboxEntry()
                         listbox_list.append(net.id)
-                        listbox_shown.append(net.id)
+                        listbox_shown.append(net.id.upper())
 
                     # Add field name
-                    if field_name not in plot_data:
-                        plot_data[field_name] = ListboxEntry(color=cmap(len(listbox_shown) % N_PLT_COLORS))
+                    if field_id not in plot_data:
+                        plot_data[field_id] = ListboxEntry()
 
-                        field_name_shown = f'    {field_name[field_name.find(".") + 1:]}'
+                        field_name_shown = f'{" " * 13}{field_id[field_id.find(".") + 1:]}'
 
-                        listbox_list.append(field_name)
+                        listbox_list.append(field_id)
                         listbox_shown.append(field_name_shown)  # TODO: this causes infinite memory losses
 
                     if mat.is_num(field_value):
-                        field_name_shown = f'    {field_name[field_name.find(".") + 1:]}   {field_value}'
-                        listbox_shown[listbox_list.index(field_name)] = field_name_shown
+                        field_name_shown = f'{format(field_value, ".2f").rjust(9, " ")} {field_id[field_id.find(".") + 1:]}'
+                        listbox_shown[listbox_list.index(field_id)] = field_name_shown
 
-                        plot_data[field_name].add((field_value, time.time() - start_time))
+                        plot_data[field_id].add((field_value, time.time() - start_time))

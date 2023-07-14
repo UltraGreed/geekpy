@@ -1,8 +1,17 @@
+import time
+
 import serial
 import setproctitle
 import sys
 
 from base import message, network
+
+
+#########
+# CONFIG
+# EXP COEFS
+alpha_coef = 0.7
+beta_coef = 1 - alpha_coef
 
 
 class DataLostException(Exception):
@@ -64,31 +73,30 @@ class DepthMeterSerial(serial.Serial):
 
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
-read_interval = 0
 port_name = '/dev/ttyTHS1'
 baudrate = 115200
-package_freq = 10  # Packages per second
 
 
 def main():
     net = network.Net(timer=1)  # TODO: msg?
 
-    pos_depth = 0
+    average_depth = 0
+    last_time = 0
     is_first = True
+    vel_depth = 0
 
     with DepthMeterSerial(port=port_name, baudrate=baudrate) as ser:
         while True:
             try:
                 unit = ser.get_data_unit()
-                if not is_first:
-                    vel_depth = (unit.depth - pos_depth) / package_freq
-                else:
-                    vel_depth = 0
-                    is_first = False
+                if is_first:
+                    vel_depth = (average_depth * beta_coef + unit.depth * alpha_coef - average_depth) / (time.time() - last_time)
+                    average_depth = average_depth * beta_coef + unit.depth * alpha_coef
+                    last_time = time.time()
             except ByteLostException:
-                pass
+                print('BYTE WAS LOST')
             finally:
-                net.send(message.Sensor(pos_depth=unit.depth, vel_depth=vel_depth))
+                net.send(message.Sensor(pos_depth=average_depth, vel_depth=vel_depth))
 
 
 if __name__ == '__main__':

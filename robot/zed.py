@@ -4,6 +4,8 @@ import pyzed.sl as sl
 import numpy as np
 import time
 import setproctitle
+import datetime
+import os
 
 sys.path.append('..')
 
@@ -12,6 +14,8 @@ from base.message import Sensor, ImageLink
 
 setproctitle.setproctitle(' '.join(sys.argv))
 
+PATH_PREFIX = '/media/ssd/photo'
+ROLL_OFFSET = 3.3
 
 class Timer:
     def __init__(self, delay_sec: float):
@@ -47,7 +51,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
     send_timer = Timer(0.1)
 
     img_capture = False
-    save_path = ''
+    save_path = '/media/ssd/photo'
 
     print(f'[{name}] Configure init parameters')
     init_params = sl.InitParameters()
@@ -61,9 +65,9 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
     print(f'[{name}] Open the camera')
     zed = sl.Camera()
     zed_status = zed.open(init_params)
-    if zed_status != sl.ERROR_CODE.SUCCESS:
+    while zed_status != sl.ERROR_CODE.SUCCESS:
         print(f'[{name}] {repr(zed_status)}')
-        exit(1)
+        zed_status = zed.open(init_params)
 
     print(f'[{name}] Configure runtime parameters')
     runtime_params = sl.RuntimeParameters()
@@ -86,19 +90,27 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
     image = sl.Mat()
 
     while net.receive():
-        zed_status = zed.grab(runtime_params)
-        if zed_status != sl.ERROR_CODE.SUCCESS:
-            print(f'[{name}] {repr(zed_status)}')
-            continue
+#        zed_status = zed.grab(runtime_params)
+#        if zed_status != sl.ERROR_CODE.SUCCESS:
+#            print(f'[{name}] {repr(zed_status)}')
+#            continue
 
         if net.id == "PhotoSave":
-            img_capture = True
-            save_path = net.msg.folder
+            if net.msg.camera == name:
+                img_capture = True
+                save_path = PATH_PREFIX + "/" + net.msg.folder
+                if not os.path.exists(save_path):
+                    os.mkdir(save_path)
+
+        if net.id == "PhotoOff":
+            if net.msg.camera == name:
+                img_capture = False
 
         if net.id == "Timer" and img_capture:
+            zed.grab(runtime_params)
             zed.retrieve_image(image, sl.VIEW.LEFT)
-            timestamp = zed.get_timestamp(sl.TIME_REFERENCE.IMAGE)
-            path = f"{save_path}/{timestamp}.jpg"
+            timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S")
+            path = f"{save_path}/{name}_{timestamp}.jpg"
 
             image.write(path)
             net.send(ImageLink(
@@ -107,6 +119,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
             ))
 
         if send_timer.is_unlock and pose_tracking:
+            zed.grab(runtime_params)
             zed.get_sensors_data(sensors_data, sl.TIME_REFERENCE.CURRENT)
             zed_imu = sensors_data.get_imu_data()
 
@@ -127,7 +140,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                 y = 90
             
             net.send(Sensor(
-                pos_yaw=-x.item(), pos_pitch=z.item(), pos_roll=y,
+                pos_yaw=-x.item(), pos_pitch=z.item(), pos_roll=y - ROLL_OFFSET,
                 vel_yaw=vy.item(), vel_pitch=vz.item(), vel_roll=-vx.item(),
             ))
 
