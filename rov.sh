@@ -1,3 +1,4 @@
+#!/bin/bash
 # Turn on robot software
 (
   export PYTHONPATH=$(pwd)
