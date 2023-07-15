@@ -8,7 +8,7 @@ from base.message import X, Y, DEPTH
 LEFT, RIGHT, BACK, FRONT = 0, 1, 2, 3  # Phones ailases.
 PHONE_X = [-0.2, 0.2,  0.0, 0.0]       # Phones
 PHONE_Y = [ 0.0, 0.0, -0.2, 0.2]       # coordinates.
-SIN_SAT = 0.9                          # Sinus saturation to prevent wrong asin.
+SIN_SAT = 0.99                         # Sinus saturation to prevent wrong asin.
 
 # Input parameters.
 FREQ_MIN = float(sys.argv[1])  # Minimal and
@@ -20,35 +20,12 @@ net    = network.Net()                                      # Network communicat
 robot  = network.wait_message("Coord").pos                  # Current robot position.
 pinger = network.wait_message("FilteredObjects").objs[OBJ]  # Initial pinger position on seabed.
 
-# First theory math, but it works asimmetrical!
-# # Offset projection to one axel.
-# def proj(base, diff):
-#     angle = math.asin(mat.sat(diff, -base, base) / base)  # Calculated ngle and
-#     return math.tan(mat.sat(angle, -TAN_SAT, TAN_SAT))    # distance of projection.
-# # Object offset in robot coordinates.
-# def offset(dist, height):
-#     dx = height * proj(PHONE_X[RIGHT] - PHONE_X[LEFT], dist[LEFT] - dist[RIGHT])  # X&Y offset based
-#     dy = height * proj(PHONE_Y[FRONT] - PHONE_Y[BACK], dist[BACK] - dist[FRONT])  # on two projections.
-#     return [dx, dy]
-
-# SECOND VERSION:
-# # Offset projection to one axel.
-# def proj(base, diff):
-#     return diff / base
-# Object offset in robot coordinates.
-# def offset(dist, height):
-#     dx = proj(PHONE_X[RIGHT] - PHONE_X[LEFT], dist[LEFT] - dist[RIGHT])  # X&Y offset based
-#     dy = proj(PHONE_Y[FRONT] - PHONE_Y[BACK], dist[BACK] - dist[FRONT])  # on two projections.
-#     dr = mat.sat(math.sqrt(dx**2 + dy**2), -0.9, 0.9)
-#     scale = height * (1.0 + 0.5 * math.tan(math.asin(dr)))
-#     return [scale * dx, scale * dy]
-
 # Object offset in robot coordinates.
 def offset(dist, height):
     dx = (dist[LEFT] - dist[RIGHT]) / (PHONE_X[RIGHT] - PHONE_X[LEFT])  # X&Y offset based
     dy = (dist[BACK] - dist[FRONT]) / (PHONE_Y[FRONT] - PHONE_Y[BACK])  # on two projections.
     dr = math.sqrt(dx**2 + dy**2)
-    dr_sat = mat.sat(dr, -0.999, 0.999)
+    dr_sat = mat.sat(dr, -SIN_SAT, SIN_SAT)
     scale = (height * math.tan(math.asin(dr_sat)) / dr) if abs(dr) > 0.000001 else height
     return [scale * dx, scale * dy]
 
