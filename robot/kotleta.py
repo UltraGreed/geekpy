@@ -22,7 +22,7 @@ def send_raw_command(node, power):
         if current_power > _MAX_POWER:
             current_power = _MAX_POWER
 
-        if sign > 0:
+        if sign > 0 and current_power != 0:
             current_power -= 1
 
         cmd[i] = current_power * rotation_params[i] * sign
