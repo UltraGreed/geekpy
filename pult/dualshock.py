@@ -10,28 +10,34 @@ import sys
 import setproctitle
 
 from base import message, network
-from base.message import X, Y, DEPTH, YAW
+from base.message import X, Y, DEPTH, YAW, PITCH, ROLL
 
 
 ############################
 # Configuration parameters #
 THRESHOLD = 0.1
 
-# x_coef = 0.5
-# y_coef = 1
 X_COEF = 0.15
 Y_COEF = 0.6
-DEPTH_COEF = 0.25
+
+DEPTH_COEF = 0.15
 YAW_COEF = 60
+
 PITCH_COEF = 45
-ROLL_COEF = 45
+ROLL_COEF = 360
 
 STAB_X_STEP = 0.05
 STAB_Y_STEP = 0.05
-STAB_DEPTH_STEP = 0.05
-STAB_YAW_STEP = 5
-STAB_PITCH_STEP = 5
-STAB_ROLL_STEP = 5
+
+STAB_DEPTH_SMALL_STEP = 0.02
+STAB_DEPTH_BIG_STEP = 0.20
+STAB_YAW_SMALL_STEP = 2
+STAB_YAW_BIG_STEP = 20
+
+STAB_PITCH_COEF = 45
+STAB_ROLL_COEF = 90
+
+UPDATE_FREQ = 10
 
 DEBUG = False
 ############################
@@ -80,13 +86,20 @@ BUTTON_RIGHT_STICK = 12
 # BUTTON_PAD = 13
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
-net = network.Net(timer=0.1)  # TODO: msg?
+net = network.Net(timer=1 / UPDATE_FREQ)  # TODO: msg?
 
 is_stab_yaw = False
 is_stab_xy = False
 is_stab_depth = False
+is_stab_pitch = False
+is_stab_roll = False
 
-pos_x, pos_y, pos_depth, pos_yaw = 0, 0, 0, 0
+pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll = 0, 0, 0, 0, 0, 0
+stab_x, stab_y, stab_depth, stab_yaw, stab_pitch, stab_roll = 0, 0, 0, 0, 0, 0
+
+speed_depth = 0
+speed_pitch = 0
+speed_roll = 0
 
 # Main loop
 while net.receive():
@@ -104,102 +117,112 @@ while net.receive():
             elif event.type == pygame.JOYHATMOTION:
                 hat = event.value
 
-        if button_click[BUTTON_R1]:
-            if is_stab_yaw:
-                stab_yaw += STAB_YAW_STEP
-            else:
-                stab_yaw = pos_yaw + STAB_YAW_STEP
-                is_stab_yaw = True
-
-        if button_click[BUTTON_L1]:
-            if is_stab_yaw:
-                stab_yaw -= STAB_YAW_STEP
-            else:
-                stab_yaw = pos_yaw - STAB_YAW_STEP
-                is_stab_yaw = True
-
         if button_click[BUTTON_TRIANGLE]:
             if is_stab_depth:
-                stab_depth -= STAB_DEPTH_STEP
+                stab_depth -= STAB_DEPTH_BIG_STEP
             else:
                 is_stab_depth = True
-                stab_depth = pos_depth - STAB_DEPTH_STEP
+                stab_depth = pos_depth - STAB_DEPTH_BIG_STEP
 
         if button_click[BUTTON_CROSS]:
             if is_stab_depth:
-                stab_depth += STAB_DEPTH_STEP
+                stab_depth += STAB_DEPTH_BIG_STEP
             else:
                 is_stab_depth = True
-                stab_depth = pos_depth + STAB_DEPTH_STEP
+                stab_depth = pos_depth + STAB_DEPTH_BIG_STEP
 
-        # if hat[0]:
+        if button_click[BUTTON_SQUARE]:
+            if is_stab_yaw:
+                stab_yaw -= STAB_YAW_BIG_STEP
+            else:
+                is_stab_yaw = True
+                stab_yaw = pos_yaw - STAB_YAW_SMALL_STEP
 
-            # if is_stab_xy:
-            #     stab_x += stab_x_step * hat[0]
-            # else:
-            #     # is_stab_x = True
-            #     stab_x = pos_x + stab_x_step * hat[0]
+        if button_click[BUTTON_CIRCLE]:
+            if is_stab_yaw:
+                stab_yaw += STAB_YAW_BIG_STEP
+            else:
+                is_stab_yaw = True
+                stab_yaw = pos_yaw + STAB_YAW_SMALL_STEP
 
-        # if hat[1]:
-            # TEMPORAL SOLUTION FOR REGULATION
+        if hat[0]:
+            if is_stab_yaw:
+                stab_yaw += STAB_YAW_SMALL_STEP * hat[0]
+            else:
+                is_stab_yaw = True
+                stab_yaw = pos_yaw + STAB_YAW_SMALL_STEP * hat[0]
 
-            # if is_stab_xy:
-            #     stab_y += stab_y_step * hat[1]
-            # else:
-            #     # is_stab_y = True
-            #     stab_y = pos_y + stab_y_step * hat[1]
+        if hat[1]:
+            if is_stab_depth:
+                stab_depth -= STAB_DEPTH_SMALL_STEP * hat[1]
+            else:
+                is_stab_depth = True
+                stab_depth = pos_depth - STAB_DEPTH_SMALL_STEP * hat[1]
 
         # Sticks are not ideal, so we have to use this
-        # TODO: uncomment section
-        # if abs(axis[AXIS_LEFT_STICK_X]) > threshold:
-        #     speed_x = axis[AXIS_LEFT_STICK_X] * x_coef
-        #     is_stab_xy = False
-        # else:
-        #     speed_x = 0.0
-        #
-        # if abs(axis[AXIS_LEFT_STICK_Y]) > threshold:
-        #     speed_y = -axis[AXIS_LEFT_STICK_Y] * y_coef
-        #     is_stab_xy = False
-        # else:
-        #     speed_y = 0.0
-
-        if abs(axis[AXIS_RIGHT_STICK_X]) > THRESHOLD:
-            speed_x = axis[AXIS_RIGHT_STICK_X] * X_COEF
+        if abs(axis[AXIS_LEFT_STICK_X]) > THRESHOLD:
+            speed_x = axis[AXIS_LEFT_STICK_X] * X_COEF
             is_stab_xy = False
         else:
             speed_x = 0
 
-        speed_y = hat[1] * Y_COEF
-
-        if abs(axis[AXIS_RIGHT_STICK_Y]) > THRESHOLD:
-            speed_depth = axis[AXIS_RIGHT_STICK_Y] * DEPTH_COEF
-            is_stab_depth = False
+        if abs(axis[AXIS_LEFT_STICK_Y]) > THRESHOLD:
+            speed_y = -axis[AXIS_LEFT_STICK_Y] * Y_COEF
+            is_stab_xy = False
         else:
-            speed_depth = 0.0
+            speed_y = 0.0
 
-        speed_yaw = hat[0] * YAW_COEF
-        if speed_yaw != 0:
+        if abs(axis[AXIS_RIGHT_STICK_X]) > THRESHOLD:
             is_stab_yaw = False
+            speed_yaw = YAW_COEF * axis[AXIS_RIGHT_STICK_X]
+        else:
+            speed_yaw = 0.0
+
+        # If stabilization is enabled or input given, we calculate stabilization
+        if is_stab_pitch or abs(axis[AXIS_RIGHT_STICK_Y]) > THRESHOLD:
+            is_stab_pitch = True
+            stab_pitch = axis[AXIS_RIGHT_STICK_Y] * STAB_PITCH_COEF
+
+        # If stabilization is enabled or input given, we calculate stabilization
+        if is_stab_roll or axis[AXIS_R2] != axis[AXIS_L2]:
+            is_stab_roll = True
+            stab_roll = (axis[AXIS_R2] - axis[AXIS_L2]) / 2 * STAB_ROLL_COEF
+
+        # DEBUG CONTROL OVERRIDE
+        speed_roll = 0
+        if button[BUTTON_R1]:
+            is_stab_pitch = False
+            speed_roll = -ROLL_COEF
+
+        if button[BUTTON_L1]:
+            is_stab_pitch = False
+            speed_roll = ROLL_COEF
 
         tack_params = {
             'speed_x': speed_x if not is_stab_xy else None,
             'speed_y': speed_y if not is_stab_xy else None,
             'speed_depth': speed_depth if not is_stab_depth else None,
             'speed_yaw': speed_yaw if not is_stab_yaw else None,
+            'speed_pitch': speed_pitch if not is_stab_pitch else None,
+            'speed_roll': speed_roll if not is_stab_roll else None,
             'stab_x': stab_x if is_stab_xy else None,
             'stab_y': stab_y if is_stab_xy else None,
             'stab_depth': stab_depth if is_stab_depth else None,
-            'stab_yaw': stab_yaw if is_stab_yaw else None
+            'stab_yaw': stab_yaw if is_stab_yaw else None,
+            'stab_pitch': stab_pitch if is_stab_pitch else None,
+            'stab_roll': stab_roll if is_stab_roll else None,
         }
 
         net.send(message.Tack(priority=2, time=1, **tack_params))
 
         # Disable stabilisation
         if button[BUTTON_PS]:
-            stab_x = False
-            stab_y = False
-            stab_depth = False
-            stab_yaw = False
+            is_stab_x = False
+            is_stab_y = False
+            is_stab_depth = False
+            is_stab_yaw = False
+            is_stab_pitch = False
+            is_stab_roll = False
 
         # Reset xy coordinates
         if button[BUTTON_SHARE]:
@@ -237,3 +260,5 @@ while net.receive():
         pos_y = net.msg.pos[Y]
         pos_depth = net.msg.pos[DEPTH]
         pos_yaw = net.msg.pos[YAW]
+        pos_pitch = net.msg.pos[PITCH]
+        pos_roll = net.msg.pos[ROLL]

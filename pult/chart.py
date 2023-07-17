@@ -92,6 +92,8 @@ pause_button.pack()
 fig_plot = plt.figure()
 fig_plot.set_size_inches(10, 7)
 ax_plot = fig_plot.add_subplot()
+ax_plot.yaxis.set_label_position("right")
+ax_plot.yaxis.tick_right()
 
 toolbar_frame = ttk.Frame(master=root)
 toolbar_frame.grid(row=0, column=2)
