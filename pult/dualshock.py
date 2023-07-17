@@ -15,23 +15,23 @@ from base.message import X, Y, DEPTH, YAW
 
 ############################
 # Configuration parameters #
-threshold = 0.1
+THRESHOLD = 0.1
 
 # x_coef = 0.5
 # y_coef = 1
-x_coef = 0.15
-y_coef = 0.6
-depth_coef = 0.25
-yaw_coef = 60
-pitch_coef = 45
-roll_coef = 45
+X_COEF = 0.15
+Y_COEF = 0.6
+DEPTH_COEF = 0.25
+YAW_COEF = 60
+PITCH_COEF = 45
+ROLL_COEF = 45
 
-stab_x_step = 0.05
-stab_y_step = 0.05
-stab_depth_step = 0.05
-stab_yaw_step = 5
-stab_pitch_step = 5
-stab_roll_step = 5
+STAB_X_STEP = 0.05
+STAB_Y_STEP = 0.05
+STAB_DEPTH_STEP = 0.05
+STAB_YAW_STEP = 5
+STAB_PITCH_STEP = 5
+STAB_ROLL_STEP = 5
 
 DEBUG = False
 ############################
@@ -106,31 +106,31 @@ while net.receive():
 
         if button_click[BUTTON_R1]:
             if is_stab_yaw:
-                stab_yaw += stab_yaw_step
+                stab_yaw += STAB_YAW_STEP
             else:
-                stab_yaw = pos_yaw + stab_yaw_step
+                stab_yaw = pos_yaw + STAB_YAW_STEP
                 is_stab_yaw = True
 
         if button_click[BUTTON_L1]:
             if is_stab_yaw:
-                stab_yaw -= stab_yaw_step
+                stab_yaw -= STAB_YAW_STEP
             else:
-                stab_yaw = pos_yaw - stab_yaw_step
+                stab_yaw = pos_yaw - STAB_YAW_STEP
                 is_stab_yaw = True
 
         if button_click[BUTTON_TRIANGLE]:
             if is_stab_depth:
-                stab_depth -= stab_depth_step
+                stab_depth -= STAB_DEPTH_STEP
             else:
                 is_stab_depth = True
-                stab_depth = pos_depth - stab_depth_step
+                stab_depth = pos_depth - STAB_DEPTH_STEP
 
         if button_click[BUTTON_CROSS]:
             if is_stab_depth:
-                stab_depth += stab_depth_step
+                stab_depth += STAB_DEPTH_STEP
             else:
                 is_stab_depth = True
-                stab_depth = pos_depth + stab_depth_step
+                stab_depth = pos_depth + STAB_DEPTH_STEP
 
         # if hat[0]:
 
@@ -163,21 +163,21 @@ while net.receive():
         # else:
         #     speed_y = 0.0
 
-        if abs(axis[AXIS_RIGHT_STICK_X]) > threshold:
-            speed_x = axis[AXIS_RIGHT_STICK_X] * x_coef
+        if abs(axis[AXIS_RIGHT_STICK_X]) > THRESHOLD:
+            speed_x = axis[AXIS_RIGHT_STICK_X] * X_COEF
             is_stab_xy = False
         else:
             speed_x = 0
 
-        speed_y = hat[1] * y_coef
+        speed_y = hat[1] * Y_COEF
 
-        if abs(axis[AXIS_RIGHT_STICK_Y]) > threshold:
-            speed_depth = axis[AXIS_RIGHT_STICK_Y] * depth_coef
+        if abs(axis[AXIS_RIGHT_STICK_Y]) > THRESHOLD:
+            speed_depth = axis[AXIS_RIGHT_STICK_Y] * DEPTH_COEF
             is_stab_depth = False
         else:
             speed_depth = 0.0
 
-        speed_yaw = hat[0] * yaw_coef
+        speed_yaw = hat[0] * YAW_COEF
         if speed_yaw != 0:
             is_stab_yaw = False
 

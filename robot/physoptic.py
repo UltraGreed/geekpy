@@ -3,7 +3,14 @@ import serial
 import setproctitle
 import sys
 
+import threading
+
 from base import message, network
+from base.message import YAW
+
+
+BAUDRATE = 115200
+PACKAGE_FREQ = 1200  # Packages per second
 
 
 class DataLostException(Exception):
@@ -46,7 +53,7 @@ class DataSet:
 
         rate_sum = sum([unit.rate for unit in units])
         self.average_rate = rate_sum / len(units)
-        self.course_change = rate_sum / package_freq
+        self.course_change = rate_sum / PACKAGE_FREQ
 
 
 class PhysopticSerial(serial.Serial):
@@ -138,35 +145,52 @@ class PhysopticSerial(serial.Serial):
         return DataSet(units, temperature, voltage, current, diagnostics)
 
 
+# Thread for pitch receiving
+def get_init_robot_thread():
+    global pos_yaw
+
+    net = network.Net()
+    while net.receive():
+        if net.id == "InitRobot":
+            lock.acquire()  # Acquire the lock
+            pos_yaw = net.msg.pos[YAW]  # Modify the shared variable
+            lock.release()  # Release the lock
+
+
+# Thread for depth meter reading
+def send_depth_thread():
+    global pos_yaw
+
+    net = network.Net()
+    with PhysopticSerial(port=port_name, baudrate=BAUDRATE) as ser:
+        # 75 times per second we send 1 UDP package, containing an average of 1 data set or 16 packages
+        while True:
+            try:
+                data_sets = ser.get_data_set()
+
+                vel_yaw = sum(data_set.average_rate for data_set in data_sets)
+
+                lock.acquire()
+                pos_yaw += sum(data_set.course_change for data_set in data_sets)
+                lock.release()
+            except ByteLostException:
+                print('Byte lost')  # TODO: handle error.
+            finally:
+                net.send(message.Sensor(pos_yaw=pos_yaw, vel_yaw=vel_yaw))
+                print(f'Course change: {vel_yaw}')
+                print(f'Course: {pos_yaw}')
+
+
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
-read_interval = 0
 port_name = '/dev/ttyUSB0'
-baudrate = 115200
-package_freq = 1200  # Packages per second
 sensor_error = 2.6656648454566797e-05
 
+pos_yaw = 0
+lock = threading.Lock()
 
-def main():
-    net = network.Net(timer=1)
+# Create and start the threads
+yaw_receiver = threading.Thread(target=get_init_robot_thread)
+yaw_sender = threading.Thread(target=send_depth_thread)
 
-    net.receive()
-    if net.id == message.InitRobot:
-        pos_yaw = net.msg.yaw
-    else:
-        pos_yaw = 0
-    print('Initial yaw received')
-
-    with PhysopticSerial(port=port_name, baudrate=baudrate) as ser:
-        # 18.75 times per second we send 1 UDP package, containing an average of 4 data sets or 64 packages
-        while True:
-            data_sets = [ser.get_data_set() for _ in range(4)]  # TODO: handle error.
-            vel_yaw = sum(data_set.average_rate for data_set in data_sets) / 4
-            pos_yaw += sum(data_set.course_change for data_set in data_sets)
-
-            net.send(message.Sensor(pos_yaw=pos_yaw, vel_yaw=vel_yaw))
-            print(f'Course change: {vel_yaw}')
-            print(f'Course: {pos_yaw}')
-
-
-if __name__ == '__main__':
-    main()
+yaw_receiver.start()
+yaw_sender.start()
