@@ -1,5 +1,6 @@
 import sys
 import setproctitle
+import math
 
 import dronecan
 from dronecan import uavcan
@@ -15,8 +16,16 @@ def send_raw_command(node, power):
     rotation_params = [ 1, 1, -1, 1, -1, 1 ]
 
     for i in range(len(cmd)):
-        current_power = round(power.power[i] / 100 * _MAX_POWER)
-        cmd[i] = current_power * rotation_params[i]
+        sign = int(math.copysign(1, power.power[i]))
+        current_power = round(abs(power.power[i]) / 100 * _MAX_POWER)
+
+        if current_power > _MAX_POWER:
+            current_power = _MAX_POWER
+
+        if sign > 0:
+            current_power -= 1
+
+        cmd[i] = current_power * rotation_params[i] * sign
 
     message = uavcan.equipment.esc.RawCommand(cmd=cmd)
     node.broadcast(message)
