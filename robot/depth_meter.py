@@ -112,7 +112,7 @@ def send_depth_thread():
                 lock.release()  # Release the lock
 
                 # Calculate exponential average depth
-                average_depth = average_depth * BETA_COEF + (unit.depth + pitch_offset) * ALPHA_COEF
+                average_depth = average_depth * BETA_COEF + (unit.depth - pitch_offset) * ALPHA_COEF
 
                 vel_depth = (average_depth - last_depth) / (time.time() - last_time)
 

@@ -109,7 +109,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
         if net.id == "Timer" and img_capture:
             zed.grab(runtime_params)
             zed.retrieve_image(image, sl.VIEW.LEFT)
-            timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S")
+            timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S.%f")
             path = f"{save_path}/{name}_{timestamp}.jpg"
 
             image.write(path)
