@@ -1,11 +1,16 @@
 import sys
 
+import socket
+import io
+from PIL import Image
+from base import message
 import pyzed.sl as sl
 import numpy as np
 import time
 import setproctitle
 import datetime
 import os
+import math
 
 sys.path.append('..')
 
@@ -16,6 +21,14 @@ setproctitle.setproctitle(' '.join(sys.argv))
 
 PATH_PREFIX = '/media/ssd/photo'
 ROLL_OFFSET = 3.3
+
+sock_set = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+sock_set.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+sock_set.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+PORT_FRONT = 1111
+PORT_BOTTOM = 1112
+
 
 class Timer:
     def __init__(self, delay_sec: float):
@@ -46,9 +59,31 @@ def quat2eul(qx, qy, qz, qw) -> np.array:
     return np.rad2deg((yaw, roll, pitch))
 
 
+def jpgByteArray(image):
+    imageBytesIO = io.BytesIO()
+    image.save(imageBytesIO, format="JPEG")
+    return imageBytesIO.getvalue()
+
+
+def send_img(image, port):
+    arr = image.get_data()
+    b, g, r, _ = Image.fromarray(arr).split()
+    png = Image.merge('RGB', (r, g, b))
+
+    jpg = jpgByteArray(png.resize((910, 512)))
+
+    if sys.getsizeof(jpg) > 65000:
+        ratio =  65000 / sys.getsizeof(jpg)
+        jpg = jpgByteArray(png.resize((math.floor(910 * ratio), math.floor(512 * ratio))))
+
+    sock_set.sendto(jpg, ("255.255.255.255", port))
+
+
 def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: bool = False) -> None:
     net = Net(1)
     send_timer = Timer(0.1)
+    photo_timer = Timer(0.25)
+    stream_timer = Timer(0.033)
 
     img_capture = False
     save_path = '/media/ssd/photo'
@@ -60,7 +95,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
     init_params.coordinate_system = sl.COORDINATE_SYSTEM.RIGHT_HANDED_Z_UP
     init_params.coordinate_units = sl.UNIT.METER
     init_params.depth_mode = sl.DEPTH_MODE.NONE
-    init_params.camera_fps = 10
+    init_params.camera_fps = 30
 
     print(f'[{name}] Open the camera')
     zed = sl.Camera()
@@ -72,29 +107,31 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
     print(f'[{name}] Configure runtime parameters')
     runtime_params = sl.RuntimeParameters()
 
-    if is_stream:
-        print(f'[{name}] Configuring stream parameters')
-        stream_params = sl.StreamingParameters()
-        stream_params.codec = sl.STREAMING_CODEC.H264
-        stream_params.bitrate = 4000
-        stream_params.port = 30000
+    # if is_stream:
+    #     print(f'[{name}] Configuring stream parameters')
+    #     stream_params = sl.StreamingParameters()
+    #     stream_params.codec = sl.STREAMING_CODEC.H264
+    #     stream_params.bitrate = 4000
+    #     stream_params.port = 30000
 
-        zed_status = zed.enable_streaming(stream_params)
-        if zed_status != sl.ERROR_CODE.SUCCESS:
-            print(repr(zed_status))
-            exit(1)
+    #     zed_status = zed.enable_streaming(stream_params)
+    #     if zed_status != sl.ERROR_CODE.SUCCESS:
+    #         print(repr(zed_status))
+    #         exit(1)
 
     print(f'[{name}] Init sensors data')
     sensors_data = sl.SensorsData()
 
-    image = sl.Mat()
+    resolution = (1280, 720)
+    image = sl.Mat(*resolution, sl.MAT_TYPE.U8_C1)
+
+    photo_counter = 0
 
     while net.receive():
 #        zed_status = zed.grab(runtime_params)
 #        if zed_status != sl.ERROR_CODE.SUCCESS:
 #            print(f'[{name}] {repr(zed_status)}')
 #            continue
-
         if net.id == "PhotoSave":
             if net.msg.camera == name:
                 img_capture = True
@@ -107,15 +144,25 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                 img_capture = False
 
         if net.id == "Timer" and img_capture:
+            photo_counter += 1
             zed.grab(runtime_params)
             zed.retrieve_image(image, sl.VIEW.LEFT)
             timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S.%f")
             path = f"{save_path}/{name}_{timestamp}.jpg"
 
-            image.write(path)
+            arr = image.get_data()
+            b, g, r, _ = Image.fromarray(arr).split()
+            png = Image.merge('RGB', (r, g, b))
+
+            png = png.resize((456, 256))
+            png = png.crop((100, 0, 356, 256))
+
+            png.save(fp=path)
             net.send(ImageLink(
                 obj=name,
-                path=path
+                path=path,
+                file=f'{name}_{timestamp}.jpg',
+                counter=photo_counter
             ))
 
         if send_timer.is_unlock and pose_tracking:
@@ -144,9 +191,23 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                 vel_yaw=vy.item(), vel_pitch=vz.item(), vel_roll=-vx.item(),
             ))
 
-    if is_stream:
-        print(f'[{name}] Disable streaming')
-        zed.disable_streaming()
+        if stream_timer.is_unlock and is_stream:
+            zed.grab()
+            zed_status = zed.grab()
+            if zed_status != sl.ERROR_CODE.SUCCESS:
+                print(f' {repr(zed_status)}')
+                continue
+
+            if name == 'Front':
+                zed.retrieve_image(image, sl.VIEW.LEFT)
+                send_img(image, PORT_FRONT)
+            elif name == 'Bottom':
+                zed.retrieve_image(image, sl.VIEW.RIGHT)
+                send_img(image, PORT_BOTTOM)
+
+    # if is_stream:
+    #     print(f'[{name}] Disable streaming')
+    #     zed.disable_streaming()
 
     print(f'[{name}] Close the camera')
     zed.close()

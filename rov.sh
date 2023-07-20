@@ -14,6 +14,7 @@
 
   python depth_meter.py &
 
-  python3 zed.py bottom 24827734 True &
-  # python3 zed.py front 16909428 False &
+  #                              photo stream
+  python3 zed.py Bottom 24827734 True  True &
+  python3 zed.py Front  16909428 True  True &
 )
