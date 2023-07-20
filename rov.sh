@@ -5,14 +5,14 @@
 
   cd robot
 
-  # python physoptic.py &
+  thon physoptic.py &
   python navigation.py &
   python odometry.py &
   python regulator.py &
   python spreader.py &
   python kotleta.py &
 
-  python depth_meter.py &
+  python ctd_i2c.py &
 
   #                              photo stream
   python3 zed.py Bottom 24827734 True  True &

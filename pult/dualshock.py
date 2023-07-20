@@ -12,7 +12,6 @@ import setproctitle
 from base import message, network
 from base.message import X, Y, DEPTH, YAW, PITCH, ROLL
 
-
 ############################
 # Configuration parameters #
 THRESHOLD = 0.1
@@ -24,7 +23,7 @@ DEPTH_COEF = 0.15
 YAW_COEF = 60
 
 PITCH_COEF = 45
-ROLL_COEF = 360
+ROLL_COEF = 60
 
 STAB_X_STEP = 0.05
 STAB_Y_STEP = 0.05
@@ -101,21 +100,28 @@ speed_depth = 0
 speed_pitch = 0
 speed_roll = 0
 
+is_paused = False
+
 # Main loop
 while net.receive():
     if net.id == "Timer":
         button_click = [False for _ in range(controller.get_numbuttons())]
+        was_input = False
         # Get events
         for event in pygame.event.get():
             if event.type == pygame.JOYAXISMOTION:
                 axis[event.axis] = round(event.value, 3)
+                if abs(event.value) > THRESHOLD:
+                    was_input = True
             elif event.type == pygame.JOYBUTTONDOWN:
                 button[event.button] = True
                 button_click[event.button] = True
+                was_input = True
             elif event.type == pygame.JOYBUTTONUP:
                 button[event.button] = False
             elif event.type == pygame.JOYHATMOTION:
                 hat = event.value
+                was_input = True
 
         if button_click[BUTTON_TRIANGLE]:
             if is_stab_depth:
@@ -213,7 +219,9 @@ while net.receive():
             'stab_roll': stab_roll if is_stab_roll else None,
         }
 
-        net.send(message.Tack(priority=2, time=1, **tack_params))
+        if was_input or not is_paused:
+            is_paused = False
+            net.send(message.Tack(priority=2, time=1, **tack_params))
 
         # Disable stabilisation
         if button[BUTTON_PS]:
@@ -231,8 +239,9 @@ while net.receive():
 
         # Reset xy, yaw and depth
         if button[BUTTON_OPTIONS]:
-            init = message.InitRobot(x=0, y=0, yaw=0, depth=0)
-            net.send(init)
+            # init = message.InitRobot(x=0, y=0, yaw=0, depth=0)
+            # net.send(init)
+            is_paused = True
 
         if DEBUG:
             # Print out results
@@ -262,3 +271,4 @@ while net.receive():
         pos_yaw = net.msg.pos[YAW]
         pos_pitch = net.msg.pos[PITCH]
         pos_roll = net.msg.pos[ROLL]
+

@@ -1,6 +1,8 @@
 #!python3
 # @todo: Need to fix bag with InitRobot offset.
-import sys, setproctitle
+import setproctitle
+import sys
+
 from base import mat, network, message
 from base.message import AXIS
 
@@ -27,4 +29,4 @@ while net.receive():
         pos = net.msg.pos                          # then save position
         for i in range(AXIS):                      # and for each axel
             if mat.is_num(pos[i]):                 # (if input value is number)
-                offset[i] = coord.pos[i] - pos[i]  # calculate offset.
+                offset[i] += coord.pos[i] - pos[i]  # calculate offset.

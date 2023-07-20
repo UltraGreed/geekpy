@@ -1,6 +1,6 @@
 import math
 
-X, Y, DEPTH, YAW = 0, 1, 2, 3
+from base.message import X, Y, DEPTH, YAW, PITCH, ROLL, AXIS
 
 
 # Check if value is numerical

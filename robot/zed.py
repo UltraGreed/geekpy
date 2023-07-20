@@ -80,10 +80,10 @@ def send_img(image, port):
 
 
 def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: bool = False) -> None:
-    net = Net(1)
-    send_timer = Timer(0.1)
-    photo_timer = Timer(0.25)
-    stream_timer = Timer(0.033)
+    net = Net(0.05)
+#    send_timer = Timer(0.1)
+#    photo_timer = Timer(0.25)
+#    stream_timer = Timer(0.033)
 
     img_capture = False
     save_path = '/media/ssd/photo'
@@ -132,7 +132,9 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
 #        if zed_status != sl.ERROR_CODE.SUCCESS:
 #            print(f'[{name}] {repr(zed_status)}')
 #            continue
+
         if net.id == "PhotoSave":
+            print("photo save " + name)
             if net.msg.camera == name:
                 img_capture = True
                 save_path = PATH_PREFIX + "/" + net.msg.folder
@@ -143,71 +145,66 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
             if net.msg.camera == name:
                 img_capture = False
 
-        if net.id == "Timer" and img_capture:
-            photo_counter += 1
-            zed.grab(runtime_params)
-            zed.retrieve_image(image, sl.VIEW.LEFT)
-            timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S.%f")
-            path = f"{save_path}/{name}_{timestamp}.jpg"
-
-            arr = image.get_data()
-            b, g, r, _ = Image.fromarray(arr).split()
-            png = Image.merge('RGB', (r, g, b))
-
-            png = png.resize((456, 256))
-            png = png.crop((100, 0, 356, 256))
-
-            png.save(fp=path)
-            net.send(ImageLink(
-                obj=name,
-                path=path,
-                file=f'{name}_{timestamp}.jpg',
-                counter=photo_counter
-            ))
-
-        if send_timer.is_unlock and pose_tracking:
-            zed.grab(runtime_params)
-            zed.get_sensors_data(sensors_data, sl.TIME_REFERENCE.CURRENT)
-            zed_imu = sensors_data.get_imu_data()
-
-            # deg/sec
-            a_velocity = zed_imu.get_angular_velocity()
-            vx, vy, vz = np.round(a_velocity, 3)
-
-            # m/sec^2
-            # a_accel = zed_imu.get_linear_acceleration()
-            # ax, ay, az = np.round(a_accel, 3)
-
-            x, y, z = quat2eul(*zed_imu.get_pose().get_orientation().get())
-
-            y = -y.item() - 90
-            if y < -90:
-                y = -90
-            if y > 90:
-                y = 90
-            
-            net.send(Sensor(
-                pos_yaw=-x.item(), pos_pitch=z.item(), pos_roll=y - ROLL_OFFSET,
-                vel_yaw=vy.item(), vel_pitch=vz.item(), vel_roll=-vx.item(),
-            ))
-
-        if stream_timer.is_unlock and is_stream:
-            zed.grab()
-            zed_status = zed.grab()
-            if zed_status != sl.ERROR_CODE.SUCCESS:
-                print(f' {repr(zed_status)}')
+        if net.id == "Timer":
+#            zed.grab(runtime_params)
+            if zed.grab() != sl.ERROR_CODE.SUCCESS:
                 continue
 
-            if name == 'Front':
-                zed.retrieve_image(image, sl.VIEW.LEFT)
-                send_img(image, PORT_FRONT)
-            elif name == 'Bottom':
-                zed.retrieve_image(image, sl.VIEW.RIGHT)
-                send_img(image, PORT_BOTTOM)
+            photo_counter += 1
 
-    # if is_stream:
-    #     print(f'[{name}] Disable streaming')
-    #     zed.disable_streaming()
+            if photo_counter % 5 and img_capture:
+                zed.retrieve_image(image, sl.VIEW.LEFT)
+                timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S.%f")
+                path = f"{save_path}/{name}_{timestamp}.jpg"
+                print(path)
+
+                arr = image.get_data()
+                b, g, r, _ = Image.fromarray(arr).split()
+                png = Image.merge('RGB', (r, g, b))
+
+                png = png.resize((456, 256))
+                png = png.crop((100, 0, 356, 256))
+
+                png.save(fp=path)
+                net.send(ImageLink(
+                    obj=name,
+                    path=path,
+                    file=f'{name}_{timestamp}.jpg',
+                    counter=photo_counter
+                ))
+
+            if pose_tracking:
+                zed.get_sensors_data(sensors_data, sl.TIME_REFERENCE.CURRENT)
+                zed_imu = sensors_data.get_imu_data()
+
+                # deg/sec
+                a_velocity = zed_imu.get_angular_velocity()
+                vx, vy, vz = np.round(a_velocity, 3)
+
+                # m/sec^2
+                # a_accel = zed_imu.get_linear_acceleration()
+                # ax, ay, az = np.round(a_accel, 3)
+
+                x, y, z = quat2eul(*zed_imu.get_pose().get_orientation().get())
+
+                y = -y.item() - 90
+                if y < -90:
+                    y = -90
+                if y > 90:
+                    y = 90
+
+                net.send(Sensor(
+                    pos_yaw=-x.item(), pos_pitch=z.item(), pos_roll=y - ROLL_OFFSET,
+                    vel_yaw=vy.item(), vel_pitch=vz.item(), vel_roll=-vx.item(),
+                ))
+
+            if is_stream:
+                if name == 'Front':
+                    zed.retrieve_image(image, sl.VIEW.LEFT)
+                    send_img(image, PORT_FRONT)
+                elif name == 'Bottom':
+                    zed.retrieve_image(image, sl.VIEW.RIGHT)
+                    send_img(image, PORT_BOTTOM)
 
     print(f'[{name}] Close the camera')
     zed.close()

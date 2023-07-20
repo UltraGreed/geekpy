@@ -51,6 +51,15 @@ class Sensor(Message):
         self.acc = [acc_x, acc_y, acc_depth, acc_yaw, acc_pitch, acc_roll]  # Vehicle acceleration
 
 
+class SensorRU(Message):
+    def __init__(self, pos_x=None, pos_y=None, pos_depth=None, pos_yaw=None, pos_pitch=None, pos_roll=None,
+                 vel_x=None, vel_y=None, vel_depth=None, vel_yaw=None, vel_pitch=None, vel_roll=None,
+                 acc_x=None, acc_y=None, acc_depth=None, acc_yaw=None, acc_pitch=None, acc_roll=None):
+        self.pos = [pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll]  # Vehicle position
+        self.vel = [vel_x, vel_y, vel_depth, vel_yaw, vel_pitch, vel_roll]  # Vehicle velocity
+        self.acc = [acc_x, acc_y, acc_depth, acc_yaw, acc_pitch, acc_roll]  # Vehicle acceleration
+
+
 # Used navigation data
 class Coord(Message):
     def __init__(self, pos_x=0.0, pos_y=0.0, pos_depth=0.0, pos_yaw=0.0, pos_pitch=0.0, pos_roll=0.0,

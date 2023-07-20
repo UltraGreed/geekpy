@@ -8,9 +8,18 @@ import threading
 from base import message, network
 from base.message import YAW
 
+import time
 
+#################
+# CONFIGURATION #
 BAUDRATE = 115200
 PACKAGE_FREQ = 1200  # Packages per second
+PORT_NAME = '/dev/ttyUSB0'
+
+SENSOR_ERROR = 2.6656648454566797e-05
+
+
+#################
 
 
 class DataLostException(Exception):
@@ -79,8 +88,7 @@ class PhysopticSerial(serial.Serial):
     def bytes_to_unit(data):
         rate = int.from_bytes((data[2], data[3], data[1]), byteorder='big', signed=True) * 5 / 2 ** 24 / math.pi * 180
 
-        if abs(rate) < sensor_error:
-            rate = 0
+        rate += SENSOR_ERROR
 
         counter = data[4]
         extra = data[5]
@@ -88,61 +96,6 @@ class PhysopticSerial(serial.Serial):
 
     def get_data_unit(self) -> DataUnit:
         return self.bytes_to_unit(self.get_data_bytes())
-
-    # Returns data set of 16 data units with all extra data
-    def get_data_set(self):
-        units = list()
-        temperature_b = [255, 255]
-        voltage_b = [255, 255]
-        current_b = [255, 255]
-        diagnostics_b = [255, 255]
-
-        # Package loss check
-        last_counter = -1
-        was_lost = False
-        while len(units) < 16:
-            unit = self.get_data_unit()
-
-            if units and (last_counter + 1) % 16 != unit.counter:
-                # If we lost a package, we duplicate the last one
-                units.append(units[0])
-                was_lost = True
-                # raise PackageLostException TODO: IDK if we will need an exception here
-
-            units.append(unit)
-
-            if unit.counter == 0:
-                temperature_b[0] = unit.extra
-            elif unit.counter == 1:
-                temperature_b[1] = unit.extra
-            elif unit.counter == 2:
-                voltage_b[0] = unit.extra
-            elif unit.counter == 3:
-                voltage_b[1] = unit.extra
-            elif unit.counter == 4:
-                current_b[0] = unit.extra
-            elif unit.counter == 5:
-                current_b[1] = unit.extra
-            elif unit.counter == 6:
-                diagnostics_b[0] = unit.extra
-            elif unit.counter == 7:
-                diagnostics_b[1] = unit.extra
-
-            last_counter = unit.counter
-
-        # If a package was lost, we can not get extra data
-        if was_lost:
-            temperature = None
-            voltage = None
-            current = None
-            diagnostics = None
-        else:
-            temperature = int.from_bytes(temperature_b, byteorder='big', signed=True) * 250 / 2 ** 15 - 50
-            voltage = int.from_bytes(voltage_b, byteorder='big', signed=True) * 2.5 / 2 ** 15 / 0.25
-            current = int.from_bytes(current_b, byteorder='big', signed=True) * 2.5 / 2 ** 15 / 10
-            diagnostics = int.from_bytes(diagnostics_b, byteorder='big', signed=True) * 2.5 / 2 ** 15
-
-        return DataSet(units, temperature, voltage, current, diagnostics)
 
 
 # Thread for pitch receiving
@@ -162,28 +115,48 @@ def send_depth_thread():
     global pos_yaw
 
     net = network.Net()
-    with PhysopticSerial(port=port_name, baudrate=BAUDRATE) as ser:
-        # 75 times per second we send 1 UDP package, containing an average of 1 data set or 16 packages
+    with PhysopticSerial(port=PORT_NAME, baudrate=BAUDRATE) as ser:
+        delta_pos_list = [0]
+        acc_yaw_list = [0]
+        vel_yaw_list = [0]
+
+        last_time = 0
         while True:
-            try:
-                data_sets = ser.get_data_set()
+            delta_pos_list = [delta_pos_list[-1]]  # We keep last element to calculate speed
+            acc_yaw_list = [acc_yaw_list[-1]]
+            vel_yaw_list = [vel_yaw_list[-1]]
 
-                vel_yaw = sum(data_set.average_rate for data_set in data_sets)
+            # results in 20 packages per second (one package is an average of 60 data units)
+            for i in range(PACKAGE_FREQ // 20):
+                try:
+                    data_unit = ser.get_data_unit()
 
-                lock.acquire()
-                pos_yaw += sum(data_set.course_change for data_set in data_sets)
-                lock.release()
-            except ByteLostException:
-                print('Byte lost')  # TODO: handle error.
-            finally:
-                net.send(message.Sensor(pos_yaw=pos_yaw, vel_yaw=vel_yaw))
-                print(f'Course change: {vel_yaw}')
-                print(f'Course: {pos_yaw}')
+                    delta_pos_list.append(vel_yaw_list[-1] * (time.time() - last_time))
+
+                    acc_yaw_list.append((vel_yaw_list[-1] - data_unit.rate) / (time.time() - last_time))
+
+                    vel_yaw_list.append(data_unit.rate)
+
+                    last_time = time.time()
+                except ByteLostException:
+                    delta_pos_list.append(delta_pos_list[-1])
+                    acc_yaw_list.append(acc_yaw_list[-1])
+                    vel_yaw_list.append(vel_yaw_list[-1])
+
+                    print('Byte lost')  # TODO: handle error.
+
+            delta_pos = sum(delta_pos_list)
+            acc_yaw = sum(acc_yaw_list) / len(acc_yaw_list)
+            vel_yaw = sum(vel_yaw_list) / len(vel_yaw_list)
+
+            lock.acquire()
+            pos_yaw += delta_pos
+            lock.release()
+
+            net.send(message.SensorRU(pos_yaw=pos_yaw, vel_yaw=vel_yaw, acc_yaw=acc_yaw))
 
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
-port_name = '/dev/ttyUSB0'
-sensor_error = 2.6656648454566797e-05
 
 pos_yaw = 0
 lock = threading.Lock()

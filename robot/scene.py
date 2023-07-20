@@ -32,8 +32,8 @@ while net.receive():
         msg = net.msg                              # then read message.
         for i in range(len(msg.pos)):              # For all axis:
             if mat.is_num(msg.pos[i]):             # if position in axel is number
-                out.objs[msg.obj][i] = msg.pos[i]  # then save to output data.
-                update[msg.obj][i] = time.time()   # Update time of each value.
+                out.objs[msg.obj_name][i] = msg.pos[i]  # then save to output data.
+                update[msg.obj_name][i] = time.time()   # Update time of each value.
 
     elif net.id == 'ResetObjects':       # If ResetObjects message has come
         out = message.FilteredObjects()  # then save object to output array.

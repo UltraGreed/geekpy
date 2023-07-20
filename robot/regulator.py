@@ -52,6 +52,7 @@ setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for proce
 net = network.Net(timer=TIMER)                 # Will wait messages and timer ticks.
 tack = message.Tack()                          # Incoming Tack message for robot control.
 tack_time = 0.0                                # Time of last Tack message.
+tack_priority = 0
 pos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]           # Incoming position
 vel = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]           # and velocity data.
 
@@ -70,9 +71,10 @@ while net.receive():  # Waiting for timer ticks and messages.
                 motion.speed[i] += tack.speed[i]  # (if 'stab' and/or 'speed' mode).
         net.send(motion)
 
-    elif net.id == 'Tack':       # If Tack message has come
-        tack = net.msg           # then save this message
-        tack_time = time.time()  # and its timestamp.
+    elif net.id == 'Tack':
+        if net.msg.priority >= tack.priority:  # If Tack message w/ higher priority has come
+            tack = net.msg                     # then save this message
+            tack_time = time.time()            # and timestamp.
 
     elif net.id == 'Coord':          # Save position
         msg = net.msg                # and velocity
