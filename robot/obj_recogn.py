@@ -5,7 +5,7 @@ import numpy as np
 import setproctitle
 
 from base import network, message, mat
-from base.message import DEPTH
+from base.message import X, Y, DEPTH
 
 #####################
 # CONFIG PARAMETERS #
@@ -36,34 +36,38 @@ vec_get_bw = np.vectorize(get_bw, signature='(3)->(3)')
 
 
 # Function saving black and white image with detected object for debugging
-def save_bw_image(image, point_coords):
+def save_bw_image(image, point_coords, save_path):
     image_bw_array = vec_get_bw(image)
 
     image_bw = Image.fromarray(image_bw_array.astype('uint8'))
 
     image_bw.putpixel(point_coords, (255, 0, 0))
 
+    image_bw.save(save_path)
+
 
 # Function converting pixel coordinates to map coordinates
 def get_map_coords(image, obj_coords, robot_coords, camera_dist):
-    pixel_dist_x = image.shape[0] / 2 - obj_coords[0]
-    pixel_dist_y = image.shape[1] / 2 - obj_coords[1]
+    pixel_relative_x = obj_coords[X] - image.shape[X] / 2
+    pixel_relative_y = image.shape[Y] / 2 - obj_coords[Y]
 
-    dist_x = pixel_dist_x / image.shape[0] * 2 * np.tan(np.deg2rad(CAMERA_FOV / 2)) * camera_dist
-    dist_y = pixel_dist_y / image.shape[1] * 2 * np.tan(np.deg2rad(CAMERA_FOV / 2)) * camera_dist
+    relative_x = pixel_relative_x / image.shape[0] * 2 * np.tan(np.deg2rad(CAMERA_FOV / 2)) * camera_dist
+    relative_y = pixel_relative_y / image.shape[1] * 2 * np.tan(np.deg2rad(CAMERA_FOV / 2)) * camera_dist
 
-    return mat.robot2map(robot_coords, (dist_x, dist_y))
+    return mat.robot2map(robot_coords, (relative_x, relative_y, obj_coords[DEPTH]))
 
 
-def main(obj_name):
-    pos_depth = 0
+def main(camera_name, obj_name):
+    pos = [0 for _ in range(6)]
     obj_depth = message.FilteredObjects().objs[obj_name][DEPTH]
 
     net = network.Net()
     while net.receive():
         if net.id == "ImageLink":
-            if net.msg.obj == obj_name:
-                camera_dist = obj_depth - pos_depth
+            print(0)
+            if net.msg.obj == camera_name:
+                print(1)
+                camera_dist = obj_depth - pos[DEPTH]
 
                 image = Image.open(net.msg.path)
                 image_array = np.asarray(image)
@@ -74,25 +78,28 @@ def main(obj_name):
 
                 obj_x, obj_y = round(np.average(x_coords)), round(np.average(y_coords))
 
-                map_coords = get_map_coords(image_array, (obj_x, obj_y), net.message.pos, camera_dist)
+                map_coords = get_map_coords(image_array, (obj_x, obj_y, obj_depth), pos, camera_dist)
 
                 net.send(message.DetectedObject(x=map_coords[0], y=map_coords[1]))
 
                 # Saving black and white image with detected object for debugging
-                save_bw_image(image_array, (obj_x, obj_y))
+                save_path = net.msg.path.replace('.jpg', '_bw.jpg')
+                file_path = net.msg.file.replace('.jpg', '_bw.jpg')
+
+                save_bw_image(image_array, (obj_x, obj_y), save_path)
 
                 net.send(message.ImageLink(
-                    path=net.msg.path.replace('.jpg', '_bw.jpg'),
+                    path=save_path,
                     obj=net.msg.obj,
-                    file=net.msg.file.replace('.jpg', '_bw.jpg')
+                    file=file_path
                 ))
 
         if net.id == "Coord":
-            pos_depth = net.message.depth
+            pos = net.msg.pos
 
 
 if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
-    main(sys.argv[1])
+    main(camera_name=sys.argv[1], obj_name=sys.argv[2])
 

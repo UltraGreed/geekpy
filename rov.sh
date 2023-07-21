@@ -14,7 +14,7 @@
 
   python ctd_i2c.py &
 
-  #                              photo stream
-  python3 zed.py Bottom 24827734 True  True &
-  python3 zed.py Front  16909428 True  True &
+  #                              pos_tracking stream
+  python3 zed.py Bottom 24827734 True          False &
+  python3 zed.py Front  16909428 False         False &
 )

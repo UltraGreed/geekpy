@@ -152,7 +152,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
 
             photo_counter += 1
 
-            if photo_counter % 5 and img_capture:
+            if photo_counter % 5 == 0 and img_capture:
                 zed.retrieve_image(image, sl.VIEW.LEFT)
                 timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S.%f")
                 path = f"{save_path}/{name}_{timestamp}.jpg"
