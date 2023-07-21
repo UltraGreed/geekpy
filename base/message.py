@@ -204,9 +204,11 @@ class PhotoOff(Message):
 
 # Wave delay of received signals
 class SoundDelay(Message):
-    def __init__(self, freq=-1.0, left=-0.1, right=-0.1, back=-0.1, front=-0.1):
+    def __init__(self, freq=-1.0, left=-0.1, right=-0.1, back=-0.1, front=-0.1, 
+                 freq_left = -0.1, freq_right = -0.1, freq_back = -0.1, freq_front = -0.1):
         self.freq = freq  # Signal frequency, Hz.
         self.dist = [left, right, back, front]  # Distance delay, m.
+        self.freqs = [freq_left, freq_right, freq_back, freq_front]
 
 
 ##########################
