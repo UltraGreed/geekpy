@@ -35,15 +35,13 @@ while net.receive():
         delays = json_data['data']['delay']
         freqs  = json_data['data']['frequency']
 
-        print(delays)
-
         freq = np.mean(freqs).item()
         min_delay  = np.min(delays).item()
         net.send(message.SoundDelay(freq  = freq,           # Send message with config frequecy and
-                                left  = (delays[LEFT_CHANNEL] - min_delay)*OV_DSP_FREQ*1500,   # left,
-                                right = (delays[RIGHT_CHANNEL] - min_delay)*OV_DSP_FREQ*1500,   # right,
-                                back  = (delays[BACK_CHANNEL] - min_delay)*OV_DSP_FREQ*1500,   # back and
-                                front = (delays[FRONT_CHANNEL] - min_delay)*OV_DSP_FREQ*1500,
+                                left  = (delays[LEFT_CHANNEL] - 2000)*OV_DSP_FREQ*1500,   # left,
+                                right = (delays[RIGHT_CHANNEL] - 2000)*OV_DSP_FREQ*1500,   # right,
+                                back  = (delays[BACK_CHANNEL] - 2000)*OV_DSP_FREQ*1500,   # back and
+                                front = (delays[FRONT_CHANNEL] - 2000)*OV_DSP_FREQ*1500,
                                 freq_left = freqs[LEFT_CHANNEL],
                                 freq_right = freqs[RIGHT_CHANNEL],
                                 freq_back  = freqs[BACK_CHANNEL], 
