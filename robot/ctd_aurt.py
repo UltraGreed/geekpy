@@ -120,7 +120,7 @@ def send_depth_thread():
             except ByteLostException:
                 print('BYTE WAS LOST')
             finally:
-                net.send(message.SensorRU(pos_depth=average_depth, vel_depth=vel_depth))
+                net.send(message.Sensor(pos_depth=average_depth, vel_depth=vel_depth))
 
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.

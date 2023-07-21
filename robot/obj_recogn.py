@@ -9,8 +9,11 @@ from base.message import X, Y, DEPTH
 
 #####################
 # CONFIG PARAMETERS #
-THRESHOLD = 200 ** 2
-TARGET_COLOR = np.array([255, 255, 0])
+THRESHOLD_COLOR = 10 ** 2
+TARGET_COLOR = np.array([49.8, 69.4, 16.4])
+
+THRESHOLD_IMAGE_PART = 0.1
+
 CAMERA_FOV = 70
 ####################
 
@@ -19,7 +22,7 @@ CAMERA_FOV = 70
 def get_mask(pixel):
     error = np.sum(np.square(pixel - TARGET_COLOR))
 
-    return True if error < THRESHOLD else False
+    return True if error < THRESHOLD_COLOR else False
 
 
 vec_get_mask = np.vectorize(get_mask, signature='(3)->()')
@@ -29,7 +32,7 @@ vec_get_mask = np.vectorize(get_mask, signature='(3)->()')
 def get_bw(pixel):
     error = np.sum(np.square(pixel - TARGET_COLOR))
 
-    return np.array([255, 255, 255]) if error < THRESHOLD else np.array([0, 0, 0])
+    return np.array([255, 255, 255]) if error < THRESHOLD_COLOR else np.array([0, 0, 0])
 
 
 vec_get_bw = np.vectorize(get_bw, signature='(3)->(3)')
@@ -64,9 +67,7 @@ def main(camera_name, obj_name):
     net = network.Net()
     while net.receive():
         if net.id == "ImageLink":
-            print(0)
             if net.msg.obj == camera_name:
-                print(1)
                 camera_dist = obj_depth - pos[DEPTH]
 
                 image = Image.open(net.msg.path)
@@ -76,23 +77,24 @@ def main(camera_name, obj_name):
 
                 y_coords, x_coords = mask.nonzero()
 
-                obj_x, obj_y = round(np.average(x_coords)), round(np.average(y_coords))
+                if len(y_coords) >= THRESHOLD_IMAGE_PART * len(image_array):
+                    obj_x, obj_y = round(np.average(x_coords)), round(np.average(y_coords))
 
-                map_coords = get_map_coords(image_array, (obj_x, obj_y, obj_depth), pos, camera_dist)
+                    map_coords = get_map_coords(image_array, (obj_x, obj_y, obj_depth), pos, camera_dist)
 
-                net.send(message.DetectedObject(x=map_coords[0], y=map_coords[1]))
+                    net.send(message.DetectedObject(x=map_coords[0], y=map_coords[1], obj=obj_name))
 
-                # Saving black and white image with detected object for debugging
-                save_path = net.msg.path.replace('.jpg', '_bw.jpg')
-                file_path = net.msg.file.replace('.jpg', '_bw.jpg')
+                    # Saving black and white image with detected object for debugging
+                    save_path = net.msg.path.replace('.jpg', '_bw.jpg')
+                    file_path = net.msg.file.replace('.jpg', '_bw.jpg')
 
-                save_bw_image(image_array, (obj_x, obj_y), save_path)
+                    save_bw_image(image_array, (obj_x, obj_y), save_path)
 
-                net.send(message.ImageLink(
-                    path=save_path,
-                    obj=net.msg.obj,
-                    file=file_path
-                ))
+                    net.send(message.ImageLink(
+                        path=save_path,
+                        obj=net.msg.obj,
+                        file=file_path
+                    ))
 
         if net.id == "Coord":
             pos = net.msg.pos

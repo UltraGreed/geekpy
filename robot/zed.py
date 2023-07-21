@@ -132,7 +132,6 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
 #        if zed_status != sl.ERROR_CODE.SUCCESS:
 #            print(f'[{name}] {repr(zed_status)}')
 #            continue
-
         if net.id == "PhotoSave":
             print("photo save " + name)
             if net.msg.camera == name:
@@ -156,7 +155,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                 zed.retrieve_image(image, sl.VIEW.LEFT)
                 timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S.%f")
                 path = f"{save_path}/{name}_{timestamp}.jpg"
-                print(path)
+                # print(path)
 
                 arr = image.get_data()
                 b, g, r, _ = Image.fromarray(arr).split()

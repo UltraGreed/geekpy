@@ -16,9 +16,8 @@ BAUDRATE = 115200
 PACKAGE_FREQ = 1200  # Packages per second
 PORT_NAME = '/dev/ttyUSB0'
 
-SENSOR_ERROR = 2.6656648454566797e-05
-
-
+EARTH_ROTATION = 2.6656648454566797e-05
+SENSOR_ERROR = 1.588
 #################
 
 
@@ -88,7 +87,9 @@ class PhysopticSerial(serial.Serial):
     def bytes_to_unit(data):
         rate = int.from_bytes((data[2], data[3], data[1]), byteorder='big', signed=True) * 5 / 2 ** 24 / math.pi * 180
 
-        rate += SENSOR_ERROR
+        rate += EARTH_ROTATION
+
+        rate *= SENSOR_ERROR
 
         counter = data[4]
         extra = data[5]

@@ -13,10 +13,12 @@
   python spreader.py &
   python kotleta.py &
 
-  python ctd_i2c.py &
+#  python ctd_i2c.py &
+  python ctd_aurt.py &
 
   #                              pos_tracking stream
   python3 zed.py Bottom 24827734 True          False &
+  sleep 5
   python3 zed.py Front  16909428 False         False &
 
   python3 obj_recogn.py Bottom BallR &
