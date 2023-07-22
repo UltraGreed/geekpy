@@ -6,7 +6,7 @@ from base.message import X, Y, YAW
 TIMER = 0.25
 
 ## Robot ahead moving function with given yaw
-def stab(origin='Current', x=0.0, y=0.0, dx=0.0, dy=0.0, yaw=None, dt=0.0, depth=None):
+def stab(origin='Current', x=0.0, y=0.0, left=0.0, front=0.0, yaw=None, dt=0.0, depth=None):
 
     # Initial objects positions and objects data.
     start_time = time.time()
