@@ -1,8 +1,3 @@
-# @todo: Нужно заполнить функции, которые включают и выключают камеры.
-# Особенность в том, что сообщения могут теряться,
-# поэтому нужно в цикле длительностью 0.5 сек с периодом 0.01 сек
-# отправить соответствующее сообщение.
-# Папка сохранения фоток пусть именуется "[path]_[bottom|front]_DAY_HH-MM-SS"
 import sys
 import time
 
@@ -11,7 +6,7 @@ from base import message, network
 from base.timer import Timer
 
 
-def startPhotosave(camera, path):
+def start(camera, path):
 	net = network.Net()
 	timer = Timer(0.5)
 	while True:
@@ -22,7 +17,7 @@ def startPhotosave(camera, path):
 		time.sleep(0.01)
 
 
-def stopPhotosave(camera):
+def stop(camera):
 	net = network.Net()
 	timer = Timer(0.5)
 	while True:

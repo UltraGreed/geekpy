@@ -13,6 +13,9 @@
 
   cd ../simulation
   python3 imu.py &
+
+  cd ../tasks
+  python3 test_stab.py &
   # Objects simulation: X    Y   OBJ    DISP PERIOD PROB DIST
   # python3 object.py    -5    5   BallR  0.10   0.25 0.98  1.0 &
   # python3 object.py    -6    6   BallY  0.10   0.25 0.98  1.0 &
