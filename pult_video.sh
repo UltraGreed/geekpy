@@ -3,6 +3,6 @@
   export PYTHONPATH=$(pwd)
 
   cd pult
-  python3 recieve.py Front &
-  python3 recieve.py Bottom &
+  python3 video.py Front &
+  python3 video.py Bottom &
 )
