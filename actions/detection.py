@@ -1,14 +1,30 @@
-# @todo: Нужно заполнить функции, которые включают и выключают распознавание.
-# Особенность в том, что сообщения могут теряться,
-# поэтому нужно в цикле длительностью 0.5 сек с периодом 0.01 сек
-# отправить соответствующее сообщение.
 # Это сообщение DetectionOn/Off примет модуль сцены и
 # либо начнет применять результаты распознавания, либо их игнорить.
+import sys
+import time
+
+sys.path.append('./')
+from base import message, network
+from base.timer import Timer
+
 
 def on(obj):
-	...
-	net.send(message.DetectionOn(obj))
+	net = network.Net()
+	timer = Timer(0.5)
+	while True:
+		if timer.is_unlock:
+			break
+
+		net.send(message.DetectionOn(obj))
+		time.sleep(0.01)
+
 
 def off(obj):
-	...
-	net.send(message.DetectionOff(obj))
+	net = network.Net()
+	timer = Timer(0.5)
+	while True:
+		if timer.is_unlock:
+			break
+
+		net.send(message.DetectionOff(obj))
+		time.sleep(0.01)

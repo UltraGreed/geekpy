@@ -101,7 +101,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
     photo_counter = 0
 
     while net.receive():
-        if net.id == "PhotoSave":
+        if net.id == "PhotoOn":
             if net.msg.camera == name:
                 img_capture = True
                 save_path = PATH_PREFIX + "/" + net.msg.folder

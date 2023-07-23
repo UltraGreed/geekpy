@@ -1,12 +1,29 @@
-# @todo: Нужно заполнить функции, которые управляют ключами.
-# Особенность в том, что сообщения могут теряться,
-# поэтому нужно в цикле длительностью 0.5 сек с периодом 0.01 сек
-# отправить сообщение KeyOn с установленным таймером и номером ключа.
+import sys
+import time
 
-def left():
-	...
-	net.send(KeyOn(0, 3.0))
+sys.path.append('./')
+from base import message, network
+from base.timer import Timer
 
-def right():
-	...
-	net.send(KeyOn(1, 3.0))
+
+def left(key, hold_time):
+	net = network.Net()
+	timer = Timer(0.5)
+	while True:
+		if timer.is_unlock:
+			break
+
+		net.send(message.KeyOn(key, hold_time))
+		time.sleep(0.01)
+
+
+def right(key):
+	net = network.Net()
+	timer = Timer(0.5)
+	while True:
+		if timer.is_unlock:
+			break
+
+		net.send(message.KeyOff(key))
+		time.sleep(0.01)
+

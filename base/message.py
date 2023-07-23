@@ -177,24 +177,14 @@ class ImageLink(Message):
 
 
 # Start saving photo images
-class PhotoSave(Message):
-    def __init__(self, camera='Bottom', folder="", time=10, period=0.2):
+class PhotoOn(Message):
+    def __init__(self, camera='', folder=''):
         self.camera = camera  # 'Bottom' or 'Front' camera
         self.folder = folder  # Folder name for saved images
-        self.time = time  # Time of image saving
-        self.period = period  # Imaging period
 
-
-# Switch on photo camera
-class PhotoOn(Message):
-    def __init__(self, camera='Bottom', period=0.1):
-        self.camera = camera  # 'Bottom' or 'Front' camera
-        self.period = period  # Imaging period
-
-
-# Switch off photo camera
+# Stop saving photo images
 class PhotoOff(Message):
-    def __init__(self, camera='Bottom'):
+    def __init__(self, camera=''):
         self.camera = camera  # 'Bottom' or 'Front' camera
 
 
