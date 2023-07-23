@@ -43,39 +43,35 @@ while net.receive():
         dist = msg.dist                             # distances and
         height = abs(pinger[DEPTH] - robot[DEPTH])  # calc pinger height.
 
-        # # Check which channels we have
-        # channels = 4
-        # no_left, no_right, no_back, no_front = False, False, False, False
-        # if msg.freqs[LEFT] < FREQ_MIN or msg.freqs[LEFT] > FREQ_MAX:
-        #     channels -= 1
-        #     no_left = True
-        # if msg.freqs[RIGHT] < FREQ_MIN or msg.freqs[RIGHT] > FREQ_MAX:
-        #     channels -= 1
-        #     no_right = True
-        # if msg.freqs[BACK] < FREQ_MIN or msg.freqs[BACK] > FREQ_MAX:
-        #     channels -= 1
-        #     no_back = True
-        # if msg.freqs[FRONT] < FREQ_MIN or msg.freqs[FRONT] > FREQ_MAX:
-        #     channels -= 1
-        #     no_front = True
-        # no_front = dist[FRONT] - min(dist[LEFT],min(dist[RIGHT],dist[BACK]))
+        # # If frequence not in the range then exit from processing.
+        # if msg.freq < FREQ_MIN or msg.freq > FREQ_MAX: 
+        #     continue                                                     
 
-        # If frequence not in the range then exit from processing.
-        if msg.freq < FREQ_MIN or msg.freq > FREQ_MAX: 
-            continue                                                     
+        # Check which channels we have.
+        channels = 4
+        absent = [False, False, False, False]
+        for ch in range(channels):
+            if msg.freqs[ch] < FREQ_MIN or msg.freqs[ch] > FREQ_MAX:
+                channels -= 1;
+                absent[ch] = True
+
+        # @todo:
+        # no_front = dist[FRONT] - min(dist[LEFT],min(dist[RIGHT],dist[BACK]))
+        print("Channels =", channels)
+
+        # If channels not enough then wait next message.
+        if channels < 3:
+            continue
 
         # Calculate pinger position based on 4 channels.
-        local = offset(dist[LEFT] - dist[RIGHT],    # Calculate
-                       dist[BACK] - dist[FRONT],    # pinger position
-                       height, BASE4)               # in local
-        glob  = mat.robot2map(robot, local)         # and map coodrinate systems.
+        glob = mat.robot2map(robot, offset(dist[LEFT] - dist[RIGHT], dist[BACK] - dist[FRONT], height, BASE4))
 
         # Calculate pinger position based on 3 channels.
-        # local = offset(dist[BACK] - dist[RIGHT],                                  # Calculate
-        #                dist[BACK] - dist[LEFT],                                   # pinger position
-        #                height, BASE3)                                             # in local
-        # glob  = mat.robot2map([robot[X], robot[Y], robot[DEPTH], robot[YAW]-45],  # and map 
-        #                       local)                                              # coodrinate systems.
+        if channels == 3:
+            if absent[LEFT ]: glob = mat.robot2map([robot[X], robot[Y], robot[DEPTH], robot[YAW]], offset(dist[BACK] - dist[RIGHT], dist[BACK] - dist[LEFT], height, BASE3))
+            if absent[RIGHT]: glob = mat.robot2map([robot[X], robot[Y], robot[DEPTH], robot[YAW]], offset(dist[BACK] - dist[RIGHT], dist[BACK] - dist[LEFT], height, BASE3))
+            if absent[BACK ]: glob = mat.robot2map([robot[X], robot[Y], robot[DEPTH], robot[YAW]], offset(dist[BACK] - dist[RIGHT], dist[BACK] - dist[LEFT], height, BASE3))
+            if absent[FRONT]: glob = mat.robot2map([robot[X], robot[Y], robot[DEPTH], robot[YAW]-45], offset(dist[BACK] - dist[RIGHT], dist[BACK] - dist[LEFT], height, BASE3))
 
         # Send message to whom it may cocern.
         net.send(message.DetectedObject(obj=OBJ, x=glob[X], y=glob[Y]))
