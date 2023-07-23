@@ -3,3 +3,4 @@ venv369/
 *.pyc
 .DS_Store
 .idea/
+*.npy
