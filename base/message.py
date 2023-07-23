@@ -217,14 +217,14 @@ class SoundDelay(Message):
 
 # Switch on GPIO key
 class KeyOn(Message):
-    def __init__(self, key, time=3.0):
+    def __init__(self, key='', time=3.0):
         self.key  = key   # Turn on 'Left' or 'Right' ball key.
         self.time = time  # Time of hold the key, -1 = infinit.
 
 
 # Switch off GPIO key
 class KeyOff(Message):
-    def __init__(self, key):
+    def __init__(self, key=''):
         self.key = key  # Turn off key of 'Grabber', 'BallLeft' or 'BallRight'
 
 
@@ -234,11 +234,11 @@ class KeyOff(Message):
 
 # Raw odometry data message
 class OdometryRaw(Message):
-    def __init__(self):
-        self.vel_west=0.0
-        self.vel_north=0.0
-        self.acc_x=0.0
-        self.acc_y=0.0
+    def __init__(self, vel_west=0.0, vel_north=0.0, acc_x=0.0, acc_y=0.0):
+        self.vel_west=vel_west
+        self.vel_north=vel_north
+        self.acc_x=acc_x
+        self.acc_y=acc_y
 
 
 #####################
