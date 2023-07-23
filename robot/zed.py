@@ -15,6 +15,7 @@ sys.path.append('./')
 
 from base.message import ImageLink, Sensor
 from base.network import Net
+from base.timer import Timer
 
 setproctitle.setproctitle(' '.join(sys.argv))
 
@@ -27,19 +28,6 @@ sock_set.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 PORT_FRONT = 1111
 PORT_BOTTOM = 1112
-
-
-class Timer:
-    def __init__(self, delay_sec: float):
-        self.delay_sec = delay_sec
-        self.next = time.time() + delay_sec
-
-    @property
-    def is_unlock(self):
-        unlock = self.next < time.time()
-        if unlock:
-            self.next = time.time() + self.delay_sec
-        return unlock
 
 
 def quat2eul(qx, qy, qz, qw) -> np.array:
