@@ -110,7 +110,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
     # if is_stream:
     #     print(f'[{name}] Configuring stream parameters')
     #     stream_params = sl.StreamingParameters()
-    #     stream_params.codec = sl.STREAMING_CODEC.H264
+    #     stream_params.codec = sl.STREAMING_CODEC.H264 
     #     stream_params.bitrate = 4000
     #     stream_params.port = 30000
 
@@ -133,7 +133,6 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
 #            print(f'[{name}] {repr(zed_status)}')
 #            continue
         if net.id == "PhotoSave":
-            print("photo save " + name)
             if net.msg.camera == name:
                 img_capture = True
                 save_path = PATH_PREFIX + "/" + net.msg.folder
@@ -145,17 +144,22 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                 img_capture = False
 
         if net.id == "Timer":
-#            zed.grab(runtime_params)
-            if zed.grab() != sl.ERROR_CODE.SUCCESS:
+            zed_status = zed.grab(runtime_params)
+            if zed_status != sl.ERROR_CODE.SUCCESS:
+                print(f'[{name}] {repr(zed_status)}')
                 continue
+
+            if name == 'Front':
+                zed.retrieve_image(image, sl.VIEW.LEFT)
+            elif name == 'Bottom':
+                zed.retrieve_image(image, sl.VIEW.RIGHT)
 
             photo_counter += 1
 
             if photo_counter % 5 == 0 and img_capture:
-                zed.retrieve_image(image, sl.VIEW.LEFT)
+                # zed.retrieve_image(image, sl.VIEW.LEFT)
                 timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S.%f")
                 path = f"{save_path}/{name}_{timestamp}.jpg"
-                # print(path)
 
                 arr = image.get_data()
                 b, g, r, _ = Image.fromarray(arr).split()
@@ -199,10 +203,10 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
 
             if is_stream:
                 if name == 'Front':
-                    zed.retrieve_image(image, sl.VIEW.LEFT)
+                    # zed.retrieve_image(image, sl.VIEW.LEFT)
                     send_img(image, PORT_FRONT)
                 elif name == 'Bottom':
-                    zed.retrieve_image(image, sl.VIEW.RIGHT)
+                    # zed.retrieve_image(image, sl.VIEW.RIGHT)
                     send_img(image, PORT_BOTTOM)
 
     print(f'[{name}] Close the camera')
