@@ -50,7 +50,7 @@ while net.receive():
                                         freq_left  = FREQ,      # with
                                         freq_right = FREQ,      # config
                                         freq_back  = FREQ,      # frequecy
-                                        freq_front = -1,        # +
+                                        freq_front = FREQ,      # +
                                         left  = left  - mini,   # left,
                                         right = right - mini,   # right,
                                         back  = back  - mini,   # back and

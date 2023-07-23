@@ -22,8 +22,8 @@
   # python3 object.py   -10.5 10.5 CellB  0.10   0.25 0.98  1.0 &
   # python3 object.py    -3   11   Frame  0.50   1.00 1.00  90.0 &
   # SoundDelay simulation:
-  python3 acoustic.py -9.5 10.5 2.0      0.00000001 30000 1.00  50.0 &
-  python3 acoustic.py  0.0 11.0 2.0      0.00000001 37500 1.00  50.0 &
+  python3 acoustic.py -9.5 10.5 2.0      0.001 30000 1.00  50.0 &
+  python3 acoustic.py  0.0 11.0 2.0      0.001 37500 1.00  50.0 &
 
   cd ../pult
   python3 map.py &
