@@ -4,6 +4,7 @@ import time
 import tkinter
 from tkinter import BOTH, ttk
 
+import setproctitle
 from PIL import Image, ImageTk
 
 sys.path.append('./')
@@ -167,6 +168,8 @@ class App(tkinter.Tk):
 
 
 def main():
+    setproctitle.setproctitle(' '.join(sys.argv))
+
     app = App()
     app.mainloop()
 

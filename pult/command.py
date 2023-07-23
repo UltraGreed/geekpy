@@ -1,7 +1,7 @@
 import sys
 import threading
-import time
 
+import setproctitle
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox,
                              QHBoxLayout, QLabel, QLineEdit, QMainWindow,
@@ -197,6 +197,8 @@ class MainWindow(QMainWindow):
 
 
 def main(): 
+    setproctitle.setproctitle(' '.join(sys.argv))
+
     app = QApplication([])
 
     window = MainWindow()
