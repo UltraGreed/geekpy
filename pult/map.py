@@ -23,11 +23,25 @@ MARKERS = {
 }
 
 # Robot (X, Y) coordinates.
-ROBOT = [( 0.0, -0.3),
-         (-0.2, -0.4),
-         ( 0.0,  0.4),
-         ( 0.2, -0.4),
-         ( 0.0, -0.3)]
+# ROBOT = [( 0.0, -0.3),
+#          (-0.2, -0.4),
+#          ( 0.0,  0.4),
+#          ( 0.2, -0.4),
+#          ( 0.0, -0.3)]
+ROBOT = [( 0.000,  1.237),
+         ( 0.000, -0.262),
+         (-0.090, -0.262),
+         (-0.189, -0.271),
+         (-0.213, -0.002),
+         (-0.127,  0.102),
+         (-0.075,  0.237),
+         ( 0.075,  0.237),
+         ( 0.127,  0.102),
+         ( 0.213, -0.002),
+         ( 0.189, -0.271),
+         ( 0.090, -0.262),
+         ( 0.000, -0.262),
+         ( 0.000,  1.000)]
 
 REFRESH = 0.2       # Refresh time, sec.
 POINTS  = 20 * 120  # Number of points in trajectories.
@@ -44,8 +58,8 @@ for m in MARKERS:
     sub.plot(MARKERS[m][X], MARKERS[m][Y], '+', color='#00000066')
 obj,   = sub.plot([], [], '.', color='#0066FF22')
 objs,  = sub.plot([], [], 'o', color='#00000033') #color='#00FF6644')
-way,   = sub.plot([], [], '-', color='#FF330066', linewidth=1)
-robot, = sub.plot([], [], '-', color='#FF330099', linewidth=2)
+way,   = sub.plot([], [], '-', color='#FF330044', linewidth=1)
+robot, = sub.plot([], [], '-', color='#FF330088', linewidth=2)
 
 # Connect to network and start to refresh data.
 net = network.Net(timer=REFRESH)
