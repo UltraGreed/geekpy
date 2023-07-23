@@ -1,5 +1,3 @@
-# Это сообщение DetectionOn/Off примет модуль сцены и
-# либо начнет применять результаты распознавания, либо их игнорить.
 import sys
 import time
 
@@ -8,23 +6,25 @@ from base import message, network
 from base.timer import Timer
 
 
-def on(obj):
+def start(camera, path):
 	net = network.Net()
 	timer = Timer(0.5)
 	while True:
 		if timer.is_unlock:
 			break
 
-		net.send(message.DetectionOn(obj))
+		net.send(message.PhotoOn(camera, path))
 		time.sleep(0.01)
 
 
-def off(obj):
+def stop(camera):
 	net = network.Net()
 	timer = Timer(0.5)
 	while True:
 		if timer.is_unlock:
 			break
 
-		net.send(message.DetectionOff(obj))
+		net.send(message.PhotoOff(camera))
 		time.sleep(0.01)
+
+

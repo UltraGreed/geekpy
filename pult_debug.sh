@@ -3,6 +3,7 @@
   export PYTHONPATH=$(pwd)
 
   cd pult
-  python3 chart.py &
-  python3 map.py &
+  python command.py &
+  python chart.py &
+  python map.py &
 )
