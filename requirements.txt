@@ -5,3 +5,4 @@ pygame
 setproctitle
 dronecan
 opencv-python
+PyQt6
