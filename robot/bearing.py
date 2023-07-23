@@ -2,13 +2,14 @@
 import time, sys, setproctitle, math
 import numpy as np
 from base import network, message, mat
-from base.message import X, Y, DEPTH
+from base.message import X, Y, YAW, DEPTH
 
 # Constants.
+BASE4 = 0.4
+BASE3 = math.sqrt(2 * ((BASE4/2)**2))
+
 LEFT, RIGHT, BACK, FRONT = 0, 1, 2, 3  # Phones ailases.
-PHONE_X = [-0.2, 0.2,  0.0, 0.0]       # Phones
-PHONE_Y = [ 0.0, 0.0, -0.2, 0.2]       # coordinates.
-SIN_SAT = 0.99                         # Sinus saturation to prevent wrong asin.
+SIN_SAT = 0.9999                         # Sinus saturation to prevent wrong asin.
 
 # Input parameters.
 FREQ_MIN = float(sys.argv[1])  # Minimal and
@@ -21,25 +22,63 @@ robot  = network.wait_message("Coord").pos                  # Current robot posi
 pinger = network.wait_message("FilteredObjects").objs[OBJ]  # Initial pinger position on seabed.
 
 # Object offset in robot coordinates.
-def offset(dist, height):
-    dx = (dist[LEFT] - dist[RIGHT]) / (PHONE_X[RIGHT] - PHONE_X[LEFT])  # X&Y offset based
-    dy = (dist[BACK] - dist[FRONT]) / (PHONE_Y[FRONT] - PHONE_Y[BACK])  # on two projections.
+def offset(dist_lr, dist_bf, height, base):
+    dx = dist_lr / base  # X&Y offset based
+    dy = dist_bf / base  # on two projections.
     dr = math.sqrt(dx**2 + dy**2)
     dr_sat = mat.sat(dr, -SIN_SAT, SIN_SAT)
-    scale = (height * math.tan(math.asin(dr_sat)) / dr) if abs(dr) > 0.000001 else height
+    scale = height
+    if abs(dr) > 0.000001:
+        scale = height * math.tan(math.asin(dr_sat)) / dr
     return [scale * dx, scale * dy]
 
 # Send object coordinates by timer.
 while net.receive():
 
     # Calculate Sound delays to pinger position.
-    if net.id == 'SoundDelay':                                           # If sound delays has come
-        msg = net.msg                                                    # then read message.
-        if msg.freq < FREQ_MIN or msg.freq > FREQ_MAX:                   # If frequence not in the range
-            continue                                                     # then exit from processing.
-        local = offset(msg.dist, abs(pinger[DEPTH] - robot[DEPTH]))      # Calculate pinger position in local
-        glob  = mat.robot2map(robot, local)                              # and map coodrinate systems.
-        net.send(message.DetectedObject(obj=OBJ, x=glob[X], y=glob[Y]))  # Send message to whom it may cocern.
+    if net.id == 'SoundDelay':
+
+        # If sound delays has come then:
+        msg  = net.msg                              # read message,
+        dist = msg.dist                             # distances and
+        height = abs(pinger[DEPTH] - robot[DEPTH])  # calc pinger height.
+
+        # # Check which channels we have
+        # channels = 4
+        # no_left, no_right, no_back, no_front = False, False, False, False
+        # if msg.freqs[LEFT] < FREQ_MIN or msg.freqs[LEFT] > FREQ_MAX:
+        #     channels -= 1
+        #     no_left = True
+        # if msg.freqs[RIGHT] < FREQ_MIN or msg.freqs[RIGHT] > FREQ_MAX:
+        #     channels -= 1
+        #     no_right = True
+        # if msg.freqs[BACK] < FREQ_MIN or msg.freqs[BACK] > FREQ_MAX:
+        #     channels -= 1
+        #     no_back = True
+        # if msg.freqs[FRONT] < FREQ_MIN or msg.freqs[FRONT] > FREQ_MAX:
+        #     channels -= 1
+        #     no_front = True
+        # no_front = dist[FRONT] - min(dist[LEFT],min(dist[RIGHT],dist[BACK]))
+
+        # If frequence not in the range then exit from processing.
+        if msg.freq < FREQ_MIN or msg.freq > FREQ_MAX: 
+            continue                                                     
+
+        # Calculate pinger position based on 4 channels.
+        local = offset(dist[LEFT] - dist[RIGHT],    # Calculate
+                       dist[BACK] - dist[FRONT],    # pinger position
+                       height, BASE4)               # in local
+        glob  = mat.robot2map(robot, local)         # and map coodrinate systems.
+
+        # Calculate pinger position based on 3 channels.
+        # local = offset(dist[BACK] - dist[RIGHT],                                  # Calculate
+        #                dist[BACK] - dist[LEFT],                                   # pinger position
+        #                height, BASE3)                                             # in local
+        # glob  = mat.robot2map([robot[X], robot[Y], robot[DEPTH], robot[YAW]-45],  # and map 
+        #                       local)                                              # coodrinate systems.
+
+        # Send message to whom it may cocern.
+        net.send(message.DetectedObject(obj=OBJ, x=glob[X], y=glob[Y]))
 
     # Save robot position.
     elif net.id == 'Coord':  # If robot coordinates has come
