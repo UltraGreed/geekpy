@@ -3,7 +3,6 @@
   export PYTHONPATH=$(pwd)
 
   cd pult
-
   python dualshock.py &
   python chart.py &
   python map.py &

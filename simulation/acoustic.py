@@ -46,7 +46,11 @@ while net.receive():
             back  = dist(robot, PHONE_BACK ) + rnd(disp)        # back and
             front = dist(robot, PHONE_FRONT) + rnd(disp)        # front phones with noise.
             mini  = min(min(left, right), min(back, front))     # Calc minimal distance.
-            net.send(message.SoundDelay(freq  = FREQ,           # Send message with config frequecy and
+            net.send(message.SoundDelay(freq  = FREQ,           # Send message
+                                        freq_left  = FREQ,      # with
+                                        freq_right = FREQ,      # config
+                                        freq_back  = FREQ,      # frequecy
+                                        freq_front = -1,        # +
                                         left  = left  - mini,   # left,
                                         right = right - mini,   # right,
                                         back  = back  - mini,   # back and

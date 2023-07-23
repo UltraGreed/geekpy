@@ -217,14 +217,14 @@ class SoundDelay(Message):
 
 # Switch on GPIO key
 class KeyOn(Message):
-    def __init__(self, key='', time=3.0):
-        self.key = key  # Turn on key of 'Grabber', 'BallLeft' or 'BallRight'
-        self.time = time  # Time of hold the key, -1 = infinit
+    def __init__(self, key, time=3.0):
+        self.key  = key   # Turn on 'Left' or 'Right' ball key.
+        self.time = time  # Time of hold the key, -1 = infinit.
 
 
 # Switch off GPIO key
 class KeyOff(Message):
-    def __init__(self, key=''):
+    def __init__(self, key):
         self.key = key  # Turn off key of 'Grabber', 'BallLeft' or 'BallRight'
 
 
