@@ -17,6 +17,6 @@
 
   #                              pos_tracking stream
   python3 zed.py Bottom 24827734 True          True &
-  sleep 3
+  sleep 5
   python3 zed.py Front  16909428 False         True &
 )
