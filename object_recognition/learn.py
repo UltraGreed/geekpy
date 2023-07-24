@@ -5,13 +5,17 @@ import time
 import numpy as np
 
 from image_utils import load_image_rgba, save_image_rgba
+from model_class import COLOR_AMOUNT, COLOR_COMPRESSION
 
 #####################
 # CONFIG PARAMETERS #
 PIXEL_AREA = 1
 
-COLOR_AMOUNT = 64
-COLOR_COMPRESSION = 256 / COLOR_AMOUNT
+LOAD_PREFIX = 'images/selection_learn/'
+OBJ = 'CellB'
+LOAD_PREFIX_OBJ = LOAD_PREFIX + OBJ + '/'
+
+SAVE_PREFIX = 'images/selection_learn/'
 #####################
 
 
@@ -19,21 +23,18 @@ def get_bw(pixel):
     return pixel if pixel[3] == 0 else np.asarray([255, 255, 255, 255], dtype='uint8')
 
 
-vec_get_bw = np.vectorize(get_bw, signature='(n)->(n)')
+vec_get_bw = np.vectorize(get_bw, signature='(n)->(4)')
 
 data_found = np.zeros(tuple(COLOR_AMOUNT for _ in range(3)))
 data_not_found = np.zeros(tuple(COLOR_AMOUNT for _ in range(3)))
 data_all = np.zeros(tuple(COLOR_AMOUNT for _ in range(3)))
 
-load_prefix = 'images/selection_learn/'
-save_prefix = 'images/selection_learn/'
-
-for image_file in os.listdir(load_prefix):
+for image_file in os.listdir(LOAD_PREFIX_OBJ):
     if not image_file.startswith('learning') or 'out' in image_file:
         continue
 
     time1 = time.time()
-    image_array = load_image_rgba(load_prefix + image_file)
+    image_array = load_image_rgba(LOAD_PREFIX_OBJ + image_file)
     print(f"Image loaded: {time.time() - time1}")
 
     time2 = time.time()
@@ -53,7 +54,7 @@ for image_file in os.listdir(load_prefix):
     print(f'Image bw generated: {time.time() - time3}')
 
     time4 = time.time()
-    save_image_rgba(load_prefix + image_file.replace('.png', '_out.png'), image_bw_array)
+    save_image_rgba(LOAD_PREFIX_OBJ + image_file.replace('.png', '_out.png'), image_bw_array)
     print(f"Image saved: {time.time() - time4}")
 
     print(f"Total: {time.time() - time1}")
