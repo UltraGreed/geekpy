@@ -8,7 +8,7 @@ from base import message, network
 from base.timer import Timer
 
 
-def on(obj):
+def detection_on(obj):
 	net = network.Net()
 	timer = Timer(0.5)
 	while True:
@@ -19,7 +19,7 @@ def on(obj):
 		time.sleep(0.01)
 
 
-def off(obj):
+def detection_off(obj):
 	net = network.Net()
 	timer = Timer(0.5)
 	while True:

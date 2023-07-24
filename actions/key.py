@@ -6,7 +6,7 @@ from base import message, network
 from base.timer import Timer
 
 
-def left(key, hold_time):
+def key_on(key, hold_time):
 	net = network.Net()
 	timer = Timer(0.5)
 	while True:
@@ -17,7 +17,7 @@ def left(key, hold_time):
 		time.sleep(0.01)
 
 
-def right(key):
+def key_off(key):
 	net = network.Net()
 	timer = Timer(0.5)
 	while True:
