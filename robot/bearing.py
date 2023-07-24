@@ -6,8 +6,9 @@ from base import network, message, mat
 from base.message import X, Y, YAW, DEPTH
 
 # Constants.
-BASE    = 0.4                          # 4 phones base (cross dist).
-SIN_SAT = 0.99                         # Sinus saturation to prevent wrong asin.
+BASE       = 0.4                       # 4 phones base (cross dist).
+DIST_TRASH = 1.5 * BASE                # Distance trashold to drop wrong distance defference.
+SIN_SAT    = 0.99                      # Sinus saturation to prevent wrong asin.
 LEFT, RIGHT, BACK, FRONT = 0, 1, 2, 3  # Phones ailases.
 
 # Input parameters.
@@ -31,6 +32,19 @@ def offset(left, right, back, front, height):
         scale = height * math.tan(math.asin(dr_sat)) / dr
     return [scale * dx, scale * dy]
 
+# Return false if dist[channel] out of range in comparison with other channels.
+def out_of_range(dist, channel):
+    mn =  100000000
+    mx = -100000000
+    for ch in range(len(dist)):
+        if ch != channel:
+            mn = min(mn, dist[ch])
+            mx = max(mx, dist[ch])
+    if max(dist[channel] - mx, mn - dist[channel]) > DIST_TRASH:
+        return True
+    return False
+
+
 # Send object coordinates by timer.
 while net.receive():
 
@@ -38,20 +52,18 @@ while net.receive():
     if net.id == 'SoundDelay':
 
         # If sound delays has come then:
-        msg  = net.msg                              # read message,
-        dist = msg.dist                             # distances and
+        msg    = net.msg                            # Read message,
+        dist   = msg.dist                           # distances,
+        freqs  = msg.freqs                          # frequencies and
         height = abs(pinger[DEPTH] - robot[DEPTH])  # calc pinger height.
 
         # Check cool channels basing on frequency.
         channels = 4
         for ch in range(channels):
-            if msg.freqs[ch] < FREQ_MIN: dist[ch] = -1
-            if msg.freqs[ch] > FREQ_MAX: dist[ch] = -1
-            if dist[ch] < 0:             channels -= 1
-
-        # @todo:
-        # no_front = dist[FRONT] - min(dist[LEFT],min(dist[RIGHT],dist[BACK]))
-        # print("Channels =", channels)
+            if freqs[ch] < FREQ_MIN or freqs[ch] > FREQ_MAX or out_of_range(dist, ch):
+                dist[ch] = -1
+            if dist[ch] < 0:
+                channels -= 1
 
         # If channels not enough then wait next message.
         if channels < 3:
