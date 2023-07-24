@@ -20,7 +20,9 @@ def stab(origin='Current', x=0.0, y=0.0, left=0.0, front=0.0, yaw=None, dt=0.0, 
         stab = [x + pos[X], y + pos[Y]]
     else:
         objs = network.wait_message('FilteredObjects').objs
-        stab = [x + objs[origin][X] + left, y + objs[origin][Y] - front]
+        dx, dy = mat.rotate2map(left, -front, yaw)
+        stab = [x + objs[origin][X] + dx,
+                y + objs[origin][Y] + dy]
 
     # Infinit loop until reach destination time.
     net = network.Net(timer=TIMER)
@@ -42,5 +44,7 @@ def stab(origin='Current', x=0.0, y=0.0, left=0.0, front=0.0, yaw=None, dt=0.0, 
         elif net.id == 'FilteredObjects':
             if origin != 'Navigation' and origin != 'Current':
                 objs = net.msg.objs
-                stab = [x + objs[origin][X] + left, y + objs[origin][Y] - front]
+                dx, dy = mat.rotate2map(left, -front, yaw)
+                stab = [x + objs[origin][X] + dx,
+                        y + objs[origin][Y] + dy]
 
