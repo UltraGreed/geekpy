@@ -135,6 +135,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
 
                 png = png.resize((456, 256))
                 png = png.crop((100, 0, 356, 256))
+                png = png.rotate(-90)
 
                 png.save(fp=path)
                 net.send(ImageLink(
