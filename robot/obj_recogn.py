@@ -7,6 +7,9 @@ import setproctitle
 from base import network, message, mat
 from base.message import X, Y, DEPTH
 
+from object_recognition.model_class import Model
+from object_recognition.image_utils import load_image_rgba, save_image_rgba
+
 #####################
 # CONFIG PARAMETERS #
 THRESHOLD_COLOR = 10 ** 2
@@ -15,39 +18,9 @@ TARGET_COLOR = np.array([49.8, 69.4, 16.4])
 THRESHOLD_IMAGE_PART = 0.1
 
 CAMERA_FOV = 70
+
+
 ####################
-
-
-# Function creating a bit mask of the image
-def get_mask(pixel):
-    error = np.sum(np.square(pixel - TARGET_COLOR))
-
-    return True if error < THRESHOLD_COLOR else False
-
-
-vec_get_mask = np.vectorize(get_mask, signature='(3)->()')
-
-
-# Function creating a black and white array image of object
-def get_bw(pixel):
-    error = np.sum(np.square(pixel - TARGET_COLOR))
-
-    return np.array([255, 255, 255]) if error < THRESHOLD_COLOR else np.array([0, 0, 0])
-
-
-vec_get_bw = np.vectorize(get_bw, signature='(3)->(3)')
-
-
-# Function saving black and white image with detected object for debugging
-def save_bw_image(image, point_coords, save_path):
-    image_bw_array = vec_get_bw(image)
-
-    image_bw = Image.fromarray(image_bw_array.astype('uint8'))
-
-    image_bw.putpixel(point_coords, (255, 0, 0))
-
-    image_bw.save(save_path)
-
 
 # Function converting pixel coordinates to map coordinates
 def get_map_coords(image, obj_coords, robot_coords, camera_dist):
@@ -64,6 +37,8 @@ def main(camera_name, obj_name):
     pos = [0 for _ in range(6)]
     obj_depth = message.FilteredObjects().objs[obj_name][DEPTH]
 
+    model = Model()
+
     net = network.Net()
     while net.receive():
         if net.id == "ImageLink":
@@ -73,7 +48,7 @@ def main(camera_name, obj_name):
                 image = Image.open(net.msg.path)
                 image_array = np.asarray(image)
 
-                mask = vec_get_mask(image_array)
+                mask = model.get_mask(image_array)
 
                 y_coords, x_coords = mask.nonzero()
 
@@ -88,7 +63,11 @@ def main(camera_name, obj_name):
                     save_path = net.msg.path.replace('.jpg', '_bw.jpg')
                     file_path = net.msg.file.replace('.jpg', '_bw.jpg')
 
-                    save_bw_image(image_array, (obj_x, obj_y), save_path)
+                    image_bw_array = model.get_grayscale(image_array)
+
+                    image_bw_array[obj_x][obj_y] = np.asarray([255, 0, 0, 255], dtype='uint8')
+
+                    save_image_rgba(save_path, image_bw_array)
 
                     net.send(message.ImageLink(
                         path=save_path,
@@ -104,4 +83,3 @@ if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
     main(camera_name=sys.argv[1], obj_name=sys.argv[2])
-
