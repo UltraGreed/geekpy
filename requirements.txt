@@ -6,3 +6,4 @@ setproctitle
 dronecan
 opencv-python
 PyQt6
+gpio4
