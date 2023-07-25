@@ -58,7 +58,8 @@ while True:
     elif ch == "g": net.send(message.Tack(time=1, stab_y=-2))
     elif ch == "t": net.send(message.Tack(time=1, stab_y= 2))
 
-    elif ch == "i": net.send(message.Tack(time=1, stab_x=-2, stab_y= 2))
-    elif ch == "o": net.send(message.Tack(time=1, stab_x= 2, stab_y= 2))
-    elif ch == "k": net.send(message.Tack(time=1, stab_x=-2, stab_y=-2))
-    elif ch == "l": net.send(message.Tack(time=1, stab_x= 2, stab_y=-2))
+    elif ch == "/": net.send(message.Tack(time=1, stab_x=0,  stab_y=0))
+    elif ch == "i": net.send(message.Tack(time=1, stab_x=-1, stab_y= 1))
+    elif ch == "o": net.send(message.Tack(time=1, stab_x= 1, stab_y= 1))
+    elif ch == "k": net.send(message.Tack(time=1, stab_x=-1, stab_y=-1))
+    elif ch == "l": net.send(message.Tack(time=1, stab_x= 1, stab_y=-1))

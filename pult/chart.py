@@ -1,3 +1,4 @@
+#!python3
 import setproctitle
 import time
 import sys

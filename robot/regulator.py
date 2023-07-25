@@ -1,5 +1,4 @@
 #!python3
-# @todo: Improve pd_xy() to ellipse projections.
 import math
 import setproctitle
 import sys
@@ -9,33 +8,49 @@ from base import mat, network, message
 from base.message import X, Y, YAW, AXIS
 
 ########### X ##### Y # DEPTH ### YAW # PITCH ## ROLL
-P   = [100.00, 100.00,   0.50,   3.00,   3.00,   1.00]  # Proportional coefficients of regulator.
+P   = [  5.00,   1.00,   0.50,   3.00,   3.00,   1.00]  # Proportional coefficients of regulator.
 D   = [  1.00,   1.00,   0.50,   3.00,   3.00,   1.00]  # Differential coefficients of regulator.
-MAX = [  0.70,   0.70,   1.00,  90.00,  90.00,  90.00]  # Maximal possible velocity in stabilization mode.
-MIN = [ -0.70,  -0.70,  -1.00, -90.00, -90.00, -90.00]  # Minimal possible velocity in stabilization mode.
+MAX = [  0.10,   0.10,   1.00,  90.00,  90.00,  90.00]  # Maximal possible velocity in stabilization mode.
+MIN = [ -0.10,  -0.10,  -1.00, -90.00, -90.00, -90.00]  # Minimal possible velocity in stabilization mode.
 TIMER = 0.05                                            # 'Motion' message publication timer.
 MIN_STAB_DIST = 0.001                                   # Min distance to make stabilization.
 
 
 ## Simple PD-regulator with saturation
 def pd(dif, vel, stab_p, stab_d, sat_min, sat_max):
-    val = stab_p * dif - stab_d * vel  # PD regulator.
+    val = stab_p * dif - stab_d * vel      # PD regulator.
     return mat.sat(val, sat_min, sat_max)  # Return value with saturation.
 
 
 ## Stabilization of XY coordinates
+# def pd_xy(speed, stab, pos, vel):
+#     sx = stab[X] if mat.is_num(stab[X]) else pos[X]                # Save stabilization
+#     sy = stab[Y] if mat.is_num(stab[Y]) else pos[Y]                # values X and/or Y (if exists).
+#     dx, dy = mat.rotate2robot(sx - pos[X], sy - pos[Y], pos[YAW])  # Convert stab values to robot coords.
+#     dist = math.sqrt(sx * sx + sy * sy)                            # Claculate distance to stab-point.
+#     if (dist < MIN_STAB_DIST): return                              # If distanace lees then minimal then nothing to stab.
+#     min_x = MIN[X] * abs(dx) / dist                                # Calculate
+#     min_y = MIN[Y] * abs(dy) / dist                                # min and max
+#     max_x = MAX[X] * abs(dx) / dist                                # restrictions
+#     max_y = MAX[Y] * abs(dy) / dist                                # for axis.
+#     speed[X] = pd(dx, vel, P[X], D[X], min_x, max_x)               # Apply PD-regulator for X
+#     speed[Y] = pd(dy, vel, P[Y], D[Y], min_y, max_y)               # and Y axis.
+
+
+## Stabilization of XY coordinates
 def pd_xy(speed, stab, pos, vel):
-    sx = stab[X] if mat.is_num(stab[X]) else pos[X]                # Save stabilization
-    sy = stab[Y] if mat.is_num(stab[Y]) else pos[Y]                # values X and/or Y (if exists).
-    dx, dy = mat.rotate2robot(sx - pos[X], sy - pos[Y], pos[YAW])  # Convert stab values to robot coords.
-    dist = math.sqrt(sx * sx + sy * sy)                            # Claculate distance to stab-point.
-    if (dist < MIN_STAB_DIST): return                              # If distanace lees then minimal then nothing to stab.
-    min_x = MIN[X] * abs(dx) / dist                                # Calculate
-    min_y = MIN[Y] * abs(dy) / dist                                # min and max
-    max_x = MAX[X] * abs(dx) / dist                                # restrictions
-    max_y = MAX[Y] * abs(dy) / dist                                # for axis.
-    speed[X] = pd(dx, vel, P[X], D[X], min_x, max_x)               # Apply PD-regulator for X
-    speed[Y] = pd(dy, vel, P[Y], D[Y], min_y, max_y)               # and Y axis.
+    dx, dy = mat.rotate2robot(stab[X] - pos[X],       # Convert stab values
+                              stab[Y] - pos[Y],       # from navigation
+                              pos[YAW])               # to robot coord system.
+    dist = math.sqrt(dx**2 + dy**2)                   # Claculate distance to stab-point.
+    if (dist < MIN_STAB_DIST):                        # If distanace lees then minimal
+        return                                        # then nothing to stab.
+    min_x = MIN[X] * abs(dx) / dist                   # Calculate
+    min_y = MIN[Y] * abs(dy) / dist                   # min and max
+    max_x = MAX[X] * abs(dx) / dist                   # restrictions
+    max_y = MAX[Y] * abs(dy) / dist                   # for axis.
+    speed[X] = pd(dx, vel, P[X], D[X], min_x, max_x)  # Apply PD-regulator for X
+    speed[Y] = pd(dy, vel, P[Y], D[Y], min_y, max_y)  # and Y axis.
 
 
 ## Stabilization of YAW coordinate
@@ -52,7 +67,7 @@ setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for proce
 net = network.Net(timer=TIMER)                 # Will wait messages and timer ticks.
 tack = message.Tack()                          # Incoming Tack message for robot control.
 tack_time = 0.0                                # Time of last Tack message.
-tack_priority = 0
+tack_priority = 0                              # Default tack priority.
 pos = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]           # Incoming position
 vel = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]           # and velocity data.
 
@@ -71,8 +86,8 @@ while net.receive():  # Waiting for timer ticks and messages.
                 motion.speed[i] += tack.speed[i]  # (if 'stab' and/or 'speed' mode).
         net.send(motion)
 
-    elif net.id == 'Tack':
-        if net.msg.priority >= tack.priority:  # If Tack message w/ higher priority has come
+    elif net.id == 'Tack':                     # If Tack message 
+        if net.msg.priority >= tack.priority:  # with higher priority has come
             tack = net.msg                     # then save this message
             tack_time = time.time()            # and timestamp.
 
