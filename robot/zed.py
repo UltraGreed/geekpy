@@ -1,4 +1,3 @@
-import datetime
 import io
 import math
 import os
@@ -126,8 +125,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
             if photo_timer.is_unlock and img_capture:
                 photo_counter += 1
 
-                timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S.%f")
-                path = f"{save_path}/{name}_{timestamp}.jpg"
+                path = f"{save_path}/{name}_{photo_counter}.jpg"
 
                 arr = image.get_data()
                 b, g, r, _ = Image.fromarray(arr).split()
