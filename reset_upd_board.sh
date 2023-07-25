@@ -12,7 +12,7 @@ expect -c "
 	}
 "
 expect -c "
-	spawn sh -c {./install.sh}
+	spawn sh -c {./install_all.sh}
 
 	expect {
 		-re \"auv@192.168.88.101's password:\" {

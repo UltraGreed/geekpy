@@ -46,7 +46,6 @@ while True:
         break
 
     buf, addr = sock_set.recvfrom(65535)
-    print(sys.getsizeof(buf))
 
     imageStream = io.BytesIO(buf)
     image_real = Image.open(imageStream)

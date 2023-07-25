@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def load_image_rgba(path):
@@ -10,4 +11,15 @@ def load_image_rgba(path):
 
 def save_image_rgba(path, img_array):
     img = cv2.cvtColor(img_array, cv2.COLOR_RGBA2BGRA)
+    cv2.imwrite(path, img)
+
+
+def load_image_rgb(path):
+    img = cv2.imread(path, flags=-1)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    return np.asarray(img)
+
+
+def save_image_rgb(path, img_array):
+    img = cv2.cvtColor(img_array, cv2.COLOR_RGB2BGR)
     cv2.imwrite(path, img)

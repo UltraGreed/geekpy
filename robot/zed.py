@@ -1,4 +1,3 @@
-import datetime
 import io
 import math
 import os
@@ -67,7 +66,7 @@ def send_img(image, port):
 
 
 def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: bool = False) -> None:
-    net = Net(0.05)
+    net = Net(0.1)
     photo_timer = Timer(0.25)
 
     img_capture = False
@@ -126,8 +125,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
             if photo_timer.is_unlock and img_capture:
                 photo_counter += 1
 
-                timestamp = datetime.datetime.today().strftime("%Y%m%d_%H%M%S.%f")
-                path = f"{save_path}/{name}_{timestamp}.jpg"
+                path = f"{save_path}/{name}_{photo_counter}.jpg"
 
                 arr = image.get_data()
                 b, g, r, _ = Image.fromarray(arr).split()
@@ -135,6 +133,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
 
                 png = png.resize((456, 256))
                 png = png.crop((100, 0, 356, 256))
+                png = png.rotate(-90)
 
                 png.save(fp=path)
                 net.send(ImageLink(

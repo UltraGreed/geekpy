@@ -1,52 +1,18 @@
 import sys
 
-from PIL import Image
 import numpy as np
 import setproctitle
 
 from base import network, message, mat
 from base.message import X, Y, DEPTH
 
+from object_recognition.model_class import Model
+from object_recognition.image_utils import load_image_rgb, save_image_rgb
+
 #####################
 # CONFIG PARAMETERS #
-THRESHOLD_COLOR = 10 ** 2
-TARGET_COLOR = np.array([49.8, 69.4, 16.4])
-
-THRESHOLD_IMAGE_PART = 0.1
-
 CAMERA_FOV = 70
 ####################
-
-
-# Function creating a bit mask of the image
-def get_mask(pixel):
-    error = np.sum(np.square(pixel - TARGET_COLOR))
-
-    return True if error < THRESHOLD_COLOR else False
-
-
-vec_get_mask = np.vectorize(get_mask, signature='(3)->()')
-
-
-# Function creating a black and white array image of object
-def get_bw(pixel):
-    error = np.sum(np.square(pixel - TARGET_COLOR))
-
-    return np.array([255, 255, 255]) if error < THRESHOLD_COLOR else np.array([0, 0, 0])
-
-
-vec_get_bw = np.vectorize(get_bw, signature='(3)->(3)')
-
-
-# Function saving black and white image with detected object for debugging
-def save_bw_image(image, point_coords, save_path):
-    image_bw_array = vec_get_bw(image)
-
-    image_bw = Image.fromarray(image_bw_array.astype('uint8'))
-
-    image_bw.putpixel(point_coords, (255, 0, 0))
-
-    image_bw.save(save_path)
 
 
 # Function converting pixel coordinates to map coordinates
@@ -60,9 +26,11 @@ def get_map_coords(image, obj_coords, robot_coords, camera_dist):
     return mat.robot2map(robot_coords, (relative_x, relative_y, obj_coords[DEPTH]))
 
 
-def main(camera_name, obj_name):
+def main(camera_name, obj_name, model_path):
     pos = [0 for _ in range(6)]
     obj_depth = message.FilteredObjects().objs[obj_name][DEPTH]
+
+    model = Model(model_path)
 
     net = network.Net()
     while net.receive():
@@ -70,25 +38,26 @@ def main(camera_name, obj_name):
             if net.msg.obj == camera_name:
                 camera_dist = obj_depth - pos[DEPTH]
 
-                image = Image.open(net.msg.path)
-                image_array = np.asarray(image)
+                image = load_image_rgb(net.msg.path)
 
-                mask = vec_get_mask(image_array)
+                is_obj_found = model.check_object(image)
 
-                y_coords, x_coords = mask.nonzero()
+                if is_obj_found:
+                    obj_x, obj_y = model.object_center
 
-                if len(y_coords) >= THRESHOLD_IMAGE_PART * len(image_array):
-                    obj_x, obj_y = round(np.average(x_coords)), round(np.average(y_coords))
+                    map_coords = get_map_coords(image, (obj_x, obj_y, obj_depth), pos, camera_dist)
 
-                    map_coords = get_map_coords(image_array, (obj_x, obj_y, obj_depth), pos, camera_dist)
-
-                    net.send(message.DetectedObject(x=map_coords[0], y=map_coords[1], obj=obj_name))
+                    net.send(message.DetectedObject(x=float(map_coords[0]), y=float(map_coords[1]), obj=obj_name))
 
                     # Saving black and white image with detected object for debugging
-                    save_path = net.msg.path.replace('.jpg', '_bw.jpg')
-                    file_path = net.msg.file.replace('.jpg', '_bw.jpg')
+                    save_path = net.msg.path.replace('.jpg', '_bw.png')
+                    file_path = net.msg.file.replace('.jpg', '_bw.png')
 
-                    save_bw_image(image_array, (obj_x, obj_y), save_path)
+                    image_grayscale = model.get_grayscale(image)
+
+                    image_grayscale[int(obj_x)][int(obj_y)] = np.asarray([255, 0, 0, 255], dtype='uint8')
+
+                    save_image_rgb(save_path, image_grayscale)
 
                     net.send(message.ImageLink(
                         path=save_path,
@@ -103,5 +72,4 @@ def main(camera_name, obj_name):
 if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
-    main(camera_name=sys.argv[1], obj_name=sys.argv[2])
-
+    main(camera_name=sys.argv[1], obj_name=sys.argv[2], model_path=sys.argv[3])
