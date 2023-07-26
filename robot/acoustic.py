@@ -10,10 +10,10 @@ from base import network, message, mat
 PERIOD   = 1.0                       # Publication period.
 OV_DSP_FREQ = 1.0/192.0e3  
 
-LEFT_CHANNEL   = 2
+LEFT_CHANNEL   = 1
 FRONT_CHANNEL  = 3
 RIGHT_CHANNEL  = 0
-BACK_CHANNEL   = 1
+BACK_CHANNEL   = 2
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 net = network.Net(timer=PERIOD)                # Network communication.
