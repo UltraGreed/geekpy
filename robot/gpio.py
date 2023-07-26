@@ -72,11 +72,6 @@ def main():
     for it in GPIO_PORTS:
         GPIO.setup(it, GPIO.OUT)
 
-    time.sleep(1)
-
-    for it in GPIO_PORTS:
-        GPIO.output(it, GPIO.LOW)
-
     net = network.Net(0.05)
     while net.receive():
         if net.id == 'KeyOn' and GPIO_MAP.get(net.msg.key) != None:
