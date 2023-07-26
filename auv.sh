@@ -13,11 +13,13 @@
   python spreader.py &
   python kotleta.py &
 
+#  python ctd_i2c.py &
+  python ctd_aurt.py &
+
   python acoustic.py &
   python bearing.py 29500 30500 Frame &
 
-#  python ctd_i2c.py &
-  python ctd_aurt.py &
+  python gpio.py &
 
   #                              pos_tracking stream
   python3 zed.py Bottom 24827734 True          True &
