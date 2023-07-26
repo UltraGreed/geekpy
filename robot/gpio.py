@@ -57,7 +57,7 @@ class GPIOHandler:
 
 GPIO = GPIOHandler()
 
-GPIO_PORTS = [392, 394, 395, 396]
+GPIO_PORTS = [394, 396, 395, 392]
 GPIO_MAP = {
             'Left'    : [GPIO_PORTS[0], False, Timer(0)],
             'Right'   : [GPIO_PORTS[1], False, Timer(0)],
