@@ -11,22 +11,15 @@ def start(camera, path):
 	net = network.Net()
 
 	timer = Timer(0.5)
-	while True:
-		if timer.is_unlock:
-			break
-
+	while not timer.is_unlock:
 		net.send(message.PhotoOn(camera, path))
 		time.sleep(0.01)
 
 
 def stop(camera):
 	net = network.Net()
-	timer = Timer(0.5)
-	while True:
-		if timer.is_unlock:
-			break
 
+	timer = Timer(0.5)
+	while not timer.is_unlock:
 		net.send(message.PhotoOff(camera))
 		time.sleep(0.01)
-
-
