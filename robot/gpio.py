@@ -2,7 +2,8 @@ import sys
 
 import setproctitle
 
-from base import message, network, timer
+from base import message, network
+from base.timer import Timer
 
 
 class GPIOHandler:
@@ -50,35 +51,41 @@ class GPIOHandler:
 
 GPIO = GPIOHandler()
 
+GPIO_PORTS = [392, 394, 395, 396]
+GPIO_MAP = {
+            'Left'    : [GPIO_PORTS[0], False, Timer(0)],
+            'Right'   : [GPIO_PORTS[1], False, Timer(0)],
+            'Push'    : [GPIO_PORTS[2], False, Timer(0)],
+            'Release' : [GPIO_PORTS[3], False, Timer(0)], 
+           }
 
-def main(name, port):
+
+def main():
     setproctitle.setproctitle(' '.join(sys.argv))
 
-    GPIO.setup(port, GPIO.OUT)
-    GPIO.output(port, GPIO.LOW)
+    GPIO.setup(GPIO_PORTS, GPIO.OUT)
+    GPIO.output(GPIO_PORTS, GPIO.LOW)
 
     net = network.Net()
-    time = timer.Timer(0)
-    is_time = False
     while net.receive():
-        if net.id == 'KeyOn' and net.msg.key == name:
+        if net.id == 'KeyOn' and GPIO_MAP.get(net.msg.key) != None:
             if net.msg.time != -1:
-                is_time = True
-                time = timer.Timer(net.msg.time)
+                GPIO_MAP[net.msg.key][1] = True
+                GPIO_MAP[net.msg.key][2] = Timer(net.msg.time)
 
-            GPIO.output(port, GPIO.HIGH)
+            GPIO.output(GPIO_MAP[net.msg.key][0], GPIO.HIGH)
 
-        if net.id == 'KeyOff' and net.msg.key == name or time.is_unlock and is_time:
-            if is_time:
-                is_time = False
+        if net.id == 'KeyOff' and GPIO_MAP.get(net.msg.key) != None:
+            GPIO_MAP[net.msg.key][1] = False
+            GPIO.output(GPIO_MAP[net.msg.key][0], GPIO.LOW)
 
-            GPIO.output(port, GPIO.LOW)
+        for key in GPIO_MAP:
+            if GPIO_MAP[key][1] and GPIO_MAP[key][2].is_unlock:
+                GPIO_MAP[key][1] = False
+                GPIO.output(GPIO_MAP[key][0], GPIO.LOW)
 
-    GPIO.unexport(port)
+    GPIO.unexport(GPIO_PORTS)
 
 
 if __name__ == '__main__':
-    name = sys.argv[1]
-    port = int(sys.argv[2])
-
-    main(name, port)
+    main()
