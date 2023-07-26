@@ -1,4 +1,5 @@
 import sys
+import time
 
 import setproctitle
 
@@ -24,7 +25,12 @@ class GPIOHandler:
 
     def setup(self, gpio, direction):
         self.export(gpio)
-        open("/sys/class/gpio/gpio%d/direction" % gpio, "wt").write("%s\n" % direction)
+        while True:
+            try:
+                open("/sys/class/gpio/gpio%d/direction" % gpio, "wt").write("%s\n" % direction)
+                break
+            except:
+                pass
     
     def _open(self, gpio):
         fd = open("/sys/class/gpio/gpio%d/value" % gpio, "r+")
@@ -63,10 +69,15 @@ GPIO_MAP = {
 def main():
     setproctitle.setproctitle(' '.join(sys.argv))
 
-    GPIO.setup(GPIO_PORTS, GPIO.OUT)
-    GPIO.output(GPIO_PORTS, GPIO.LOW)
+    for it in GPIO_PORTS:
+        GPIO.setup(it, GPIO.OUT)
 
-    net = network.Net()
+    time.sleep(1)
+
+    for it in GPIO_PORTS:
+        GPIO.output(it, GPIO.LOW)
+
+    net = network.Net(0.05)
     while net.receive():
         if net.id == 'KeyOn' and GPIO_MAP.get(net.msg.key) != None:
             if net.msg.time != -1:
@@ -84,7 +95,8 @@ def main():
                 GPIO_MAP[key][1] = False
                 GPIO.output(GPIO_MAP[key][0], GPIO.LOW)
 
-    GPIO.unexport(GPIO_PORTS)
+    for it in GPIO_PORTS:
+        GPIO.unexport(it)
 
 
 if __name__ == '__main__':
