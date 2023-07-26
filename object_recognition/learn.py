@@ -1,18 +1,16 @@
-import datetime
 import os
 import time
 
 import numpy as np
 
 from image_utils import load_image_rgba, save_image_rgba
-from model_class import COLOR_AMOUNT, COLOR_COMPRESSION
+from model_class import COLOR_AMOUNT, COLOR_COMPRESSION, OBJ
 
 #####################
 # CONFIG PARAMETERS #
-PIXEL_AREA = 1
+PIXEL_AREA = 0
 
 LOAD_PREFIX = 'images/selection_learn/'
-OBJ = 'CellB'
 LOAD_PREFIX_OBJ = LOAD_PREFIX + OBJ + '/'
 
 SAVE_PREFIX = 'images/selection_learn/'
@@ -40,12 +38,20 @@ for image_file in os.listdir(LOAD_PREFIX_OBJ):
     time2 = time.time()
     for row in image_array:
         for pixel in row:
-            x, y, z = [int(i // COLOR_COMPRESSION + 0.5) for i in pixel[:3]]
-            data_all[x][y][z] += 1
-            if pixel[3] == 0:
-                data_found[x][y][z] += 1
-            else:
-                data_not_found[x][y][z] += 1
+            for dx in range(-PIXEL_AREA, PIXEL_AREA + 1):
+                for dy in range(-PIXEL_AREA, PIXEL_AREA + 1):
+                    for dz in range(-PIXEL_AREA, PIXEL_AREA + 1):
+                        x, y, z = [int(i // COLOR_COMPRESSION) for i in pixel[:3]]
+                        x += dx
+                        y += dy
+                        z += dz
+                        if any([i < 0 or i >= COLOR_AMOUNT for i in (x, y, z)]):
+                            continue
+                        data_all[x][y][z] += 1
+                        if pixel[3] < 128:
+                            data_found[x][y][z] += 1
+                        else:
+                            data_not_found[x][y][z] += 1
 
     print(f"Image processed: {time.time() - time2}")
 
@@ -60,8 +66,9 @@ for image_file in os.listdir(LOAD_PREFIX_OBJ):
     print(f"Total: {time.time() - time1}")
 
 
-np.save('model_found.npy', data_found)
-np.save('model_not_found.npy', data_not_found)
-np.save('model_all.npy', data_all)
+print(data_not_found.dtype, data_found.dtype, data_all.dtype)
+np.save('model_found.npy', data_found.flatten())
+np.save('model_not_found.npy', data_not_found.flatten())
+np.save('model_all.npy', data_all.flatten())
 
-np.save('model_divided.npy', data_found / np.where(data_all > 0, data_all, 1))
+np.save('model_divided.npy', (data_found / np.where(data_all > 0, data_all, 1)).flatten())

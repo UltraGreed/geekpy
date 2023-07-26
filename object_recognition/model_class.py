@@ -2,15 +2,17 @@ import numpy as np
 
 #####################
 # CONFIG PARAMETERS #
-THRESHOLD_IMAGE_PART = 0.001
+THRESHOLD_IMAGE_PART = 0.01
 
-THRESHOLD_MIN = 0.01
-THRESHOLD_MAX = 0.9
+THRESHOLD_MIN = 0.0
+THRESHOLD_MAX = 1.0
 
-COLOR_AMOUNT = 16
-COLOR_COMPRESSION = 256 / COLOR_AMOUNT
+COLOR_AMOUNT = 2
+COLOR_COMPRESSION = 256 // COLOR_AMOUNT
 
 MAX_PIXEL_WEIGHT = 1
+
+OBJ = "CellRdirt"
 ####################
 
 
@@ -28,48 +30,42 @@ class Model:
         self.model_lower_border = self.model_min + THRESHOLD_MIN * (self.model_max - self.model_min)
         self.model_upper_border = self.model_min + THRESHOLD_MAX * (self.model_max - self.model_min)
 
-        self.get_mask = np.vectorize(self.get_mask_pixel, signature='(n)->()')
-        self.get_grayscale = np.vectorize(self.get_gray_pixel, signature='(n)->(4)')
-        self.calc_image_weight = np.vectorize(self.get_pixel_weight, signature='(n)->()')
-
         self._image = None
         self._mask = None
-        self._threshold_pixel = None
+        self._threshold_weight = None
         self._image_sum = None
         self._image_center = None
         self._image_weight = None
 
-    def get_pixel_raw(self, pixel):
-        x, y, z = [int(i // COLOR_COMPRESSION) for i in [
-            pixel[0],
-            pixel[1],
-            pixel[2]
-        ]]
-        return self.model[x][y][z]
+    def get_pixel_raw(self, index):
+        return self.model[index]
 
-    def get_pixel_weight(self, pixel):
-        pixel_data = self.get_pixel_raw(pixel)
+    def get_pixel_weight(self, index):
+        pixel_data = self.get_pixel_raw(index)
 
-        if pixel_data < self.model_lower_border:
-            pixel_weight = 0
-        elif pixel_data >= self.model_upper_border:
-            pixel_weight = 255
-        else:
-            pixel_weight = 255 * (pixel_data - self.model_lower_border) / (self.model_upper_border - self.model_lower_border)
-
+        """
+        Sorry for some unreadable code, IDK if it can be done better with np.
+        Brief explanation:
+        we want to cut lower and upper borders from model,
+        so we make everything below lower border equal to 0
+        and everything above upper border equal to 1
+        then we make everything between lower and upper borders equal to proportion of value 
+        between borders: (value - lower border) / (upper border - lower border)
+        """
+        pixel_weight = np.where(pixel_data < self.model_lower_border, 0, pixel_data)
+        pixel_weight = np.where(pixel_weight >= self.model_upper_border, 1, pixel_weight)
+        pixel_weight = np.where(
+            np.logical_and(pixel_weight >= self.model_lower_border, pixel_weight < self.model_upper_border),
+            (pixel_weight - self.model_lower_border) / (self.model_upper_border - self.model_lower_border),
+            pixel_weight
+        )
         return pixel_weight
 
-    # Function creating a bit mask of the image
-    def get_mask_pixel(self, pixel):
-        return self.get_pixel_raw(pixel) >= self.model_upper_border
-
     # Function creating a black and white array image of object
-    def get_gray_pixel(self, pixel):
-        value = self.get_pixel_weight(pixel)
+    def get_grayscale(self):
+        r_layer, g_layer, b_layer = [np.asarray(self.image_weight * 255, dtype='uint8') for _ in range(3)]
 
-        gray_pixel = np.asarray([value * 255, value * 255, value * 255, 255], dtype='uint8')
-
-        return gray_pixel
+        return np.dstack((r_layer, g_layer, b_layer))
 
     @property
     def image(self):
@@ -82,30 +78,30 @@ class Model:
     def image(self, value):
         self._image = value
         self._mask = None
-        self._threshold_pixel = None
+        self._threshold_weight = None
         self._image_sum = None
         self._image_center = None
         self._image_weight = None
 
     @property
-    def mask(self):
-        if self._image is None:
-            raise ImageNotLoaded
-        if self._mask is None:
-            self._mask = self.get_mask(self._image)
-        return self._mask
+    def threshold_weight(self):
+        if self._threshold_weight is None:
+            self._threshold_weight = THRESHOLD_IMAGE_PART * len(self.image) ** 2 * MAX_PIXEL_WEIGHT
 
-    @property
-    def threshold_pixel(self):
-        if self._threshold_pixel is None:
-            self._threshold_pixel = THRESHOLD_IMAGE_PART * len(self.image) ** 2
-
-        return self._threshold_pixel
+        return self._threshold_weight
 
     @property
     def image_weight(self):
         if self._image_weight is None:
-            self._image_weight = self.calc_image_weight(self.image)
+            r_layer, g_layer, b_layer = [
+                np.asarray(
+                    self.image[:, :, i] // COLOR_COMPRESSION, dtype='uint32'
+                ) for i in range(3)
+            ]
+
+            index_matrix = np.asarray(r_layer * COLOR_AMOUNT ** 2 + g_layer * COLOR_AMOUNT + b_layer)
+
+            self._image_weight = self.get_pixel_weight(index_matrix)
 
         return self._image_weight
 
@@ -118,6 +114,8 @@ class Model:
 
     @property
     def object_center(self):
+        if not self.check_object():
+            return 0, 0
         if self._image_center is None:
             mean_x = np.dot(np.arange(0, self.image.shape[0]), np.sum(self.image_weight, axis=1)) / self.image_sum
             mean_y = np.dot(np.arange(0, self.image.shape[1]), np.sum(self.image_weight, axis=0)) / self.image_sum
@@ -129,4 +127,4 @@ class Model:
         if new_image is not None:
             self.image = new_image
 
-        return self.image_sum >= THRESHOLD_IMAGE_PART
+        return self.image_sum >= self.threshold_weight

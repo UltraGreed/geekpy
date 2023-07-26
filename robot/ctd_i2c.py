@@ -17,6 +17,8 @@ ALPHA_COEF = 0.7
 BETA_COEF = 1 - ALPHA_COEF
 # LEVER ARM FOR PITCH COMPENSATION #
 LEVER_ARM = 0.3
+
+OFFSET = 9.82
 ####################################
 
 
@@ -36,7 +38,7 @@ def get_pitch_thread():
 def send_depth_thread():
     global pos_pitch
 
-    sensor = ms5837.MS5837_30BA()  # Default I2C bus is 1 (Raspberry Pi 3)
+    sensor = ms5837.MS5837_02BA()  # Default I2C bus is 1 (Raspberry Pi 3)
 
     # We must initialize the sensor before reading it
     if not sensor.init():
@@ -61,7 +63,7 @@ def send_depth_thread():
 
             # Calculate exponential average depth
             last_depth = average_depth
-            average_depth = average_depth * BETA_COEF + (sensor.depth() - pitch_offset) * ALPHA_COEF
+            average_depth = average_depth * BETA_COEF + (sensor.depth() + OFFSET - pitch_offset) * ALPHA_COEF
 
             last_vel_depth = vel_depth
             vel_depth = (average_depth - last_depth) / (time.time() - last_time)
