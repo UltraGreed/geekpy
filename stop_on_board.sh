@@ -1,2 +1,2 @@
 #!/bin/bash
-ssh auv@192.168.88.101 'sudo systemctl stop auv'
+ssh auv@192.168.88.101 "sudo systemctl stop $1"

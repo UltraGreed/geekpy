@@ -1,17 +1,20 @@
 import os
 import glob
+import time
 
 import numpy as np
 
 from image_utils import load_image_rgba, save_image_rgba
 
-from model_class import Model
+from model_class import Model, OBJ
+from model_class import get_model_path
 
 #####################
 # CONFIG PARAMETERS #
-LOAD_PREFIX = 'images/selection_test/CellB/'
-LOAD_PREFIX_TRUE = LOAD_PREFIX + 'true/'
-LOAD_PREFIX_FALSE = LOAD_PREFIX + 'false/'
+LOAD_PREFIX = 'images/selection_test/'
+LOAD_PREFIX_OBJ = LOAD_PREFIX + OBJ + '/'
+LOAD_PREFIX_TRUE = LOAD_PREFIX_OBJ + 'true/'
+LOAD_PREFIX_FALSE = LOAD_PREFIX_OBJ + 'false/'
 
 SAVE_PREFIX = 'images/result_test/'
 SAVE_PREFIX_TRUE_POSITIVE = SAVE_PREFIX + 'true_positive/'
@@ -28,9 +31,12 @@ def clear_dir(path):
 
 
 def find_obj_image(image_path, is_obj):
+    time1 = time.time()
     image = load_image_rgba(image_path)
 
+    time2 = time.time()
     is_obj_found = model.check_object(image)
+    print('obj check', time.time() - time2)
 
     if is_obj_found and is_obj:
         print('found true positive', end=' ')
@@ -52,17 +58,20 @@ def find_obj_image(image_path, is_obj):
     save_image_rgba(original_path, image)
 
     # Saving black and white image with detected object for debugging
+    gray_file = image_file.replace('.jpg', '_gray.png')
+    gray_path = save_prefix + gray_file
 
-    obj_x, obj_y = model.object_center if model.check_object() else (0, 0)
+    if image_file == 'Bottom_2.jpg':
+        print(1)
+    image_gray = model.get_grayscale()
 
-    bw_file = image_file.replace('.jpg', '_grayscale.png')
-    bw_path = save_prefix + bw_file
+    if is_obj_found:
+        obj_x, obj_y = model.object_center
+        image_gray[int(obj_x + 0.5)][int(obj_y + 0.5)] = np.asarray([255, 0, 0], dtype='uint8')
 
-    image_bw_array = model.get_grayscale(image)
+    save_image_rgba(gray_path, image_gray)
 
-    image_bw_array[int(obj_x + 0.5)][int(obj_y + 0.5)] = np.asarray([255, 0, 0, 255], dtype='uint8')
-
-    save_image_rgba(bw_path, image_bw_array)
+    print('all', time.time() - time1)
 
 
 for directory in (
@@ -73,7 +82,7 @@ for directory in (
 ):
     clear_dir(directory)
 
-model = Model('model_divided.npy')
+model = Model(get_model_path('sub'))
 
 for image_file in sorted(os.listdir(LOAD_PREFIX_TRUE)):
     find_obj_image(LOAD_PREFIX_TRUE + image_file, True)

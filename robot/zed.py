@@ -4,6 +4,7 @@ import os
 import socket
 import sys
 import time
+from datetime import datetime
 
 import numpy as np
 import pyzed.sl as sl
@@ -59,10 +60,10 @@ def send_img(image, port):
     jpg = jpgByteArray(png.resize((910, 512)))
 
     if sys.getsizeof(jpg) > 65535:
-        ratio =  65535 / sys.getsizeof(jpg)
+        ratio = 65535 / sys.getsizeof(jpg)
         jpg = jpgByteArray(png.resize((math.floor(910 * ratio), math.floor(512 * ratio))))
 
-    sock_set.sendto(jpg, ("255.255.255.255", port))
+    sock_set.sendto(jpg, ("192.168.88.102", port))
 
 
 def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: bool = False) -> None:
@@ -103,7 +104,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
         if net.id == "PhotoOn":
             if net.msg.camera == name:
                 img_capture = True
-                save_path = PATH_PREFIX + "/" + net.msg.folder
+                save_path = PATH_PREFIX + "/" + net.msg.folder + "_" +  name + "_" + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
                 if not os.path.exists(save_path):
                     os.mkdir(save_path)
 
@@ -125,7 +126,8 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
             if photo_timer.is_unlock and img_capture:
                 photo_counter += 1
 
-                path = f"{save_path}/{name}_{photo_counter}.jpg"
+                file = f"{photo_counter:05d}.jpg"
+                path = f"{save_path}/{file}"
 
                 arr = image.get_data()
                 b, g, r, _ = Image.fromarray(arr).split()
@@ -139,7 +141,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                 net.send(ImageLink(
                     obj=name,
                     path=path,
-                    file=f'{name}_{timestamp}.jpg',
+                    file=file,
                     counter=photo_counter
                 ))
 

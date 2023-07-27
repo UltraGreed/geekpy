@@ -13,13 +13,18 @@
   python spreader.py &
   python kotleta.py &
 
-#  python ctd_i2c.py &
-  python ctd_aurt.py &
+  python ctd_i2c.py &
+#  python ctd_aurt.py &
+
+  python acoustic.py &
+  python bearing.py 29500 30500 Frame &
+
+  python gpio.py &
 
   #                              pos_tracking stream
-  python3 zed.py Bottom 24827734 True          True &
+  python3 zed.py Bottom 24827734 True          False &
   sleep 5
-  python3 zed.py Front  16909428 False         True &
+  python3 zed.py Front  16909428 False         False &
 
-  python3 obj_recogn.py Bottom BallR ../object_recognition/model_divided.npy &
+  python3 obj_recogn.py Bottom CellB ../object_recognition/model_divided.npy &
 )

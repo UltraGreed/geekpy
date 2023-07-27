@@ -1,12 +1,19 @@
 import math
-from base import network, message, mat
-from base.message import X, Y, YAW
+import time
+
+from base import mat, message, network
+from base.message import YAW, X, Y
 
 # Timer period to send 'Tack' message to regulator.
 TIMER = 0.25
 
 ## Robot ahead moving function with given yaw
-def tack(origin='Current', yaw=0.0, dist=0.1, speed=0.1, depth=None):
+def tack(origin='Current', yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None):
+    start_time = time.time()
+
+    if not mat.is_num(dist) and not mat.is_num(dt):
+        raise Exception('dist is None and dt is None')
+
     # Initial and current robot positions and objects data.
     start = network.wait_message('Coord').pos
     pos   = network.wait_message('Coord').pos
@@ -33,7 +40,10 @@ def tack(origin='Current', yaw=0.0, dist=0.1, speed=0.1, depth=None):
                                   stab_yaw=target_yaw,  # with all
                                   stab_pitch=0.0,       # calculated
                                   stab_roll=0.0))       # parameters.
-            if d > dist: return                         # If work done => exit.
+
+            if mat.is_num(dt) and time.time() > start_time + dt: return
+
+            if mat.is_num(dist) and d > dist: return                         # If work done => exit.
 
         elif net.id == 'Coord':  # If coordinates has come
             pos = net.msg.pos    # then save robot position.

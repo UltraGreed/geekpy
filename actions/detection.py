@@ -10,21 +10,17 @@ from base.timer import Timer
 
 def on(obj):
 	net = network.Net()
-	timer = Timer(0.5)
-	while True:
-		if timer.is_unlock:
-			break
 
+	timer = Timer(0.5)
+	while not timer.is_unlock:
 		net.send(message.DetectionOn(obj))
 		time.sleep(0.01)
 
 
 def off(obj):
 	net = network.Net()
-	timer = Timer(0.5)
-	while True:
-		if timer.is_unlock:
-			break
 
+	timer = Timer(0.5)
+	while not timer.is_unlock:
 		net.send(message.DetectionOff(obj))
 		time.sleep(0.01)
