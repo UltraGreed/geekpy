@@ -1,19 +1,34 @@
 import numpy as np
 
+
 #####################
 # CONFIG PARAMETERS #
+# LOADING PARAMETERS
+MODEL_DIRECTORY = 'models/'
+OBJ = "CellRyellow"
+# OBJECT RECOGNITION PARAMETERS
 THRESHOLD_IMAGE_PART = 0.01
-
-THRESHOLD_MIN = 0.0
-THRESHOLD_MAX = 1.0
-
-COLOR_AMOUNT = 2
-COLOR_COMPRESSION = 256 // COLOR_AMOUNT
-
+# MODEL-WIDE PARAMETERS
+# Maximum possible value in model
 MAX_PIXEL_WEIGHT = 1
-
-OBJ = "CellRdirt"
+# Dimensions of color space
+COLOR_AMOUNT = 64
+COLOR_COMPRESSION = 256 // COLOR_AMOUNT
+# EDUCATION PARAMETERS
+# Area in which pixels incremented during learning
+PIXEL_AREA = 2
+# NORMALIZATION PARAMETERS
+# Thresholds for model normalization
+UPPER_BORDER_OBJECT = 0.7
+UPPER_BORDER_NON_OBJECT = 0.7
+# Model value which will equal to zero chance
+# Ranges from -1 to 1
+LOWER_SUB_MODEL_BORDER = 0
 ####################
+
+
+def get_model_path(model_id):
+    return MODEL_DIRECTORY + f'{model_id}_{OBJ}_{COLOR_AMOUNT}.npy'
 
 
 class ImageNotLoaded(Exception):
@@ -27,9 +42,6 @@ class Model:
         self.model_max = np.max(self.model)
         self.model_min = np.min(self.model)
 
-        self.model_lower_border = self.model_min + THRESHOLD_MIN * (self.model_max - self.model_min)
-        self.model_upper_border = self.model_min + THRESHOLD_MAX * (self.model_max - self.model_min)
-
         self._image = None
         self._mask = None
         self._threshold_weight = None
@@ -37,28 +49,10 @@ class Model:
         self._image_center = None
         self._image_weight = None
 
-    def get_pixel_raw(self, index):
-        return self.model[index]
-
     def get_pixel_weight(self, index):
-        pixel_data = self.get_pixel_raw(index)
+        pixel_data = self.model[index]
 
-        """
-        Sorry for some unreadable code, IDK if it can be done better with np.
-        Brief explanation:
-        we want to cut lower and upper borders from model,
-        so we make everything below lower border equal to 0
-        and everything above upper border equal to 1
-        then we make everything between lower and upper borders equal to proportion of value 
-        between borders: (value - lower border) / (upper border - lower border)
-        """
-        pixel_weight = np.where(pixel_data < self.model_lower_border, 0, pixel_data)
-        pixel_weight = np.where(pixel_weight >= self.model_upper_border, 1, pixel_weight)
-        pixel_weight = np.where(
-            np.logical_and(pixel_weight >= self.model_lower_border, pixel_weight < self.model_upper_border),
-            (pixel_weight - self.model_lower_border) / (self.model_upper_border - self.model_lower_border),
-            pixel_weight
-        )
+        pixel_weight = pixel_data
         return pixel_weight
 
     # Function creating a black and white array image of object
@@ -101,7 +95,7 @@ class Model:
 
             index_matrix = np.asarray(r_layer * COLOR_AMOUNT ** 2 + g_layer * COLOR_AMOUNT + b_layer)
 
-            self._image_weight = self.get_pixel_weight(index_matrix)
+            self._image_weight = self.model[index_matrix]
 
         return self._image_weight
 

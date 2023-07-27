@@ -3,4 +3,5 @@ venv369/
 *.pyc
 .DS_Store
 .idea/
-*.npy
+object_recognition/models
+object_recognition/images

@@ -60,7 +60,7 @@ def send_img(image, port):
     jpg = jpgByteArray(png.resize((910, 512)))
 
     if sys.getsizeof(jpg) > 65535:
-        ratio =  65535 / sys.getsizeof(jpg)
+        ratio = 65535 / sys.getsizeof(jpg)
         jpg = jpgByteArray(png.resize((math.floor(910 * ratio), math.floor(512 * ratio))))
 
     sock_set.sendto(jpg, ("192.168.88.102", port))
@@ -68,7 +68,7 @@ def send_img(image, port):
 
 def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: bool = False) -> None:
     net = Net(0.1)
-    photo_timer = Timer(4)
+    photo_timer = Timer(0.25)
 
     img_capture = False
     save_path = '/media/ssd/photo'

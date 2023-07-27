@@ -7,6 +7,7 @@ import numpy as np
 from image_utils import load_image_rgba, save_image_rgba
 
 from model_class import Model, OBJ
+from model_class import get_model_path
 
 #####################
 # CONFIG PARAMETERS #
@@ -81,7 +82,7 @@ for directory in (
 ):
     clear_dir(directory)
 
-model = Model('model_divided.npy')
+model = Model(get_model_path('sub'))
 
 for image_file in sorted(os.listdir(LOAD_PREFIX_TRUE)):
     find_obj_image(LOAD_PREFIX_TRUE + image_file, True)

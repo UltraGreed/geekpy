@@ -60,15 +60,15 @@ def main(camera_name, obj_name, model_path):
 
                     image_grayscale = model.get_grayscale()
 
-                    image_grayscale[int(obj_x + 0.5)][int(obj_y + 0.5)] = np.asarray([255, 0, 0, 255], dtype='uint8')
+                    image_grayscale[int(obj_x + 0.5)][int(obj_y + 0.5)] = np.asarray([255, 0, 0], dtype='uint8')
 
                     save_image_rgb(save_path, image_grayscale)
 
-                    net.send(message.ImageLink(
-                        path=save_path,
-                        obj=net.msg.obj,
-                        file=file_path
-                    ))
+                    # net.send(message.ImageLink(
+                    #     path=save_path,
+                    #     obj=setproctitle.setproctitle(' '.join(sys.argv)),
+                    #     file=file_path
+                    # ))
                 print(time.time() - time1)
 
         if net.id == "Coord":

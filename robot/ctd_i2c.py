@@ -18,7 +18,8 @@ BETA_COEF = 1 - ALPHA_COEF
 # LEVER ARM FOR PITCH COMPENSATION #
 LEVER_ARM = 0.3
 
-OFFSET = 9.82
+OFFSET = 245.86
+COEFFICIENT = 25
 ####################################
 
 
@@ -63,7 +64,7 @@ def send_depth_thread():
 
             # Calculate exponential average depth
             last_depth = average_depth
-            average_depth = average_depth * BETA_COEF + (sensor.depth() + OFFSET - pitch_offset) * ALPHA_COEF
+            average_depth = average_depth * BETA_COEF + (sensor.depth() * COEFFICIENT + OFFSET - pitch_offset) * ALPHA_COEF
 
             last_vel_depth = vel_depth
             vel_depth = (average_depth - last_depth) / (time.time() - last_time)
