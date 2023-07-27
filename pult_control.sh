@@ -6,4 +6,5 @@
   python dualshock.py &
   python chart.py &
   python map.py &
+  python command.py &
 )

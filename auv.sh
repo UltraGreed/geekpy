@@ -13,8 +13,8 @@
   python spreader.py &
   python kotleta.py &
 
-  python ctd_i2c.py &
-#  python ctd_aurt.py &
+#  python ctd_i2c.py &
+  python ctd_uart.py &
 
   python acoustic.py &
   python bearing.py 29500 30500 Frame &
@@ -26,5 +26,6 @@
   sleep 5
   python3 zed.py Front  16909428 False        False &
 
-  python3 obj_recogn.py Bottom CellB ../object_recognition/model_divided.npy &
+  #                   camera_name  object_name     model_name
+  python3 obj_recogn.py Bottom       CellR            sub &
 )

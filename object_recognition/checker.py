@@ -4,7 +4,7 @@ import time
 
 import numpy as np
 
-from image_utils import load_image_rgba, save_image_rgba
+from image_utils import load_image_rgb, save_image_rgb
 
 from model_class import Model, OBJ
 from model_class import get_model_path
@@ -32,7 +32,7 @@ def clear_dir(path):
 
 def find_obj_image(image_path, is_obj):
     time1 = time.time()
-    image = load_image_rgba(image_path)
+    image = load_image_rgb(image_path)
 
     time2 = time.time()
     is_obj_found = model.check_object(image)
@@ -55,7 +55,7 @@ def find_obj_image(image_path, is_obj):
 
     # Copying original image according to our model
     original_path = save_prefix + image_file
-    save_image_rgba(original_path, image)
+    save_image_rgb(original_path, image)
 
     # Saving black and white image with detected object for debugging
     gray_file = image_file.replace('.jpg', '_gray.png')
@@ -69,7 +69,7 @@ def find_obj_image(image_path, is_obj):
         obj_x, obj_y = model.object_center
         image_gray[int(obj_x + 0.5)][int(obj_y + 0.5)] = np.asarray([255, 0, 0], dtype='uint8')
 
-    save_image_rgba(gray_path, image_gray)
+    save_image_rgb(gray_path, image_gray)
 
     print('all', time.time() - time1)
 

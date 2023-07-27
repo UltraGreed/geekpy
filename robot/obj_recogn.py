@@ -7,11 +7,13 @@ import setproctitle
 from base import network, message, mat
 from base.message import X, Y, DEPTH
 
-from object_recognition.model_class import Model
+from object_recognition.model_class import Model, get_model_path
 from object_recognition.image_utils import load_image_rgb, save_image_rgb
 
 #####################
 # CONFIG PARAMETERS #
+MODEL_PATH_PREFIX = '../object_recognition/'
+
 CAMERA_FOV = 70
 
 DEBUG = True
@@ -20,8 +22,8 @@ DEBUG = True
 
 # Function converting pixel coordinates to map coordinates
 def get_map_coords(image, obj_coords, robot_coords, camera_dist):
-    pixel_relative_x = obj_coords[X] - image.shape[X] / 2
-    pixel_relative_y = image.shape[Y] / 2 - obj_coords[Y]
+    pixel_relative_x = image.shape[X] / 2 - obj_coords[X]
+    pixel_relative_y = obj_coords[Y] - image.shape[Y] / 2
 
     relative_x = pixel_relative_y / image.shape[1] * 2 * np.tan(np.deg2rad(CAMERA_FOV / 2)) * camera_dist
     relative_y = pixel_relative_x / image.shape[0] * 2 * np.tan(np.deg2rad(CAMERA_FOV / 2)) * camera_dist
@@ -29,11 +31,11 @@ def get_map_coords(image, obj_coords, robot_coords, camera_dist):
     return mat.robot2map(robot_coords, (relative_x, relative_y, obj_coords[DEPTH]))
 
 
-def main(camera_name, obj_name, model_path):
+def main(camera_name, obj_name, model_name):
     pos = [0 for _ in range(6)]
     obj_depth = message.FilteredObjects().objs[obj_name][DEPTH]
 
-    model = Model(model_path)
+    model = Model(MODEL_PATH_PREFIX + get_model_path(model_name))
 
     net = network.Net()
     while net.receive():
@@ -78,4 +80,4 @@ def main(camera_name, obj_name, model_path):
 if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
-    main(camera_name=sys.argv[1], obj_name=sys.argv[2], model_path=sys.argv[3])
+    main(camera_name=sys.argv[1], obj_name=sys.argv[2], model_name=sys.argv[3])

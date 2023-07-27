@@ -31,11 +31,12 @@ np.save(get_model_path('noobj_norm'), data_non_object_norm)
 
 # Create the subtraction model
 # If pixel has never been found in object model, it equals to -1
-data_sub = np.where(
-    data_object_norm > 0,
-    data_object_norm - data_non_object_norm,
-    -1
-)
+# data_sub = np.where(
+#     data_object_norm > 0,
+#     data_object_norm - data_non_object_norm,
+#     -1
+# )
+data_sub = data_object_norm - data_non_object_norm
 
 # Normalize the subtraction model
 data_sub_norm = np.where(
