@@ -6,7 +6,7 @@ from base.message import X, Y, YAW
 TIMER = 0.25
 
 ## Robot ahead moving function with given yaw
-def stab(origin='Current', x=0.0, y=0.0, left=0.0, front=0.0, yaw=None, dt=0.0, depth=None):
+def stab(origin='Current', x=0.0, y=0.0, right=0.0, front=0.0, yaw=None, dt=0.0, depth=None):
 
     # Initial objects positions and objects data.
     start_time = time.time()
@@ -22,9 +22,9 @@ def stab(origin='Current', x=0.0, y=0.0, left=0.0, front=0.0, yaw=None, dt=0.0, 
         objs = network.wait_message('FilteredObjects').objs
 
         if yaw is None:
-            yaw  = network.wait_message('Coord').yaw
+            yaw  = network.wait_message('Coord').pos[YAW]
 
-        dx, dy = mat.rotate2map(left, -front, yaw)
+        dx, dy = mat.rotate2map(-right, -front, yaw)
         stab = [x + objs[origin][X] + dx,
                 y + objs[origin][Y] + dy]
 
@@ -48,6 +48,6 @@ def stab(origin='Current', x=0.0, y=0.0, left=0.0, front=0.0, yaw=None, dt=0.0, 
         elif net.id == 'FilteredObjects':
             if origin != 'Navigation' and origin != 'Current':
                 objs = net.msg.objs
-                dx, dy = mat.rotate2map(left, -front, yaw)
+                dx, dy = mat.rotate2map(-right, -front, yaw)
                 stab = [x + objs[origin][X] + dx,
                         y + objs[origin][Y] + dy]

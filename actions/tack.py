@@ -17,7 +17,6 @@ def tack(origin='Current', yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None):
     # Initial and current robot positions and objects data.
     start = network.wait_message('Coord').pos
     pos   = network.wait_message('Coord').pos
-    objs = network.wait_message('FilteredObjects')
 
     # Read target yaw.
     target_yaw = None
@@ -26,7 +25,8 @@ def tack(origin='Current', yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None):
     elif origin == 'Current':                 # Current yaw
         target_yaw = yaw + pos[YAW]           # = yaw + current robot yaw.
     else:                                     # If origin object is necessary
-        target_yaw = yaw + objs[origin][YAW]  # and save target yaw.
+        obj   = network.wait_message('FilteredObjects').objs[origin]
+        target_yaw = mat.direction(pos, obj)  # and save target yaw.
 
     # Infinit loop until reach destination.
     net = network.Net(timer=TIMER)  # Wait for timer or message.
