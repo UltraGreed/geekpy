@@ -195,14 +195,10 @@ while net.receive():
             stab_roll = (axis[AXIS_R2] - axis[AXIS_L2]) / 2 * STAB_ROLL_COEF
 
         # DEBUG CONTROL OVERRIDE
-        speed_roll = 0
         if button[BUTTON_R1]:
-            is_stab_pitch = False
-            speed_roll = -ROLL_COEF
-
+            net.send(message.KeyOn('Push', (1 / UPDATE_FREQ) * 1.1))
         if button[BUTTON_L1]:
-            is_stab_pitch = False
-            speed_roll = ROLL_COEF
+            net.send(message.KeyOn('Release', (1 / UPDATE_FREQ) * 1.1))
 
         tack_params = {
             'speed_x': speed_x if not is_stab_xy else None,
