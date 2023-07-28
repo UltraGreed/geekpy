@@ -1,40 +1,58 @@
-#!python3 
-import io, sys, setproctitle, matplotlib
-import numpy as np
-import matplotlib.pyplot as plt
-import imageio.v3 as io
+#!python3
+import math
+import setproctitle
+import sys
+import tkinter
+
+import imageio.v3 as iio
+from PIL import ImageTk, Image
+
 from base import network
 
+setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 # Path prefix to show image.
-#PATH_PERFIX = "https://upload.wikimedia.org/wikipedia/commons/d/d3/"
 PATH_PREFIX = "http://192.168.88.101"
-OBJ = sys.argv[1]
+OBJECTS = sys.argv[1:]
 
-# Create axes and image plot.
-axs = plt.subplot(111)
-img = axs.imshow(io.imread("image_absent.png"))
-plt.ion()
+n_cols = math.ceil(int(math.sqrt(len(OBJECTS))))
+n_rows = math.ceil(len(OBJECTS) / n_cols)
 
 # Subscribe to messages.
-net = network.Net()
 
-# Update plots in infinit loop.
+root = tkinter.Tk()
+root.title('Imaginarium')
+
+start_image = 'image_absent.png'
+
+image_widgets = dict()
+label_widgets = dict()
+
+is_resizing = False
+
+for i, obj in enumerate(OBJECTS):
+    image_widgets[obj] = ImageTk.PhotoImage(Image.fromarray(iio.imread(start_image)).resize((512, 512)))
+
+    label_widgets[obj] = tkinter.Label(root, image=image_widgets[obj])
+
+    label_widgets[obj].grid(row=i // n_cols, column=i % n_cols, sticky='nsew')
+
+
+# Update plots in infinite loop.
+net = network.Net(timer=0.25)
 while net.receive():
-
-    # img.set_data(io.imread("Newtons_cradle_animation_book_2.gif"))
-    # img.set_data(io.imread("https://placebear.com/g/200/200"))
-    # img.set_data(io.imread("image_test.png"))
-    # plt.pause(0.001)
-
     # New message has come.
     if net.id == "ImageLink":
-        msg = net.msg
-        # print(msg)
-        if msg.obj != OBJ:
+        if net.msg.obj not in OBJECTS:
             continue
-        link = PATH_PREFIX + msg.path
-        img.set_data(io.imread(link))
-        plt.pause(0.001)
 
-plt.ioff()  # Due to infinite loop,
-plt.show()  # this gets never called.
+        link = PATH_PREFIX + net.msg.path
+        label_widget = label_widgets[net.msg.obj]
+
+        image_widgets[net.msg.obj] = ImageTk.PhotoImage(Image.fromarray(iio.imread(link)).resize((512, 512)))
+
+        label_widget.config(image=image_widgets[net.msg.obj])
+
+    if net.id == 'Timer':
+        root.update()
+        root.update_idletasks()
+

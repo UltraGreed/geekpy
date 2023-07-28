@@ -3,5 +3,6 @@
   export PYTHONPATH=$(pwd)
 
   cd pult
-  python3 imaginarium.py Bottom &
+
+  python imaginarium2.py Bottom BottomCellR Front FrontBallY &
 )
