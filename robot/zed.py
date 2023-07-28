@@ -81,6 +81,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
     init_params.coordinate_units = sl.UNIT.METER
     init_params.depth_mode = sl.DEPTH_MODE.NONE
     init_params.camera_fps = 30
+    init_params.camera_image_flip = sl.FLIP_MODE.OFF
 
     print(f'[{name}] Open the camera')
     zed = sl.Camera()
@@ -135,7 +136,9 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
 
                 png = png.resize((456, 256))
                 png = png.crop((100, 0, 356, 256))
-                png = png.rotate(-90)
+
+                if name == 'Bottom':
+                    png = png.rotate(-90)
 
                 png.save(fp=path)
                 net.send(ImageLink(
