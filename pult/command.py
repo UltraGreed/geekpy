@@ -1,5 +1,6 @@
 import sys
 import threading
+import time
 
 import setproctitle
 from PyQt6.QtCore import Qt, pyqtSlot
@@ -194,6 +195,7 @@ class MainWindow(QMainWindow):
 
                 if it.timer.is_unlock:
                     net.send(it.getMessage())
+            time.sleep(0.05)
 
 
 def main(): 
