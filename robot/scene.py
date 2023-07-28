@@ -18,13 +18,17 @@ out    = message.FilteredObjects()             # Sended array with all filtered 
 ini    = message.FilteredObjects()             # Initial array with objects coordinates.
 update = message.FilteredObjects().objs        # Update time of all coord each object.
 
+is_detection_on = {}
+for key in ini.objs:
+    is_detection_on[key] = False
+
 # Wait for messages or timer.
 while net.receive():
 
     if net.id == 'Timer':                                   # If timer has come then
         for obj in update:                                  # For all objects
             for i in range(message.YAW):                    # and all axis:
-                if time.time() - update[obj][i] > TIMEOUT:  # if value is old
+                if time.time() - update[obj][i] > TIMEOUT and not is_detection_on[obj]:  # if value is old
                     out.objs[obj][i] = ini.objs[obj][i]     # then change to initial value.
         net.send(out)                                       # Send output objects array.
 
@@ -37,3 +41,9 @@ while net.receive():
 
     elif net.id == 'ResetObjects':       # If ResetObjects message has come
         out = message.FilteredObjects()  # then save object to output array.
+
+    elif net.id == 'DetectionOn':
+        is_detection_on[net.msg.obj] = True 
+
+    elif net.id == 'DetectionOff':
+        is_detection_on[net.msg.obj] = False
