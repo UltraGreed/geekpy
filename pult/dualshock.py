@@ -19,6 +19,8 @@ THRESHOLD = 0.1
 X_COEF = 0.15
 Y_COEF = 0.6
 
+Y_STEP = 0.2
+
 DEPTH_COEF = 0.15
 YAW_COEF = 60
 
@@ -30,7 +32,7 @@ STAB_Y_STEP = 0.05
 
 STAB_DEPTH_SMALL_STEP = 0.02
 STAB_DEPTH_BIG_STEP = 0.20
-STAB_YAW_SMALL_STEP = 2
+STAB_YAW_SMALL_STEP = 4
 STAB_YAW_BIG_STEP = 20
 
 STAB_PITCH_COEF = 45
@@ -90,8 +92,8 @@ net = network.Net(timer=1 / UPDATE_FREQ)  # TODO: msg?
 is_stab_yaw = False
 is_stab_xy = False
 is_stab_depth = False
-is_stab_pitch = False
-is_stab_roll = False
+is_stab_pitch = True
+is_stab_roll = True
 
 pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll = 0, 0, 0, 0, 0, 0
 stab_x, stab_y, stab_depth, stab_yaw, stab_pitch, stab_roll = 0, 0, 0, 0, 0, 0
@@ -123,40 +125,32 @@ while net.receive():
                 hat = event.value
                 was_input = True
 
-        if button_click[BUTTON_TRIANGLE]:
-            if is_stab_depth:
-                stab_depth -= STAB_DEPTH_BIG_STEP
-            else:
-                is_stab_depth = True
-                stab_depth = pos_depth - STAB_DEPTH_BIG_STEP
+        speed_x = 0
+        speed_y = 0
+        stab_pitch = 0
 
-        if button_click[BUTTON_CROSS]:
-            if is_stab_depth:
-                stab_depth += STAB_DEPTH_BIG_STEP
-            else:
-                is_stab_depth = True
-                stab_depth = pos_depth + STAB_DEPTH_BIG_STEP
+        if button[BUTTON_TRIANGLE]:
+            speed_y += Y_STEP / UPDATE_FREQ
 
-        if button_click[BUTTON_SQUARE]:
+        if button[BUTTON_CROSS]:
+            speed_y -= Y_STEP / UPDATE_FREQ
+
+        if button[BUTTON_SQUARE]:
             if is_stab_yaw:
-                stab_yaw -= STAB_YAW_BIG_STEP
+                stab_yaw -= STAB_YAW_SMALL_STEP
             else:
                 is_stab_yaw = True
                 stab_yaw = pos_yaw - STAB_YAW_SMALL_STEP
 
-        if button_click[BUTTON_CIRCLE]:
+        if button[BUTTON_CIRCLE]:
             if is_stab_yaw:
-                stab_yaw += STAB_YAW_BIG_STEP
+                stab_yaw += STAB_YAW_SMALL_STEP
             else:
                 is_stab_yaw = True
                 stab_yaw = pos_yaw + STAB_YAW_SMALL_STEP
 
         if hat[0]:
-            if is_stab_yaw:
-                stab_yaw += STAB_YAW_SMALL_STEP * hat[0]
-            else:
-                is_stab_yaw = True
-                stab_yaw = pos_yaw + STAB_YAW_SMALL_STEP * hat[0]
+            speed_x = hat[0] * X_COEF
 
         if hat[1]:
             if is_stab_depth:
@@ -165,39 +159,41 @@ while net.receive():
                 is_stab_depth = True
                 stab_depth = pos_depth - STAB_DEPTH_SMALL_STEP * hat[1]
 
-        # Sticks are not ideal, so we have to use this
         if abs(axis[AXIS_LEFT_STICK_X]) > THRESHOLD:
-            speed_x = axis[AXIS_LEFT_STICK_X] * X_COEF
-            is_stab_xy = False
-        else:
-            speed_x = 0
-
-        if abs(axis[AXIS_LEFT_STICK_Y]) > THRESHOLD:
-            speed_y = -axis[AXIS_LEFT_STICK_Y] * Y_COEF
-            is_stab_xy = False
-        else:
-            speed_y = 0.0
-
-        if abs(axis[AXIS_RIGHT_STICK_X]) > THRESHOLD:
             is_stab_yaw = False
-            speed_yaw = YAW_COEF * axis[AXIS_RIGHT_STICK_X]
+            speed_yaw = YAW_COEF * axis[AXIS_LEFT_STICK_X]
         else:
             speed_yaw = 0.0
 
+        if abs(axis[AXIS_LEFT_STICK_Y]) > THRESHOLD:
+            speed_y = -axis[AXIS_LEFT_STICK_Y] * Y_COEF
+
+        # Sticks are not ideal, so we have to use thresholds
+        if abs(axis[AXIS_RIGHT_STICK_X]) > THRESHOLD:
+            speed_x = axis[AXIS_RIGHT_STICK_X] * X_COEF
+
         # If stabilization is enabled or input given, we calculate stabilization
-        if is_stab_pitch or abs(axis[AXIS_RIGHT_STICK_Y]) > THRESHOLD:
+        # if is_stab_pitch or abs(axis[AXIS_RIGHT_STICK_Y]) > THRESHOLD:
+        #     is_stab_pitch = True
+        #     stab_pitch = axis[AXIS_RIGHT_STICK_Y] * STAB_PITCH_COEF
+
+        # If stabilization is enabled or input given, we calculate stabilization
+        # if is_stab_roll or axis[AXIS_R2] != axis[AXIS_L2]:
+        #     is_stab_roll = True
+        #     stab_roll = (axis[AXIS_R2] - axis[AXIS_L2]) / 2 * STAB_ROLL_COEF
+
+        if button[BUTTON_L1]:
             is_stab_pitch = True
-            stab_pitch = axis[AXIS_RIGHT_STICK_Y] * STAB_PITCH_COEF
+            stab_pitch = STAB_PITCH_COEF
 
-        # If stabilization is enabled or input given, we calculate stabilization
-        if is_stab_roll or axis[AXIS_R2] != axis[AXIS_L2]:
-            is_stab_roll = True
-            stab_roll = (axis[AXIS_R2] - axis[AXIS_L2]) / 2 * STAB_ROLL_COEF
+        if axis[AXIS_L2] == 1:
+            is_stab_pitch = True
+            stab_pitch = -STAB_PITCH_COEF
 
-        # DEBUG CONTROL OVERRIDE
         if button[BUTTON_R1]:
             net.send(message.KeyOn('Push', (1 / UPDATE_FREQ) * 1.1))
-        if button[BUTTON_L1]:
+
+        if axis[AXIS_R2] == 1:
             net.send(message.KeyOn('Release', (1 / UPDATE_FREQ) * 1.1))
 
         tack_params = {
@@ -226,7 +222,7 @@ while net.receive():
             is_stab_depth = False
             is_stab_yaw = False
             is_stab_pitch = False
-            is_stab_roll = False
+            # is_stab_roll = False
 
         # Reset xy coordinates
         if button[BUTTON_SHARE]:
