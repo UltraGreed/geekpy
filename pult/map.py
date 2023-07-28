@@ -28,20 +28,22 @@ MARKERS = {
 #          ( 0.0,  0.4),
 #          ( 0.2, -0.4),
 #          ( 0.0, -0.3)]
-ROBOT = [( 0.000,  1.237),
-         ( 0.000, -0.262),
-         (-0.090, -0.262),
-         (-0.189, -0.271),
-         (-0.213, -0.002),
-         (-0.127,  0.102),
-         (-0.075,  0.237),
-         ( 0.075,  0.237),
-         ( 0.127,  0.102),
-         ( 0.213, -0.002),
-         ( 0.189, -0.271),
-         ( 0.090, -0.262),
-         ( 0.000, -0.262),
-         ( 0.000,  1.000)]
+
+CENTER_OFFSET = 0.065
+ROBOT = [( 0.000,  1.237 - CENTER_OFFSET),
+         ( 0.000, -0.262 - CENTER_OFFSET),
+         (-0.090, -0.262 - CENTER_OFFSET),
+         (-0.189, -0.271 - CENTER_OFFSET),
+         (-0.213, -0.002 - CENTER_OFFSET),
+         (-0.127,  0.102 - CENTER_OFFSET),
+         (-0.075,  0.237 - CENTER_OFFSET),
+         ( 0.075,  0.237 - CENTER_OFFSET),
+         ( 0.127,  0.102 - CENTER_OFFSET),
+         ( 0.213, -0.002 - CENTER_OFFSET),
+         ( 0.189, -0.271 - CENTER_OFFSET),
+         ( 0.090, -0.262 - CENTER_OFFSET),
+         ( 0.000, -0.262 - CENTER_OFFSET),
+         ( 0.000,  1.000 - CENTER_OFFSET)]
 
 REFRESH = 0.2       # Refresh time, sec.
 POINTS  = 20 * 120  # Number of points in trajectories.
