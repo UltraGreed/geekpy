@@ -5,7 +5,7 @@ import numpy as np
 
 from image_utils import load_image_rgba, save_image_rgba, save_image_rgb
 from model_class import COLOR_AMOUNT, COLOR_COMPRESSION, OBJ, PIXEL_AREA
-from model_class import get_model_path
+from model_class import get_model_learn_path
 
 #####################
 # CONFIG PARAMETERS #
@@ -65,6 +65,6 @@ for image_name in os.listdir(LOAD_PREFIX_OBJ):
     print(f"Total: {time.time() - time1}")
 
 print(data_non_object.dtype, data_object.dtype, data_all.dtype)
-np.save(get_model_path('obj'), data_object)
-np.save(get_model_path('noobj'), data_non_object)
-np.save(get_model_path('all'), data_all)
+np.save(get_model_learn_path('obj'), data_object)
+np.save(get_model_learn_path('noobj'), data_non_object)
+np.save(get_model_learn_path('all'), data_all)

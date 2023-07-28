@@ -5,7 +5,7 @@ import numpy as np
 # CONFIG PARAMETERS #
 # LOADING PARAMETERS
 MODEL_DIRECTORY = 'models/'
-OBJ = "CellRdirt"
+OBJ = "BallY"
 # OBJECT RECOGNITION PARAMETERS
 THRESHOLD_IMAGE_PART = 0.001
 # MODEL-WIDE PARAMETERS
@@ -27,8 +27,12 @@ LOWER_SUB_MODEL_BORDER = 0
 ####################
 
 
-def get_model_path(model_id):
+def get_model_learn_path(model_id):
     return MODEL_DIRECTORY + f'{model_id}_{OBJ}_{COLOR_AMOUNT}.npy'
+
+
+def get_model_inference_path(model_id, obj_name):
+    return MODEL_DIRECTORY + f'{model_id}_{obj_name}_{COLOR_AMOUNT}.npy'
 
 
 class ImageNotLoaded(Exception):
@@ -49,11 +53,6 @@ class Model:
         self._image_center = None
         self._image_weight = None
 
-    def get_pixel_weight(self, index):
-        pixel_data = self.model[index]
-
-        pixel_weight = pixel_data
-        return pixel_weight
 
     # Function creating a black and white array image of object
     def get_grayscale(self):

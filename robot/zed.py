@@ -127,7 +127,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
             if photo_timer.is_unlock and img_capture:
                 photo_counter += 1
 
-                file = f"{photo_counter:05d}.jpg"
+                file = f"{photo_counter:05d}.png"
                 path = f"{save_path}/{file}"
 
                 arr = image.get_data()

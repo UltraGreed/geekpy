@@ -27,5 +27,6 @@
   python3 zed.py Front  16909428 False        False &
 
   #                   camera_name  object_name     model_name
-  python3 obj_recogn.py Bottom       CellR            sub &
+  python3 obj_recogn.py Bottom        sub            CellR &
+  python3 obj_recogn.py Front         sub            BallY &
 )
