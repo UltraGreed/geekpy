@@ -22,9 +22,9 @@
   python gpio.py &
 
   #                              pos_tracking stream
-  python3 zed.py Bottom 24827734 True          False &
+  python3 zed.py Bottom 24827734 True         False &
   sleep 5
-  python3 zed.py Front  16909428 False         False &
+  python3 zed.py Front  16909428 False        False &
 
   python3 obj_recogn.py Bottom CellB ../object_recognition/model_divided.npy &
 )
