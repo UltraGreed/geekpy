@@ -8,7 +8,7 @@ echo 394 > /sys/class/gpio/export
 echo 395 > /sys/class/gpio/export
 echo 396 > /sys/class/gpio/export
 
-sleep 1
+sleep 0.2
 
 echo out > /sys/class/gpio/gpio392/direction
 echo out > /sys/class/gpio/gpio394/direction
