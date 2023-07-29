@@ -128,14 +128,16 @@ class ResetObjects(Message):
 
 # Detection On
 class DetectionOn(Message):
-    def __init__(self, obj=''):
+    def __init__(self, obj='', timeout=10.0):
         self.obj = obj
+        self.timeout = timeout
 
 
 # Detection Off
 class DetectionOff(Message):
-    def __init__(self, obj=''):
+    def __init__(self, obj='', timeout=10.0):
         self.obj = obj
+        self.timeout = timeout
 
 
 # Detected object sended to scene

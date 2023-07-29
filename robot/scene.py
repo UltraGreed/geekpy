@@ -22,14 +22,27 @@ is_detection_on = {}
 for key in ini.objs:
     is_detection_on[key] = False
 
+timeout_for_on = {}
+for key in ini.objs:
+    timeout_for_on[key] = 10.0
+
+timeout_for_off = {}
+for key in ini.objs:
+    timeout_for_off[key] = 10.0
+
 # Wait for messages or timer.
 while net.receive():
 
     if net.id == 'Timer':                                   # If timer has come then
         for obj in update:                                  # For all objects
             for i in range(message.YAW):                    # and all axis:
-                if time.time() - update[obj][i] > TIMEOUT and not is_detection_on[obj]:  # if value is old
-                    out.objs[obj][i] = ini.objs[obj][i]     # then change to initial value.
+                # if time.time() - update[obj][i] > TIMEOUT and not is_detection_on[obj]:  # if value is old
+                    # out.objs[obj][i] = ini.objs[obj][i]     # then change to initial value.
+
+                if is_detection_on[obj] and time.time() - update[obj][i] > timeout_for_on[obj]:
+                    out.objs[obj][i] = ini.objs[obj][i]
+                elif not is_detection_on[obj] and time.time() - update[obj][i] > timeout_for_off[obj]:
+                    out.objs[obj][i] = ini.objs[obj][i]
         net.send(out)                                       # Send output objects array.
 
     elif net.id == 'DetectedObject':               # If object has come
@@ -44,6 +57,8 @@ while net.receive():
 
     elif net.id == 'DetectionOn':
         is_detection_on[net.msg.obj] = True 
+        timeout_for_on[net.msg.obj] = net.msg.timeout
 
     elif net.id == 'DetectionOff':
         is_detection_on[net.msg.obj] = False
+        timeout_for_off[net.msg.obj] = net.msg.timeout
