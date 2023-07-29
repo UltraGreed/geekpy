@@ -1,6 +1,6 @@
 import numpy as np
 
-from model_class import UPPER_BORDER_OBJECT, UPPER_BORDER_NON_OBJECT, LOWER_SUB_MODEL_BORDER
+from model_class import UPPER_BORDER_OBJECT, UPPER_BORDER_NON_OBJECT, LOWER_MODEL_BORDER
 from model_class import get_model_learn_path
 
 print('Normalization begin')
@@ -40,8 +40,8 @@ data_sub = data_object_norm - data_non_object_norm
 
 # Normalize the subtraction model
 data_sub_norm = np.where(
-    data_sub >= LOWER_SUB_MODEL_BORDER,
-    (data_sub - LOWER_SUB_MODEL_BORDER) / (1 - LOWER_SUB_MODEL_BORDER),
+    data_sub >= LOWER_MODEL_BORDER,
+    (data_sub - LOWER_MODEL_BORDER) / (1 - LOWER_MODEL_BORDER),
     0
 )
 

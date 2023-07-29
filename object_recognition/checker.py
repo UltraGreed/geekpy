@@ -69,6 +69,8 @@ def find_obj_image(image_path, is_obj):
         obj_x, obj_y = model.object_center
         image_gray[int(obj_x + 0.5)][int(obj_y + 0.5)] = np.asarray([255, 0, 0], dtype='uint8')
 
+    save_image_rgb(save_prefix + image_file.replace('.jpg', '_gray_raw.png'), model.get_grayscale_raw())
+
     save_image_rgb(gray_path, image_gray)
 
     print('all', time.time() - time1)

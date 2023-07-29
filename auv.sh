@@ -26,7 +26,7 @@
   sleep 5
   python3 zed.py Front  16909428 False        False &
 
-  #                   camera_name  object_name     model_name
-  python3 obj_recogn.py Bottom        sub            CellR &
-  python3 obj_recogn.py Front         sub            BallY &
+  #                   camera_name  model_type  model_name   object_name
+  python3 obj_recogn.py Bottom        sub      CellRdirt      CellR &
+  python3 obj_recogn.py Front         sub      BallY      BallY &
 )

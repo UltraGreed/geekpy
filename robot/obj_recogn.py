@@ -1,4 +1,5 @@
 import sys
+import time
 
 import numpy as np
 import setproctitle
@@ -30,15 +31,16 @@ def get_rel_from_pixel(image, obj_coords, camera_dist):
     return relative_x, relative_y
 
 
-def main(camera_name, model_name, obj_name):
+def main(camera_name, model_type, model_name, obj_name):
     robot_pos = [0 for _ in range(6)]
 
-    model = Model(MODEL_PATH_PREFIX + get_model_inference_path(model_name, obj_name))
+    model = Model(MODEL_PATH_PREFIX + get_model_inference_path(model_type, model_name))
 
     net = network.Net()
     while net.receive():
         if net.id == "ImageLink":
             if net.msg.obj == camera_name:
+                time1 = time.time()
                 image = load_image_rgb(net.msg.path)
 
                 is_obj_found = model.check_object(image)
@@ -51,7 +53,10 @@ def main(camera_name, model_name, obj_name):
 
                         relative_x, relative_y = get_rel_from_pixel(image, model.object_center, camera_dist)
 
-                        map_x, map_y, map_depth = mat.robot2map(robot_pos, (relative_x, relative_y, obj_depth - robot_pos[DEPTH]))
+                        map_x, map_y, map_depth = mat.robot2map(
+                            robot_pos,
+                            (relative_x, relative_y, obj_depth - robot_pos[DEPTH])
+                        )
                     elif camera_name == 'Front':
                         camera_dist = 1
 
@@ -81,8 +86,10 @@ def main(camera_name, model_name, obj_name):
                         np.asarray([255, 0, 0], dtype='uint8')
 
                     for i in range(-3, 3 + 1):
-                        image_grayscale[int(obj_x) + i][int(obj_y)] = cross_color
-                        image_grayscale[int(obj_x)][int(obj_y) + i] = cross_color
+                        if 0 <= int(obj_x) + i < image_grayscale.shape[0]:
+                            image_grayscale[int(obj_x) + i][int(obj_y)] = cross_color
+                        if 0 <= int(obj_y) + i < image_grayscale.shape[1]:
+                            image_grayscale[int(obj_x)][int(obj_y) + i] = cross_color
 
                     save_image_rgb(save_path, image_grayscale)
 
@@ -92,6 +99,7 @@ def main(camera_name, model_name, obj_name):
                         file=file_path,
                         counter=None
                     ))
+                print(f"Image all: {time.time() - time1}")
 
         if net.id == "Coord":
             robot_pos = net.msg.pos
@@ -100,4 +108,4 @@ def main(camera_name, model_name, obj_name):
 if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
-    main(camera_name=sys.argv[1], model_name=sys.argv[2], obj_name=sys.argv[3])
+    main(camera_name=sys.argv[1], model_type=sys.argv[2], model_name=sys.argv[3], obj_name=sys.argv[4])
