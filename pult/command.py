@@ -195,7 +195,8 @@ class MainWindow(QMainWindow):
 
                 if it.timer.is_unlock:
                     net.send(it.getMessage())
-            time.sleep(0.05)
+
+            time.sleep(0.0005)
 
 
 def main(): 
