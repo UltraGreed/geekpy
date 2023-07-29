@@ -13,10 +13,6 @@ def stab(origin='Current', x=0.0, y=0.0, right=0.0, front=0.0, yaw=None, dt=0.0,
 
     # Read stab parameters.
     stab = None 
-
-    if yaw is None:
-        yaw  = network.wait_message('Coord').pos[YAW]
-
     if origin == 'Navigation':
         stab = [x, y]
     elif origin == 'Current':
@@ -24,6 +20,9 @@ def stab(origin='Current', x=0.0, y=0.0, right=0.0, front=0.0, yaw=None, dt=0.0,
         stab = [x + pos[X], y + pos[Y]]
     else:
         objs = network.wait_message('FilteredObjects').objs
+
+        if yaw is None:
+            yaw  = network.wait_message('Coord').pos[YAW]
 
         dx, dy = mat.rotate2map(-right, -front, yaw)
         stab = [x + objs[origin][X] + dx,
