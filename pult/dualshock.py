@@ -19,7 +19,8 @@ THRESHOLD = 0.1
 X_COEF = 0.15
 Y_COEF = 0.6
 
-Y_STEP = 0.2
+Y_STEP = 0.02
+X_STEP = 0.008
 
 DEPTH_COEF = 0.15
 YAW_COEF = 60
@@ -127,37 +128,39 @@ while net.receive():
 
         speed_x = 0
         speed_y = 0
+        speed_yaw = 0
         stab_pitch = 0
+        stab_roll = 0
 
         if button[BUTTON_TRIANGLE]:
-            speed_y += Y_STEP / UPDATE_FREQ
-
-        if button[BUTTON_CROSS]:
-            speed_y -= Y_STEP / UPDATE_FREQ
-
-        if button[BUTTON_SQUARE]:
-            if is_stab_yaw:
-                stab_yaw -= STAB_YAW_SMALL_STEP
-            else:
-                is_stab_yaw = True
-                stab_yaw = pos_yaw - STAB_YAW_SMALL_STEP
-
-        if button[BUTTON_CIRCLE]:
-            if is_stab_yaw:
-                stab_yaw += STAB_YAW_SMALL_STEP
-            else:
-                is_stab_yaw = True
-                stab_yaw = pos_yaw + STAB_YAW_SMALL_STEP
-
-        if hat[0]:
-            speed_x = hat[0] * X_COEF
-
-        if hat[1]:
             if is_stab_depth:
-                stab_depth -= STAB_DEPTH_SMALL_STEP * hat[1]
+                stab_depth -= STAB_DEPTH_SMALL_STEP
             else:
                 is_stab_depth = True
-                stab_depth = pos_depth - STAB_DEPTH_SMALL_STEP * hat[1]
+                stab_depth = pos_depth - STAB_DEPTH_SMALL_STEP
+
+        if button[BUTTON_CROSS]:
+            if is_stab_depth:
+                stab_depth += STAB_DEPTH_SMALL_STEP
+            else:
+                is_stab_depth = True
+                stab_depth = pos_depth + STAB_DEPTH_SMALL_STEP
+
+        if button[BUTTON_SQUARE]:
+            speed_x -= X_STEP * UPDATE_FREQ
+
+        if button[BUTTON_CIRCLE]:
+            speed_x += X_STEP * UPDATE_FREQ
+
+        if hat[0]:
+            if is_stab_yaw:
+                stab_yaw += STAB_YAW_SMALL_STEP * hat[0]
+            else:
+                is_stab_yaw = True
+                stab_yaw = pos_yaw + STAB_YAW_SMALL_STEP * hat[0]
+
+        if hat[1]:
+            speed_y += Y_STEP * UPDATE_FREQ * hat[1]
 
         if abs(axis[AXIS_LEFT_STICK_X]) > THRESHOLD:
             is_stab_yaw = False
@@ -221,7 +224,7 @@ while net.receive():
             is_stab_y = False
             is_stab_depth = False
             is_stab_yaw = False
-            is_stab_pitch = False
+            # is_stab_pitch = False
             # is_stab_roll = False
 
         # Reset xy coordinates
