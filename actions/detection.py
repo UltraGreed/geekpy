@@ -8,19 +8,19 @@ from base import message, network
 from base.timer import Timer
 
 
-def on(obj):
+def on(obj, timeout=10.0):
 	net = network.Net()
 
-	timer = Timer(0.5)
+	timer = Timer(0.05)
 	while not timer.is_unlock:
-		net.send(message.DetectionOn(obj))
-		time.sleep(0.01)
+		net.send(message.DetectionOn(obj, timeout))
+		time.sleep(0.001)
 
 
-def off(obj):
+def off(obj, timeout=10.0):
 	net = network.Net()
 
-	timer = Timer(0.5)
+	timer = Timer(0.05)
 	while not timer.is_unlock:
-		net.send(message.DetectionOff(obj))
-		time.sleep(0.01)
+		net.send(message.DetectionOff(obj, timeout))
+		time.sleep(0.001)
