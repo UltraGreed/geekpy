@@ -194,10 +194,10 @@ while net.receive():
             stab_pitch = -STAB_PITCH_COEF
 
         if button[BUTTON_R1]:
-            net.send(message.KeyOn('Push', (1 / UPDATE_FREQ) * 1.1))
+            net.send(message.KeyOn('Close', (1 / UPDATE_FREQ) * 1.1))
 
         if axis[AXIS_R2] == 1:
-            net.send(message.KeyOn('Release', (1 / UPDATE_FREQ) * 1.1))
+            net.send(message.KeyOn('Open', (1 / UPDATE_FREQ) * 1.1))
 
         tack_params = {
             'speed_x': speed_x if not is_stab_xy else None,
