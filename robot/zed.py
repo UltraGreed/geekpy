@@ -115,6 +115,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                 img_capture = False
 
         if net.id == "Timer":
+            time1 = time.time()
             zed_status = zed.grab(runtime_params)
             if zed_status != sl.ERROR_CODE.SUCCESS:
                 print(f'[{name}] {repr(zed_status)}')
@@ -123,7 +124,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
             if name == 'Front':
                 zed.retrieve_image(image, sl.VIEW.LEFT)
             elif name == 'Bottom':
-                zed.retrieve_image(image, sl.VIEW.RIGHT)
+                zed.retrieve_image(image, sl.VIEW.LEFT)
 
             if photo_timer.is_unlock and img_capture:
                 photo_counter += 1
@@ -179,6 +180,9 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                     send_img(image, PORT_FRONT)
                 elif name == 'Bottom':
                     send_img(image, PORT_BOTTOM)
+
+            if time.time() - time1 > 0.05:
+                print(time.time() - time1)
 
     print(f'[{name}] Close the camera')
     zed.close()
