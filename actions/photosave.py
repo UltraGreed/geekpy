@@ -13,7 +13,7 @@ def start(camera, path):
 	timer = Timer(0.05)
 	while not timer.is_unlock:
 		net.send(message.PhotoOn(camera, path))
-		time.sleep(0.001)
+		time.sleep(0.01)
 
 
 def stop(camera):
@@ -22,4 +22,4 @@ def stop(camera):
 	timer = Timer(0.05)
 	while not timer.is_unlock:
 		net.send(message.PhotoOff(camera))
-		time.sleep(0.001)
+		time.sleep(0.01)

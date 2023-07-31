@@ -14,7 +14,7 @@ def on(obj, timeout=10.0):
 	timer = Timer(0.05)
 	while not timer.is_unlock:
 		net.send(message.DetectionOn(obj, timeout))
-		time.sleep(0.001)
+		time.sleep(0.01)
 
 
 def off(obj, timeout=10.0):
@@ -23,4 +23,4 @@ def off(obj, timeout=10.0):
 	timer = Timer(0.05)
 	while not timer.is_unlock:
 		net.send(message.DetectionOff(obj, timeout))
-		time.sleep(0.001)
+		time.sleep(0.01)

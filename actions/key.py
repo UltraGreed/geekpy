@@ -12,7 +12,7 @@ def on(key, hold_time):
 	timer = Timer(0.05)
 	while not timer.is_unlock:
 		net.send(message.KeyOn(key, hold_time))
-		time.sleep(0.001)
+		time.sleep(0.01)
 
 
 def off(key):
@@ -21,4 +21,4 @@ def off(key):
 	timer = Timer(0.05)
 	while not timer.is_unlock:
 		net.send(message.KeyOff(key))
-		time.sleep(0.001)
+		time.sleep(0.01)
