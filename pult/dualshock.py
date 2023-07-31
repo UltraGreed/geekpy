@@ -33,8 +33,8 @@ STAB_Y_STEP = 0.05
 
 STAB_DEPTH_SMALL_STEP = 0.02
 STAB_DEPTH_BIG_STEP = 0.20
-STAB_YAW_SMALL_STEP = 4
-STAB_YAW_BIG_STEP = 20
+STAB_YAW_SMALL_STEP = 2
+STAB_YAW_BIG_STEP = 8
 
 STAB_PITCH_COEF = 45
 STAB_ROLL_COEF = 90
@@ -128,6 +128,7 @@ while net.receive():
 
         speed_x = 0
         speed_y = 0
+        speed_depth = 0
         speed_yaw = 0
         stab_pitch = 0
         stab_roll = 0
@@ -176,9 +177,9 @@ while net.receive():
             speed_x = axis[AXIS_RIGHT_STICK_X] * X_COEF
 
         # If stabilization is enabled or input given, we calculate stabilization
-        # if is_stab_pitch or abs(axis[AXIS_RIGHT_STICK_Y]) > THRESHOLD:
-        #     is_stab_pitch = True
-        #     stab_pitch = axis[AXIS_RIGHT_STICK_Y] * STAB_PITCH_COEF
+        if is_stab_pitch or abs(axis[AXIS_RIGHT_STICK_Y]) > THRESHOLD:
+            is_stab_pitch = True
+            stab_pitch = axis[AXIS_RIGHT_STICK_Y] * STAB_PITCH_COEF
 
         # If stabilization is enabled or input given, we calculate stabilization
         # if is_stab_roll or axis[AXIS_R2] != axis[AXIS_L2]:
@@ -186,12 +187,12 @@ while net.receive():
         #     stab_roll = (axis[AXIS_R2] - axis[AXIS_L2]) / 2 * STAB_ROLL_COEF
 
         if button[BUTTON_L1]:
-            is_stab_pitch = True
-            stab_pitch = STAB_PITCH_COEF
+            is_stab_depth = False
+            speed_depth -= DEPTH_COEF
 
-        if axis[AXIS_L2] == 1:
-            is_stab_pitch = True
-            stab_pitch = -STAB_PITCH_COEF
+        if axis[AXIS_L2] != -1:
+            is_stab_depth = False
+            speed_depth += DEPTH_COEF * (1 + axis[AXIS_L2]) / 2
 
         if button[BUTTON_R1]:
             net.send(message.KeyOn('Close', (1 / UPDATE_FREQ) * 1.1))
