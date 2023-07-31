@@ -63,7 +63,7 @@ def send_img(image, port):
         ratio = 65535 / sys.getsizeof(jpg)
         jpg = jpgByteArray(png.resize((math.floor(910 * ratio), math.floor(512 * ratio))))
 
-    sock_set.sendto(jpg, ("192.168.88.102", port))
+    sock_set.sendto(jpg, ("255.255.255.255", port))
 
 
 def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: bool = False) -> None:
