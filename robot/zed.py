@@ -6,16 +6,18 @@ import sys
 import time
 from datetime import datetime
 
+import cv2
 import numpy as np
 import pyzed.sl as sl
 import setproctitle
-from PIL import Image
 
 sys.path.append('./')
 
 from base.message import ImageLink, Sensor
 from base.network import Net
 from base.timer import Timer
+
+from PIL import Image
 
 setproctitle.setproctitle(' '.join(sys.argv))
 
@@ -46,28 +48,27 @@ def quat2eul(qx, qy, qz, qw) -> np.array:
     return np.rad2deg((yaw, roll, pitch))
 
 
-def jpgByteArray(image):
-    imageBytesIO = io.BytesIO()
-    image.save(imageBytesIO, format="JPEG")
-    return imageBytesIO.getvalue()
-
-
 def send_img(image, port):
+    des_res = (480, 270)
     arr = image.get_data()
-    b, g, r, _ = Image.fromarray(arr).split()
-    png = Image.merge('RGB', (r, g, b))
+    b, g, r, _ = [np.asarray(arr[:, :, layer], dtype='uint8') for layer in range(4)]
 
-    jpg = jpgByteArray(png.resize((910, 512)))
+    raw_img = np.dstack((b, g, r))
+    raw_img = cv2.resize(raw_img, des_res)
 
-    if sys.getsizeof(jpg) > 65535:
-        ratio = 65535 / sys.getsizeof(jpg)
-        jpg = jpgByteArray(png.resize((math.floor(910 * ratio), math.floor(512 * ratio))))
+    is_success, jpg_buff = cv2.imencode('.jpg', raw_img)
 
-    sock_set.sendto(jpg, ("255.255.255.255", port))
+    if sys.getsizeof(jpg_buff) > 65535:
+        ratio = 65535 / sys.getsizeof(jpg_buff)
+        raw_img = cv2.resize(raw_img, (math.floor(des_res[0] * ratio), math.floor(des_res[1] * ratio)))
+        is_success, jpg_buff = cv2.imencode('.jpg', raw_img)
+        print(f'extra compressed:{(math.floor(des_res[0] * ratio), math.floor(des_res[1] * ratio))}')
+
+    sock_set.sendto(jpg_buff.tobytes(), ("255.255.255.255", port))
 
 
 def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: bool = False) -> None:
-    net = Net(0.1)
+    net = Net(0.05)
     photo_timer = Timer(0.25)
 
     img_capture = False
