@@ -4,6 +4,7 @@ import sys
 import threading
 import tkinter
 from tkinter import ttk
+import time
 
 import setproctitle
 from PIL import Image, ImageTk
@@ -46,6 +47,8 @@ while True:
         break
 
     buf, addr = sock_set.recvfrom(65535)
+
+    start_time = time.time()
 
     imageStream = io.BytesIO(buf)
     image_real = Image.open(imageStream)
