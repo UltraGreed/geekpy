@@ -1,9 +1,10 @@
+import math
 import os
 import time
 
 import numpy as np
 
-from image_utils import load_image_rgba, save_image_rgba, save_image_rgb
+from image_utils import load_image_rgba, save_image_rgb
 from model_class import COLOR_AMOUNT, COLOR_COMPRESSION, OBJ, PIXEL_AREA
 from model_class import get_model_learn_path
 
@@ -13,15 +14,27 @@ LOAD_PREFIX = 'images/selection_learn/'
 LOAD_PREFIX_OBJ = LOAD_PREFIX + OBJ + '/'
 
 SAVE_PREFIX = 'images/selection_learn/'
+
+
 #####################
 
 
 def inc_pixel_data(model, index):
-    for dx in range(-PIXEL_AREA, PIXEL_AREA + 1):
-        for dy in range(-PIXEL_AREA, PIXEL_AREA + 1):
-            for dz in range(-PIXEL_AREA, PIXEL_AREA + 1):
-                index_delta = index + dx * COLOR_AMOUNT ** 2 + dy * COLOR_AMOUNT + dz
-                np.add.at(model, index_delta[np.logical_and(index_delta >= 0, index_delta < data_all.shape[0])], 1)
+    dx, dy, dz = [np.arange(-PIXEL_AREA, PIXEL_AREA + 1) for _ in range(3)]
+
+    dx_mesh, dy_mesh, dz_mesh = np.meshgrid(dx, dy, dz)
+
+    dist_matrix = np.square(dx_mesh) + np.square(dy_mesh) + np.square(dz_mesh)
+
+    offset_matrix = dx_mesh * COLOR_AMOUNT ** 2 + dy_mesh * COLOR_AMOUNT + dz_mesh
+
+    result_index = np.sum(np.meshgrid(index, offset_matrix[dist_matrix <= PIXEL_AREA ** 2].flatten()), axis=0)
+
+    np.add.at(
+        model,
+        result_index[np.logical_and(result_index >= 0, result_index < data_all.shape[0])],
+        1
+    )
 
 
 data_all = np.zeros((COLOR_AMOUNT ** 3))
@@ -29,7 +42,7 @@ data_object = np.zeros((COLOR_AMOUNT ** 3))
 data_non_object = np.zeros((COLOR_AMOUNT ** 3))
 
 for image_name in os.listdir(LOAD_PREFIX_OBJ):
-    if not image_name.startswith('learning') or 'out' in image_name:
+    if 'out' in image_name:
         continue
 
     time1 = time.time()
