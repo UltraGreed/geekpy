@@ -68,7 +68,7 @@ def send_img(image, port):
 
 
 def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: bool = False) -> None:
-    net = Net(0.05)
+    net = Net(0.1)
     photo_timer = Timer(0.25)
 
     img_capture = False
