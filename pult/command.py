@@ -169,16 +169,13 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(scroll_area)
 
         self.close_event = threading.Event()
-        self.send_thread = threading.Thread(target=self.sendThread)
-        self.send_thread.start()
 
     def closeEvent(self, event):
         self.close_event.set()
-        self.send_thread.join()
 
         super().closeEvent(event)
 
-    def sendThread(self):
+    def sendCycle(self):
         net = network.Net()
         while True:
             if self.close_event.is_set():
@@ -196,6 +193,8 @@ class MainWindow(QMainWindow):
                 if it.timer.is_unlock:
                     net.send(it.getMessage())
 
+            QApplication.instance().processEvents()
+
             time.sleep(0.0005)
 
 
@@ -206,6 +205,7 @@ def main():
 
     window = MainWindow()
     window.show()
+    window.sendCycle()
 
     app.exec()
 
