@@ -1,7 +1,7 @@
 import json
 
 # Aliases of navigation vector elements (AXIS = size)
-X, Y, DEPTH, YAW, PITCH, ROLL, AXIS = 0, 1, 2, 3, 4, 5, 6
+X, Y, DEPTH, YAW, PITCH, ROLL, AXIS, DIAMETER = 0, 1, 2, 3, 4, 5, 6, 7
 
 
 # Parent class for all messages
@@ -151,12 +151,12 @@ class DetectedObject(Message):
 class FilteredObjects(Message):
     def __init__(self, objs=None):
         if objs is None:
-            objs = {     #### X,    Y, DEPTH,   YAW, PITCH, ROLL, COLOR
+            objs = {     #### X,    Y, DEPTH,   YAW, PITCH, ROLL,    COLOR     DIAMETER
                 "Zero":  [  0.0,  0.0,   0.0,   0.0,   0.0,  0.0, "#00000033"],
-                "BallR": [ -5.0,  5.0,   0.5,   0.0,   0.0,  0.0, "#EE000099"],
-                "BallY": [ -6.0,  6.0,   0.5,   0.0,   0.0,  0.0, "#EEEE0099"],
-                "BallG": [ -7.0,  5.0,   0.5,   0.0,   0.0,  0.0, "#00EE0099"],
-                "CellB": [-10.0, 10.5,   1.2,   0.0,   0.0,  0.0, "#0000AA99"],
+                "BallR": [ -5.0,  5.0,   0.5,   0.0,   0.0,  0.0, "#EE000099",   0.2],
+                "BallY": [ -6.0,  6.0,   0.5,   0.0,   0.0,  0.0, "#EEEE0099",   0.2],
+                "BallG": [ -7.0,  5.0,   0.5,   0.0,   0.0,  0.0, "#00EE0099",   0.2],
+                "CellB": [-10.0, 10.5,   1.2,   0.0,   0.0,  0.0, "#0000AA99",   0.15],
                 "CellY": [-10.0, 11.0,   1.2,   0.0,   0.0,  0.0, "#AAAA0099"],
                 "CellR": [-10.0, 11.5,   1.2,   0.0,   0.0,  0.0, "#AA000099"],
                 "Cells": [-10.0, 10.0,   1.2,   0.0,   0.0,  0.0, "#00CCCC99"],

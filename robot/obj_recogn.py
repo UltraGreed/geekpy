@@ -5,9 +5,9 @@ import numpy as np
 import setproctitle
 
 from base import network, message, mat
-from base.message import X, Y, DEPTH
+from base.message import X, Y, DEPTH, DIAMETER
 
-from object_recognition.model_class import Model, get_model_inference_path
+from object_recognition.model_class import StatisticModel, get_model_inference_path
 from object_recognition.image_utils import load_image_rgb, save_image_rgb
 
 #####################
@@ -34,7 +34,7 @@ def get_rel_from_pixel(image, obj_coords, camera_dist):
 def main(camera_name, model_type, model_name, obj_name):
     robot_pos = [0 for _ in range(6)]
 
-    model = Model(MODEL_PATH_PREFIX + get_model_inference_path(model_type, model_name))
+    model = StatisticModel(MODEL_PATH_PREFIX + get_model_inference_path(model_type, model_name))
 
     net = network.Net()
     while net.receive():
@@ -58,9 +58,16 @@ def main(camera_name, model_type, model_name, obj_name):
                             (relative_x, relative_y, obj_depth - robot_pos[DEPTH])
                         )
                     elif camera_name == 'Front':
-                        camera_dist = 1
+                        obj_pixel = model.object_pixel_size
+                        obj_size = message.FilteredObjects().objs[obj_name][DIAMETER]
+
+                        camera_dist_x = image.shape[X] / obj_pixel[X] / np.tan(np.deg2rad(CAMERA_FOV / 2)) * obj_size / 2
+                        camera_dist_y = image.shape[Y] / obj_pixel[Y] / np.tan(np.deg2rad(CAMERA_FOV / 2)) * obj_size / 2
+
+                        camera_dist = (camera_dist_x + camera_dist_y) / 2
 
                         relative_x, relative_depth = get_rel_from_pixel(image, model.object_center, camera_dist)
+                        relative_depth *= -1
 
                         relative_y = camera_dist * np.cos(np.deg2rad(CAMERA_FOV / 2))
 
@@ -77,20 +84,6 @@ def main(camera_name, model_type, model_name, obj_name):
 
                     image_grayscale = model.get_grayscale()
 
-                    obj_x, obj_y = model.object_center
-
-                    image_grayscale[int(obj_x)][int(obj_y)] = np.asarray([255, 0, 0], dtype='uint8')
-
-                    cross_color = np.asarray([0, 255, 0], dtype='uint8') \
-                        if is_obj_found else \
-                        np.asarray([255, 0, 0], dtype='uint8')
-
-                    for i in range(-3, 3 + 1):
-                        if 0 <= int(obj_x) + i < image_grayscale.shape[0]:
-                            image_grayscale[int(obj_x) + i][int(obj_y)] = cross_color
-                        if 0 <= int(obj_y) + i < image_grayscale.shape[1]:
-                            image_grayscale[int(obj_x)][int(obj_y) + i] = cross_color
-
                     save_image_rgb(save_path, image_grayscale)
 
                     net.send(message.ImageLink(
@@ -99,7 +92,10 @@ def main(camera_name, model_type, model_name, obj_name):
                         file=file_path,
                         counter=None
                     ))
-                print(f"Image all: {time.time() - time1}")
+
+                time2 = time.time()
+                if time2 - time1 > 0.25:
+                    print(f"Image all: {time2 - time1}")
 
         if net.id == "Coord":
             robot_pos = net.msg.pos

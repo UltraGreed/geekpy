@@ -30,5 +30,5 @@ for deleted_name in os.listdir(PATH_PREFIX_DELETED):
 
     image_result = np.dstack((r_layer, g_layer, b_layer, a_layer))
 
-    save_image_rgba(PATH_PREFIX_SAVE + f'learning{counter}.png', image_result)
+    save_image_rgba(PATH_PREFIX_SAVE + deleted_name, image_result)
 

@@ -2,11 +2,9 @@ import os
 import glob
 import time
 
-import numpy as np
-
 from image_utils import load_image_rgb, save_image_rgb
 
-from model_class import Model, OBJ
+from model_class import StatisticModel, OBJ
 from model_class import get_model_learn_path
 
 #####################
@@ -65,11 +63,7 @@ def find_obj_image(image_path, is_obj):
         print(1)
     image_gray = model.get_grayscale()
 
-    if is_obj_found:
-        obj_x, obj_y = model.object_center
-        image_gray[int(obj_x + 0.5)][int(obj_y + 0.5)] = np.asarray([255, 0, 0], dtype='uint8')
-
-    save_image_rgb(save_prefix + image_file.replace('.jpg', '_gray_raw.png'), model.get_grayscale_raw())
+    # save_image_rgb(save_prefix + image_file.replace('.jpg', '_gray_raw.png'), model.get_grayscale_raw())
 
     save_image_rgb(gray_path, image_gray)
 
@@ -84,7 +78,7 @@ for directory in (
 ):
     clear_dir(directory)
 
-model = Model(get_model_learn_path('sub'))
+model = StatisticModel(get_model_learn_path('sub'))
 
 for image_file in sorted(os.listdir(LOAD_PREFIX_TRUE)):
     find_obj_image(LOAD_PREFIX_TRUE + image_file, True)

@@ -54,8 +54,8 @@ while True:
     try:
         image_tk = ImageTk.PhotoImage(image)
         image_label['image'] = image_tk
-    except:
-        pass
-    
+    except Exception as err:
+        print('camera crash: ' + err)
+
     root.update()
     root.update_idletasks()

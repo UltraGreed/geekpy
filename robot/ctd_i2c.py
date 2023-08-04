@@ -18,8 +18,8 @@ BETA_COEF = 1 - ALPHA_COEF
 # LEVER ARM FOR PITCH COMPENSATION #
 LEVER_ARM = 0.3
 
-OFFSET = 245.86
-COEFFICIENT = 25
+OFFSET = 0
+COEFFICIENT = 1
 ####################################
 
 
@@ -39,7 +39,7 @@ def get_pitch_thread():
 def send_depth_thread():
     global pos_pitch
 
-    sensor = ms5837.MS5837_02BA()  # Default I2C bus is 1 (Raspberry Pi 3)
+    sensor = ms5837.MS5837_30BA()  # Default I2C bus is 1 (Raspberry Pi 3)
 
     # We must initialize the sensor before reading it
     if not sensor.init():

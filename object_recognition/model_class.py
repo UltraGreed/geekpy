@@ -1,28 +1,30 @@
+import math
+
 import numpy as np
 
 #####################
 # CONFIG PARAMETERS #
 # LOADING PARAMETERS #
 MODEL_DIRECTORY = 'models/'
-OBJ = "CellRdirt"
+OBJ = "PenalB"
 # OBJECT RECOGNITION PARAMETERS #
 # Part of maximum image weight sum needed to recognize object
 THRESHOLD_OBJECT = 0.001
 # Part of maximum image weight sum to remove from image
-THRESHOLD_CLEAN = 0.00001
+THRESHOLD_CLEAN = 0.00006
 # MODEL-WIDE PARAMETERS #
 # Maximum possible value in model
 MAX_PIXEL_WEIGHT = 1
 # Dimensions of color space
-COLOR_AMOUNT = 64
+COLOR_AMOUNT = 32
 COLOR_COMPRESSION = 256 // COLOR_AMOUNT
 # EDUCATION PARAMETERS #
 # Area in which pixels incremented during learning
 PIXEL_AREA = 2
 # NORMALIZATION PARAMETERS #
 # Thresholds for model normalization
-UPPER_BORDER_OBJECT = 0.7
-UPPER_BORDER_NON_OBJECT = 0.7
+UPPER_BORDER_OBJECT = 0.5
+UPPER_BORDER_NON_OBJECT = 1
 # Model value which will equal to zero chance
 # Ranges from -1 to 1
 LOWER_MODEL_BORDER = 0
@@ -43,19 +45,18 @@ class ImageNotLoaded(Exception):
     pass
 
 
-class Model:
-    def __init__(self, model_path):
-        self.model = np.load(model_path)
-
-        self.model_max = np.max(self.model)
-        self.model_min = np.min(self.model)
+class InferenceModel:
+    def __init__(self, get_image_weight):
+        self.get_image_weight = get_image_weight
 
         self._image = None
 
         self._threshold_object = None
         self._threshold_clean = None
 
-        self._image_center = None
+        self._object_center = None
+        self._object_dispersion_sq = None
+        self._object_pixel_size = None
 
         self._image_weight_raw = None
         self._image_weight = None
@@ -75,7 +76,9 @@ class Model:
         self._threshold_object = None
         self._threshold_clean = None
 
-        self._image_center = None
+        self._object_center = None
+        self._object_dispersion_sq = None
+        self._object_pixel_size = None
 
         self._image_weight_raw = None
         self._image_weight = None
@@ -98,22 +101,14 @@ class Model:
     @property
     def image_weight_raw(self):
         if self._image_weight_raw is None:
-            r_layer, g_layer, b_layer = [
-                np.asarray(
-                    self.image[:, :, i] // COLOR_COMPRESSION, dtype='uint32'
-                ) for i in range(3)
-            ]
-
-            index_matrix = np.asarray(r_layer * COLOR_AMOUNT ** 2 + g_layer * COLOR_AMOUNT + b_layer)
-
-            self._image_weight_raw = self.model[index_matrix]
+            self._image_weight_raw = self.get_image_weight(self.image)
 
         return self._image_weight_raw
 
     @property
     def image_weight(self):
         if self._image_weight is None:
-            # Removes low weighted areas of image
+            # Removes low weighted borders of image
             # Arrays with sums of columns and rows
             col_sums = np.sum(self.image_weight_raw, axis=0)
             row_sums = np.sum(self.image_weight_raw, axis=1)
@@ -128,43 +123,22 @@ class Model:
             left_removed = 0
             right_removed = 0
 
-            removed_sum = 0
-            while removed_sum < self.threshold_clean and (up != down or left != right):
-                min_weight = min(
-                    row_sums[up] + up_removed,
-                    row_sums[down] + down_removed,
-                    col_sums[left] + left_removed,
-                    col_sums[right] + right_removed
-                )
-
-                # Remove the lowest-sum side
-                if up != down:
-                    if left == right and min_weight in (col_sums[left] + left_removed, col_sums[right] + right_removed):
-                        min_weight = min(row_sums[up] + up_removed, row_sums[down] + down_removed)
-
-                    if min_weight == row_sums[up] + up_removed:
-                        col_sums -= min_weight
-                        up += 1
-                        up_removed += min_weight
-                    elif min_weight == row_sums[down] + down_removed:
-                        col_sums -= min_weight
-                        down -= 1
-                        down_removed += min_weight
-
-                if left != right:
-                    if up == down and min_weight in (row_sums[up] + up_removed, row_sums[down] + down_removed):
-                        min_weight = min(col_sums[left] + left_removed, col_sums[right] + right_removed)
-
-                    if min_weight == col_sums[left] + left_removed:
-                        row_sums -= min_weight
-                        left += 1
-                        left_removed += min_weight
-                    elif min_weight == col_sums[right] + right_removed:
-                        row_sums -= min_weight
-                        right -= 1
-                        right_removed += min_weight
-
-                removed_sum += min_weight
+            while (up_removed < self.threshold_clean / 4 or
+                   down_removed < self.threshold_clean / 4) and up != down or \
+                    (left_removed < self.threshold_clean / 4 or
+                     right_removed < self.threshold_clean / 4) and left != right:
+                if up_removed < self.threshold_clean / 4 and up != down:
+                    up += 1
+                    up_removed += col_sums[up]
+                if down_removed < self.threshold_clean / 4 and up != down:
+                    down -= 1
+                    down_removed += col_sums[down]
+                if left_removed < self.threshold_clean / 4 and left != right:
+                    left += 1
+                    left_removed += row_sums[left]
+                if right_removed < self.threshold_clean / 4 and left != right:
+                    right -= 1
+                    right_removed += row_sums[right]
 
             # Remaining part of image
             image_remain = self.image_weight_raw[up:down + 1, left:right + 1]
@@ -187,14 +161,36 @@ class Model:
 
     @property
     def object_center(self):
-        if not self.check_object():
-            return 0, 0
-        if self._image_center is None:
+        if self.image_sum == 0:
+            return self.image.shape[0] // 2, self.image.shape[1] // 2
+        if self._object_center is None:
             mean_x = np.dot(np.arange(0, self.image.shape[0]), np.sum(self.image_weight, axis=1)) / self.image_sum
             mean_y = np.dot(np.arange(0, self.image.shape[1]), np.sum(self.image_weight, axis=0)) / self.image_sum
-            self._image_center = np.asarray([mean_x, mean_y])
+            self._object_center = np.asarray([mean_x, mean_y])
 
-        return self._image_center
+        return self._object_center
+
+    @property
+    def object_dispersion_sq(self):
+        if self._object_dispersion_sq is None:
+            dispersion_x = np.sum(
+                np.square(np.repeat(np.arange(-128, 128)[np.newaxis, :], 256, axis=0)) * self.image_weight
+            ) / (self.image_sum if self.image_sum else 1)
+
+            dispersion_y = np.sum(
+                np.square(np.repeat(np.arange(-128, 128)[:, np.newaxis], 256, axis=1)) * self.image_weight
+            ) / (self.image_sum if self.image_sum else 1)
+
+            self._object_dispersion_sq = np.asarray([dispersion_x, dispersion_y])
+
+        return self._object_dispersion_sq
+
+    @property
+    def object_pixel_size(self):
+        if self._object_pixel_size is None:
+            self._object_pixel_size = np.sqrt(self.object_dispersion_sq)
+
+        return self._object_pixel_size
 
     # Function returning boolean of object presence
     def check_object(self, new_image=None):
@@ -214,9 +210,49 @@ class Model:
 
     # Function creating a black and white array image of object
     def get_grayscale(self):
-        r_layer, g_layer = [
-            np.where(np.asarray(self.image_weight) == 0, 0, self.image_weight * 255) for _ in range(2)
-        ]
-        b_layer = np.where(np.asarray(self.image_weight) == 0, 255, self.image_weight * 255)
+        r_layer = self.image_weight * 255
 
-        return np.dstack((np.asarray(layer, dtype='uint8') for layer in (r_layer, g_layer, b_layer)))
+        g_layer = np.where(
+            np.logical_and(self.image_weight == 0, self.image_weight_raw != 0),
+            200,
+            self.image_weight * 255
+        )
+
+        b_layer = np.where(self.image_weight == 0, 255, self.image_weight * 255)
+
+        image_grayscale = np.dstack((np.asarray(layer, dtype='uint8') for layer in (r_layer, g_layer, b_layer)))
+
+        cross_color = np.asarray([0, 255, 0], dtype='uint8') if self.check_object() else np.asarray([255, 0, 0],
+                                                                                                    dtype='uint8')
+
+        size_y, size_x = self.object_pixel_size
+
+        obj_x, obj_y = self.object_center
+        for i in range(-int(size_x), int(size_x) + 1):
+            if 0 <= int(obj_x) + i < image_grayscale.shape[0]:
+                image_grayscale[int(obj_x) + i][int(obj_y)] = cross_color
+        for i in range(-int(size_y), int(size_y) + 1):
+            if 0 <= int(obj_y) + i < image_grayscale.shape[1]:
+                image_grayscale[int(obj_x)][int(obj_y) + i] = cross_color
+
+        return image_grayscale
+
+
+class StatisticModel(InferenceModel):
+    def __init__(self, model_path):
+        def get_image_weight():
+            r_layer, g_layer, b_layer = [
+                np.asarray(
+                    self.image[:, :, i] // COLOR_COMPRESSION, dtype='uint32'
+                ) for i in range(3)
+            ]
+
+            index_matrix = np.asarray(r_layer * COLOR_AMOUNT ** 2 + g_layer * COLOR_AMOUNT + b_layer)
+
+            self._image_weight_raw = model[index_matrix]
+
+        model = np.load(model_path)
+
+        super().__init__(get_image_weight)
+
+

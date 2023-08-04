@@ -175,14 +175,18 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                     vel_yaw=vy.item(), vel_pitch=vz.item(), vel_roll=-vx.item(),
                 ))
 
+            time2 = time.time()
             if is_stream:
                 if name == 'Front':
                     send_img(image, PORT_FRONT)
                 elif name == 'Bottom':
                     send_img(image, PORT_BOTTOM)
 
-            if time.time() - time1 > 0.05:
-                print(time.time() - time1)
+                if time2 - time1 > 0.05:
+                    print(f'Camera iteration slow: {time2 - time1}')
+            else:
+                if time2 - time1 > 0.25:
+                    print(f'Camera iteration slow: {time2 - time1}')
 
     print(f'[{name}] Close the camera')
     zed.close()

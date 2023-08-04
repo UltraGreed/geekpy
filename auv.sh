@@ -13,7 +13,7 @@
   python spreader.py &
   python kotleta.py &
 
-#  python ctd_i2c.py &
+  python ctd_i2c.py &
   python ctd_uart.py &
 
   python acoustic.py &
@@ -27,6 +27,6 @@
   python3 zed.py Front  16909428 False        False &
 
   #                   camera_name  model_type  model_name   object_name
-  python3 obj_recogn.py Bottom        sub      CellRdirt      CellR &
-  python3 obj_recogn.py Front         sub      BallY      BallY &
+  python3 obj_recogn.py Bottom        sub      CellY           CellY &
+  python3 obj_recogn.py Front         sub      BallY           BallY &
 )
