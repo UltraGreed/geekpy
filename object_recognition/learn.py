@@ -14,8 +14,6 @@ LOAD_PREFIX = 'images/selection_learn/'
 LOAD_PREFIX_OBJ = LOAD_PREFIX + OBJ + '/'
 
 SAVE_PREFIX = 'images/selection_learn/'
-
-
 #####################
 
 
