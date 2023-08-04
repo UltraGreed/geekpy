@@ -36,7 +36,7 @@ STAB_DEPTH_BIG_STEP = 0.20
 STAB_YAW_SMALL_STEP = 2
 STAB_YAW_BIG_STEP = 8
 
-STAB_PITCH_COEF = 90
+STAB_PITCH_COEF = 30
 STAB_ROLL_COEF = 90
 
 UPDATE_FREQ = 10
@@ -179,7 +179,7 @@ while net.receive():
         # If stabilization is enabled or input given, we calculate stabilization
         if is_stab_pitch or abs(axis[AXIS_RIGHT_STICK_Y]) > THRESHOLD:
             is_stab_pitch = True
-            stab_pitch = axis[AXIS_RIGHT_STICK_Y] * STAB_PITCH_COEF
+            stab_pitch = -axis[AXIS_RIGHT_STICK_Y] * STAB_PITCH_COEF
 
         # If stabilization is enabled or input given, we calculate stabilization
         # if is_stab_roll or axis[AXIS_R2] != axis[AXIS_L2]:
