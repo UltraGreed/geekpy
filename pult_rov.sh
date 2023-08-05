@@ -3,7 +3,7 @@
   export PYTHONPATH=$(pwd)
 
   cd pult
-  python dualshock.py &
+  python3 dualshock.py &
   python3 video.py Front &
   python3 video.py Bottom &
 )

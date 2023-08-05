@@ -16,17 +16,15 @@ from base.message import X, Y, DEPTH, YAW, PITCH, ROLL
 # Configuration parameters #
 THRESHOLD = 0.1
 
-X_COEF = 0.15
+X_COEF = 0.3
 Y_COEF = 0.9
 
 Y_STEP = 0.02
 X_STEP = 0.008
 
 DEPTH_COEF = 0.15
+UP_COEF = 1
 YAW_COEF = 90
-
-PITCH_COEF = 45
-ROLL_COEF = 60
 
 STAB_X_STEP = 0.05
 STAB_Y_STEP = 0.05
@@ -36,7 +34,7 @@ STAB_DEPTH_BIG_STEP = 0.20
 STAB_YAW_SMALL_STEP = 2
 STAB_YAW_BIG_STEP = 8
 
-STAB_PITCH_COEF = 30
+STAB_PITCH_COEF = 60
 STAB_ROLL_COEF = 90
 
 UPDATE_FREQ = 10
@@ -179,7 +177,7 @@ while net.receive():
         # If stabilization is enabled or input given, we calculate stabilization
         if is_stab_pitch or abs(axis[AXIS_RIGHT_STICK_Y]) > THRESHOLD:
             is_stab_pitch = True
-            stab_pitch = -axis[AXIS_RIGHT_STICK_Y] * STAB_PITCH_COEF
+            stab_pitch = axis[AXIS_RIGHT_STICK_Y] * STAB_PITCH_COEF
 
         # If stabilization is enabled or input given, we calculate stabilization
         # if is_stab_roll or axis[AXIS_R2] != axis[AXIS_L2]:
@@ -188,7 +186,7 @@ while net.receive():
 
         if button[BUTTON_L1]:
             is_stab_depth = False
-            speed_depth -= DEPTH_COEF
+            speed_depth -= UP_COEF
 
         if axis[AXIS_L2] != -1:
             is_stab_depth = False
