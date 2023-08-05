@@ -17,13 +17,13 @@ from base.message import X, Y, DEPTH, YAW, PITCH, ROLL
 THRESHOLD = 0.1
 
 X_COEF = 0.15
-Y_COEF = 0.6
+Y_COEF = 0.9
 
 Y_STEP = 0.02
 X_STEP = 0.008
 
 DEPTH_COEF = 0.15
-YAW_COEF = 60
+YAW_COEF = 90
 
 PITCH_COEF = 45
 ROLL_COEF = 60
