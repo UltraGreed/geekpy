@@ -106,7 +106,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
         if net.id == "PhotoOn":
             if net.msg.camera == name:
                 img_capture = True
-                save_path = PATH_PREFIX + "/" + net.msg.folder + "_" +  name + "_" + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
+                save_path = PATH_PREFIX + "/" + name + "/" + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
                 if not os.path.exists(save_path):
                     os.mkdir(save_path)
 
