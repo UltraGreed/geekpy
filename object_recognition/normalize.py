@@ -1,12 +1,13 @@
 import numpy as np
 
-from model_class import UPPER_BORDER_OBJECT, UPPER_BORDER_NON_OBJECT, LOWER_MODEL_BORDER
-from model_class import get_model_learn_path
+from model_class import get_model_path
+
+from config import *
 
 print('Normalization begin')
-data_object = np.load(get_model_learn_path('obj'))
-data_non_object = np.load(get_model_learn_path('noobj'))
-data_all = np.load(get_model_learn_path('all'))
+data_object = np.load(get_model_path('obj'))
+data_non_object = np.load(get_model_path('noobj'))
+data_all = np.load(get_model_path('all'))
 
 object_max = np.max(data_object)
 non_object_max = np.max(data_non_object)
@@ -26,16 +27,9 @@ data_non_object_norm = np.where(
     1
 )
 
-np.save(get_model_learn_path('obj_norm'), data_object_norm)
-np.save(get_model_learn_path('noobj_norm'), data_non_object_norm)
+np.save(get_model_path('obj_norm'), data_object_norm)
+np.save(get_model_path('noobj_norm'), data_non_object_norm)
 
-# Create the subtraction model
-# If pixel has never been found in object model, it equals to -1
-# data_sub = np.where(
-#     data_object_norm > 0,
-#     data_object_norm - data_non_object_norm,
-#     -1
-# )
 data_sub = data_object_norm - data_non_object_norm
 
 # Normalize the subtraction model
@@ -45,5 +39,5 @@ data_sub_norm = np.where(
     0
 )
 
-np.save(get_model_learn_path('sub'), data_sub_norm)
+np.save(get_model_path('sub'), data_sub_norm)
 print('Normalization finish')

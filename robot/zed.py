@@ -19,6 +19,11 @@ from base.timer import Timer
 
 from PIL import Image
 
+#####################
+# CONFIG PARAMETERS #
+FPS = 10
+#####################
+
 setproctitle.setproctitle(' '.join(sys.argv))
 
 PATH_PREFIX = '/media/ssd/photo'
@@ -68,7 +73,7 @@ def send_img(image, port):
 
 
 def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: bool = False) -> None:
-    net = Net(0.1)
+    net = Net(1 / FPS)
     photo_timer = Timer(0.25)
 
     img_capture = False

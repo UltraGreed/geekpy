@@ -112,7 +112,7 @@ def get_init_robot_thread():
 
 
 # Thread for depth meter reading
-def send_depth_thread():
+def send_yaw_thread():
     global pos_yaw
 
     net = network.Net()
@@ -164,7 +164,7 @@ lock = threading.Lock()
 
 # Create and start the threads
 yaw_receiver = threading.Thread(target=get_init_robot_thread)
-yaw_sender = threading.Thread(target=send_depth_thread)
+yaw_sender = threading.Thread(target=send_yaw_thread)
 
 yaw_receiver.start()
 yaw_sender.start()

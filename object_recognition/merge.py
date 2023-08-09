@@ -2,15 +2,18 @@ import os
 
 import numpy as np
 
-from image_utils import load_image_rgb, load_image_rgba, save_image_rgba
+from image_utils import load_image_rgba, save_image_rgba
 
 
+############
+#  CONFIG  #
 PATH_PREFIX = 'images/merge/'
 
 PATH_PREFIX_DELETED = PATH_PREFIX + 'deleted/'
 PATH_PREFIX_ORIGINAL = PATH_PREFIX + 'original/'
 
 PATH_PREFIX_SAVE = PATH_PREFIX + 'output/'
+############
 
 counter = 0
 

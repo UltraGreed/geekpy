@@ -1,40 +1,26 @@
 import sys
 import time
-
-import numpy as np
 import setproctitle
 
-from base import network, message, mat
+from base import network, message
 from base.message import X, Y, DEPTH, DIAMETER
 
-from object_recognition.model_class import StatisticModel, get_model_inference_path
+from object_recognition.model_class import RGBModel, get_model_path
 from object_recognition.image_utils import load_image_rgb, save_image_rgb
+from object_recognition.object_position import get_obj_pos_front, get_obj_pos_bottom
 
 #####################
 # CONFIG PARAMETERS #
 MODEL_PATH_PREFIX = '../object_recognition/'
 
-CAMERA_FOV = 70
-
 DEBUG = True
 ####################
-
-
-# Function converting pixel coordinates to map coordinates
-def get_rel_from_pixel(image, obj_coords, camera_dist):
-    pixel_relative_x = image.shape[X] / 2 - obj_coords[X]
-    pixel_relative_y = obj_coords[Y] - image.shape[Y] / 2
-
-    relative_x = pixel_relative_y / image.shape[Y] * 2 * np.tan(np.deg2rad(CAMERA_FOV / 2)) * camera_dist
-    relative_y = pixel_relative_x / image.shape[X] * 2 * np.tan(np.deg2rad(CAMERA_FOV / 2)) * camera_dist
-
-    return relative_x, relative_y
 
 
 def main(camera_name, model_type, model_name, obj_name):
     robot_pos = [0 for _ in range(6)]
 
-    model = StatisticModel(MODEL_PATH_PREFIX + get_model_inference_path(model_type, model_name))
+    model = RGBModel(MODEL_PATH_PREFIX + get_model_path(model_type, model_name))
 
     net = network.Net()
     while net.receive():
@@ -48,34 +34,30 @@ def main(camera_name, model_type, model_name, obj_name):
                 if is_obj_found:
                     if camera_name == 'Bottom':
                         obj_depth = message.FilteredObjects().objs[obj_name][DEPTH]
-
-                        camera_dist = obj_depth - robot_pos[DEPTH]
-
-                        relative_x, relative_y = get_rel_from_pixel(image, model.object_center, camera_dist)
-
-                        map_x, map_y, map_depth = mat.robot2map(
+                        obj_coords = get_obj_pos_bottom(
                             robot_pos,
-                            (relative_x, relative_y, obj_depth - robot_pos[DEPTH])
+                            obj_depth,
+                            model.image.shape,
+                            model.object_center
                         )
                     elif camera_name == 'Front':
-                        obj_pixel = model.object_pixel_size
                         obj_size = message.FilteredObjects().objs[obj_name][DIAMETER]
-
-                        camera_dist_x = image.shape[X] / obj_pixel[X] / np.tan(np.deg2rad(CAMERA_FOV / 2)) * obj_size / 2
-                        camera_dist_y = image.shape[Y] / obj_pixel[Y] / np.tan(np.deg2rad(CAMERA_FOV / 2)) * obj_size / 2
-
-                        camera_dist = (camera_dist_x + camera_dist_y) / 2
-
-                        relative_x, relative_depth = get_rel_from_pixel(image, model.object_center, camera_dist)
-                        relative_depth *= -1
-
-                        relative_y = camera_dist * np.cos(np.deg2rad(CAMERA_FOV / 2))
-
-                        map_x, map_y, map_depth = mat.robot2map(robot_pos, (relative_x, relative_y, relative_depth))
+                        obj_coords = get_obj_pos_front(
+                            robot_pos,
+                            obj_size,
+                            model.object_pixel_size,
+                            model.image.shape,
+                            model.object_center
+                        )
                     else:
                         raise Exception
 
-                    net.send(message.DetectedObject(x=float(map_x), y=float(map_y), depth=float(map_depth), obj=obj_name))
+                    net.send(message.DetectedObject(
+                        x=float(obj_coords[X]),
+                        y=float(obj_coords[Y]),
+                        depth=float(obj_coords[DEPTH]),
+                        obj=obj_name
+                    ))
 
                 # Saving black and white image with detected object for debugging
                 if DEBUG:
@@ -95,7 +77,7 @@ def main(camera_name, model_type, model_name, obj_name):
 
                 time2 = time.time()
                 if time2 - time1 > 0.25:
-                    print(f"Image all: {time2 - time1}")
+                    print(f"Image recognition slow: {time2 - time1}")
 
         if net.id == "Coord":
             robot_pos = net.msg.pos

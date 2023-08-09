@@ -4,13 +4,14 @@ import time
 
 from image_utils import load_image_rgb, save_image_rgb
 
-from model_class import StatisticModel, OBJ
-from model_class import get_model_learn_path
+from model_class import RGBModel, HSVModel
+from config import *
+from model_class import get_model_path
 
 #####################
 # CONFIG PARAMETERS #
 LOAD_PREFIX = 'images/selection_test/'
-LOAD_PREFIX_OBJ = LOAD_PREFIX + OBJ + '/'
+LOAD_PREFIX_OBJ = LOAD_PREFIX + OBJ_NAME + '/'
 LOAD_PREFIX_TRUE = LOAD_PREFIX_OBJ + 'true/'
 LOAD_PREFIX_FALSE = LOAD_PREFIX_OBJ + 'false/'
 
@@ -59,11 +60,7 @@ def find_obj_image(image_path, is_obj):
     gray_file = image_file.replace('.jpg', '_gray.png')
     gray_path = save_prefix + gray_file
 
-    if image_file == 'Bottom_2.jpg':
-        print(1)
     image_gray = model.get_grayscale()
-
-    # save_image_rgb(save_prefix + image_file.replace('.jpg', '_gray_raw.png'), model.get_grayscale_raw())
 
     save_image_rgb(gray_path, image_gray)
 
@@ -78,7 +75,10 @@ for directory in (
 ):
     clear_dir(directory)
 
-model = StatisticModel(get_model_learn_path('sub'))
+if COLOR_SCHEME == 'RGB':
+    model = RGBModel(get_model_path('sub'))
+elif COLOR_SCHEME == 'HSV':
+    model = HSVModel(get_model_path('sub'))
 
 for image_file in sorted(os.listdir(LOAD_PREFIX_TRUE)):
     find_obj_image(LOAD_PREFIX_TRUE + image_file, True)
