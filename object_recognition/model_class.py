@@ -1,8 +1,8 @@
 import numpy as np
 
-from config import *
+from object_recognition.config import *
 
-from image_utils import rgb_to_hsv
+from object_recognition.image_utils import rgb_to_hsv
 
 
 def get_model_path(model_id, obj_name=OBJ_NAME, color_scheme=COLOR_SCHEME):

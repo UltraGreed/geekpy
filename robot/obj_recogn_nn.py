@@ -6,8 +6,10 @@ from datetime import datetime
 from tensorflow import keras
 from keras import Model, layers
 
+import object_recognition.object_position as obj_pos
+
 from base import network, message
-from base.message import ImageLink
+from base.message import FilteredObjects, ImageLink, X, Y, DEPTH, DIAMETER
 from object_recognition.model_class import InferenceModel
 
 import sys
@@ -43,9 +45,7 @@ def Gen_Conv2D_Block_11(inp_layer, filters = 50, act_func = "relu"):
     x = layers.Activation(act_func)(x)
     return x
 
-keras.saving.get_custom_objects().clear()
 
-@keras.saving.register_keras_serializable()
 class NeighborhoodDiff(keras.layers.Layer):
     def __init__(self, area = 7):
         super(NeighborhoodDiff, self).__init__()
@@ -126,7 +126,7 @@ def create_model():
 # --------------------- #
 
 #MAIN_OUT_FOLDER = os.environ['PYTHONPATH'] + "/debug/" #"/ssd/recognition_neural/"
-MAIN_OUT_FOLDER = "/ssd/recognition_neural/"
+MAIN_OUT_FOLDER = "/media/ssd/recognition_neural/"
 NEURAL_MODELS   = "nn_models/"
 
 def Inference(model, image):
@@ -148,14 +148,17 @@ def main(argv):
     except FileExistsError:
         pass
 
+    counter = 0
+
     net = network.Net()
     model = create_model()
     model.load_weights(f"nn_models/{object}/{object}").expect_partial()
-    print("Model loaded")
-    
-    counter = 0
+    print("Model loaded")    
 
-    inf_model = InferenceModel(lambda image: Inference(model, image))
+    obj_depth    = FilteredObjects().objs[object][DEPTH]
+    robot_pos = [0 for i in range(6)]
+    
+    inf_model = InferenceModel(lambda image: Inference(model, image), )
 
     while net.receive():
         if net.id == "ImageLink":
@@ -163,12 +166,24 @@ def main(argv):
                 file    = tf.io.read_file(net.msg.path)
                 image   = tf.image.decode_png(file, channels = 3)
 
-                inf_model.check_object(image.numpy())
+                if inf_model.check_object(image.numpy()): 
+                    if camera == "Front":
+                        obj_diameter = FilteredObjects().objs[object][DIAMETER]
+                        pos = obj_pos.get_obj_pos_front(robot_pos, 
+                                                obj_diameter, 
+                                                inf_model.object_pixel_size, 
+                                                (256, 256),
+                                                inf_model.object_center
+                                                )
+                    elif camera == "Bottom":
+                        pos = obj_pos.get_obj_pos_bottom(robot_pos, obj_depth, (256,256), inf_model.object_center)
+                        
+                    net.send(message.DetectedObject(x=float(pos[X]), y=float(pos[Y]), depth=float(pos[DEPTH]), obj=object))               
 
-                #net.send(message.DetectedObject(x=float(map_x), y=float(map_y), depth=float(map_depth), obj=obj_name))               
-
+                #DEBUG: Send grayscale output of neural network  
                 #nn_out = tf.stack([nn_out[0, ..., 1], nn_out[0, ..., 1],  nn_out[0, ..., 1]], axis = 2)      
-
+                
+                #DEBUG: Get argmax of channels
                 #nn_out  = tf.cast(tf.argmax(nn_out, axis = -1), dtype=tf.float32)[0]
                 #nn_out  = tf.reshape(nn_out, [128, 128, 1])
 
@@ -186,6 +201,9 @@ def main(argv):
                 ))
 
                 counter += 1
+                
+        elif net.id == "Coord":
+            robot_pos = net.msg.pos
 
 if __name__ == "__main__":
     main(sys.argv)
