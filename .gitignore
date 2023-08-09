@@ -5,3 +5,4 @@ venv369/
 .idea/
 object_recognition/models
 object_recognition/images
+debug
