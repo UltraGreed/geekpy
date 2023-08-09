@@ -5,6 +5,7 @@ import socket
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -113,7 +114,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                 img_capture = True
                 save_path = PATH_PREFIX + "/" + name + "/" + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
                 if not os.path.exists(save_path):
-                    os.mkdir(save_path)
+                    Path(save_path).mkdir(parents=True, exist_ok=True)
 
         if net.id == "PhotoOff":
             if net.msg.camera == name:
