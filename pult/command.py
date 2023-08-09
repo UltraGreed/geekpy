@@ -1,9 +1,8 @@
 import sys
-import threading
 import time
 
 import setproctitle
-from PyQt6.QtCore import Qt, pyqtSlot
+from PyQt6.QtCore import Qt, pyqtSlot, QTimer
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox,
                              QHBoxLayout, QLabel, QLineEdit, QMainWindow,
                              QPushButton, QScrollArea, QVBoxLayout, QWidget)
@@ -19,9 +18,15 @@ class Command(QWidget):
         super().__init__()
 
         self.message = message
+        self.send_message = self.message
+        self.net = network.Net()
+
         self.name = message.id
+
         self.is_timer = False
-        self.timer = Timer(0.1)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.sendMessage)
+        self.timer_value = 0.0
         self.send_active = False
 
         arguments = message.__init__.__code__.co_varnames[1:]
@@ -74,12 +79,13 @@ class Command(QWidget):
         timer_edit.setDecimals(3)
         timer_edit.setMinimum(0.000)
         timer_edit.setMaximum(60)
+        timer_edit.setValue(self.timer_value)
         buttons.addWidget(timer)
         buttons.addWidget(timer_edit)
         buttons.addSpacing(10)
 
         send = QPushButton('Send')
-        send.clicked.connect(self.onSendClicked)
+        send.clicked.connect(self.onSendButtonClicked)
         buttons.addWidget(send)
         main_layout.addLayout(buttons)
 
@@ -88,7 +94,7 @@ class Command(QWidget):
     def parse(self, value: str):
         if value == 'None':
             return None
-        
+
         try:
             return int(value)
         except:
@@ -110,17 +116,26 @@ class Command(QWidget):
         self.message.__init__(*arguments)
         return self.message
 
+    def sendMessage(self):
+        self.net.send(self.send_message)
+
     @pyqtSlot()
-    def onSendClicked(self):
+    def onSendButtonClicked(self):
+        self.send_message = self.getMessage()
+        self.sendMessage()
         self.send_active = True
 
     @pyqtSlot(int)
     def onTimerChecked(self, state):
         self.is_timer = bool(state)
+        if state:
+            self.timer.start(int(self.timer_value * 1000))
+        else:
+            self.timer.stop()
 
     @pyqtSlot(float)
     def onTimerValueChanged(self, value):
-        self.timer = Timer(value)
+        self.timer_value = value
 
 
 class MainWindow(QMainWindow):
@@ -168,17 +183,17 @@ class MainWindow(QMainWindow):
     
         self.setCentralWidget(scroll_area)
 
-        self.close_event = threading.Event()
+        self.is_close_pressed = False
+
 
     def closeEvent(self, event):
-        self.close_event.set()
-
+        self.is_close_pressed = True
         super().closeEvent(event)
 
     def sendCycle(self):
         net = network.Net()
         while True:
-            if self.close_event.is_set():
+            if self.is_close_pressed:
                 break
 
             for it in self.commands:
@@ -205,7 +220,7 @@ def main():
 
     window = MainWindow()
     window.show()
-    window.sendCycle()
+    # window.sendCycle()
 
     app.exec()
 
