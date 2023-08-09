@@ -124,7 +124,7 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
             if name == 'Front':
                 zed.retrieve_image(image, sl.VIEW.LEFT)
             elif name == 'Bottom':
-                zed.retrieve_image(image, sl.VIEW.LEFT)
+                zed.retrieve_image(image, sl.VIEW.RIGHT)
 
             if photo_timer.is_unlock and img_capture:
                 photo_counter += 1
