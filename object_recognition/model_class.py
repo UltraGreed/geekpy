@@ -159,7 +159,7 @@ class InferenceModel:
     @property
     def object_pixel_size(self):
         if self._object_pixel_size is None:
-            self._object_pixel_size = np.sqrt(self.object_dispersion_sq)
+            self._object_pixel_size = np.sqrt(self.object_dispersion_sq) * PIXEL_SIZE_COEFFICIENT
 
         return self._object_pixel_size
 
@@ -196,7 +196,7 @@ class InferenceModel:
         cross_color = np.asarray([0, 255, 0], dtype='uint8') if self.check_object() else np.asarray([255, 0, 0],
                                                                                                     dtype='uint8')
 
-        size_y, size_x = self.object_pixel_size
+        size_x, size_y = self.object_pixel_size
 
         obj_x, obj_y = self.object_center
         for i in range(-int(size_x), int(size_x) + 1):

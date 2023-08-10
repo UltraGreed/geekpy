@@ -5,9 +5,10 @@ import setproctitle
 from base import network, message
 from base.message import X, Y, DEPTH, DIAMETER
 
-from object_recognition.model_class import RGBModel, get_model_path
+from object_recognition.model_class import RGBModel, HSVModel, get_model_path
 from object_recognition.image_utils import load_image_rgb, save_image_rgb
 from object_recognition.object_position import get_obj_pos_front, get_obj_pos_bottom
+from object_recognition.config import *
 
 #####################
 # CONFIG PARAMETERS #
@@ -20,7 +21,12 @@ DEBUG = True
 def main(camera_name, model_type, model_name, obj_name):
     robot_pos = [0 for _ in range(6)]
 
-    model = RGBModel(MODEL_PATH_PREFIX + get_model_path(model_type, model_name))
+    if COLOR_SCHEME == 'HSV':
+        model = HSVModel(MODEL_PATH_PREFIX + get_model_path(model_type, model_name))
+    elif COLOR_SCHEME == "RGB":
+        model = RGBModel(MODEL_PATH_PREFIX + get_model_path(model_type, model_name))
+    else:
+        raise Exception
 
     net = network.Net()
     while net.receive():

@@ -4,5 +4,5 @@
 
   cd pult
 
-  python imaginarium.py Bottom BottomCellR Front FrontCellB &
+  python imaginarium.py Bottom BottomCellR Front FrontBallY &
 )
