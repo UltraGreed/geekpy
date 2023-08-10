@@ -69,7 +69,6 @@ class MainWindow(QWidget):
     def receive_picture(self):
         while self.net.receive():
             if self.net.id == "ImageLink":
-                print(self.net.msg.obj)
                 if self.net.msg.obj == "NN_CellB":
                     self.right_path = self.net.msg.path     
                     self.received = True       

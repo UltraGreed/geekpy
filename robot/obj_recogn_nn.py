@@ -12,6 +12,7 @@ from base import network, message
 from base.message import FilteredObjects, ImageLink, X, Y, DEPTH, DIAMETER
 from object_recognition.model_class import InferenceModel
 
+import copy
 import sys
 import os
 from pathlib import Path
@@ -19,8 +20,6 @@ from pathlib import Path
 # ------------------------------------------ # 
 # Describe architecture of neural network    #
 # ------------------------------------------ #
-
-
 
 KERN_INIT   = 'he_uniform' #'glorot_uniform' #'ones' #'zeros'
 def Gen_Conv2D_Block(inp_layer, filters = 50, dilation = 1):
@@ -126,13 +125,18 @@ def create_model():
 # --------------------- #
 
 #MAIN_OUT_FOLDER = os.environ['PYTHONPATH'] + "/debug/" #"/ssd/recognition_neural/"
-MAIN_OUT_FOLDER = "/media/ssd/recognition_neural/"
+MAIN_OUT_FOLDER = "media/ssd/recognition_neural"
 NEURAL_MODELS   = "nn_models/"
+FPS = 4.0
 
 def Inference(model, image):
     nn_img = tf.image.resize(image/255.0, [128, 128], "nearest").numpy()
     nn_out = model.predict(nn_img[tf.newaxis, ...], verbose=0)
-    nn_out = tf.image.resize(nn_out, [256, 256], "nearest").numpy()[0, ..., 1]       
+
+    nn_out  = tf.cast(tf.argmax(nn_out, axis = -1), dtype=tf.float32)[0]
+    nn_out  = tf.reshape(nn_out, [128, 128, 1])
+
+    nn_out = tf.image.resize(nn_out, [256, 256], "nearest").numpy()[..., 0]  
     #print(nn_out.max(), nn_out.min())  
     return nn_out   
 
@@ -150,20 +154,25 @@ def main(argv):
 
     counter = 0
 
-    net = network.Net()
+    net = network.Net(timer=1/FPS)
     model = create_model()
+
     model.load_weights(f"nn_models/{object}/{object}").expect_partial()
     print("Model loaded")    
 
     obj_depth    = FilteredObjects().objs[object][DEPTH]
     robot_pos = [0 for i in range(6)]
     
-    inf_model = InferenceModel(lambda image: Inference(model, image), )
+    inf_model = InferenceModel(lambda image: Inference(model, image), 
+                               threshold_object_part = 0.00001,
+                               threshold_clean_part  = 0)
+
+    local_img_link = None 
 
     while net.receive():
-        if net.id == "ImageLink":
-            if net.msg.obj == camera:
-                file    = tf.io.read_file(net.msg.path)
+        if net.id == "Timer":
+            if local_img_link != None:            
+                file    = tf.io.read_file(local_img_link.path)
                 image   = tf.image.decode_png(file, channels = 3)
 
                 if inf_model.check_object(image.numpy()): 
@@ -177,15 +186,8 @@ def main(argv):
                                                 )
                     elif camera == "Bottom":
                         pos = obj_pos.get_obj_pos_bottom(robot_pos, obj_depth, (256,256), inf_model.object_center)
-                        
+                            
                     net.send(message.DetectedObject(x=float(pos[X]), y=float(pos[Y]), depth=float(pos[DEPTH]), obj=object))               
-
-                #DEBUG: Send grayscale output of neural network  
-                #nn_out = tf.stack([nn_out[0, ..., 1], nn_out[0, ..., 1],  nn_out[0, ..., 1]], axis = 2)      
-                
-                #DEBUG: Get argmax of channels
-                #nn_out  = tf.cast(tf.argmax(nn_out, axis = -1), dtype=tf.float32)[0]
-                #nn_out  = tf.reshape(nn_out, [128, 128, 1])
 
                 file_name  = f"{counter:05}.png"
 
@@ -201,7 +203,20 @@ def main(argv):
                 ))
 
                 counter += 1
+                local_img_link = None
+    
+
+        elif net.id == "ImageLink":
+            if net.msg.obj == camera:
+                local_img_link = copy.deepcopy(net.msg)
+                #DEBUG: Send grayscale output of neural network  
+                #nn_out = tf.stack([nn_out[0, ..., 1], nn_out[0, ..., 1],  nn_out[0, ..., 1]], axis = 2)      
                 
+                #DEBUG: Get argmax of channels
+                #nn_out  = tf.cast(tf.argmax(nn_out, axis = -1), dtype=tf.float32)[0]
+                #nn_out  = tf.reshape(nn_out, [128, 128, 1])
+
+               
         elif net.id == "Coord":
             robot_pos = net.msg.pos
 
