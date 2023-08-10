@@ -14,7 +14,7 @@ setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for proce
 PATH_PREFIX = "http://192.168.88.101"
 OBJECTS = sys.argv[1:]
 
-n_cols = math.ceil(int(math.sqrt(len(OBJECTS))))
+n_cols = math.ceil(math.sqrt(len(OBJECTS)))
 n_rows = math.ceil(len(OBJECTS) / n_cols)
 
 # Subscribe to messages.
