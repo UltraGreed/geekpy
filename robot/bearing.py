@@ -6,7 +6,7 @@ from base import network, message, mat
 from base.message import X, Y, YAW, DEPTH
 
 # Constants.
-BASE       = 0.4                       # 4 phones base (cross dist).
+BASE       = 0.37                     # 4 phones base (cross dist).
 DIST_TRASH = 1.5 * BASE                # Distance trashold to drop wrong distance defference.
 SIN_SAT    = 0.99                      # Sinus saturation to prevent wrong asin.
 LEFT, RIGHT, BACK, FRONT = 0, 1, 2, 3  # Phones ailases.
