@@ -10,6 +10,8 @@ from base import message, network
 _PORT_NAME = 'can0'
 _MAX_POWER = 7000
 
+_NO_SENSE = 200
+
 
 def send_raw_command(node, power):
     cmd = [ 0, 0, 0, 0, 0, 0]
@@ -26,6 +28,9 @@ def send_raw_command(node, power):
             current_power -= 1
 
         cmd[i] = current_power * rotation_params[i] * sign
+
+        if abs(cmd[i]) < _NO_SENSE:
+            cmd[i] = 0
 
     message = uavcan.equipment.esc.RawCommand(cmd=cmd)
     node.broadcast(message)
