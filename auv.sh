@@ -18,6 +18,7 @@
 
   python acoustic.py &
   python bearing.py 29500 30500 Cells &
+  python bearing.py 37000 33800 Frame &
 
   python gpio.py &
 
