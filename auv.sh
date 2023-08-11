@@ -17,7 +17,7 @@
   python ctd_uart.py &
 
   python acoustic.py &
-  python bearing.py 29500 30500 Frame &
+  python bearing.py 29500 30500 Cells &
 
   python gpio.py &
 
