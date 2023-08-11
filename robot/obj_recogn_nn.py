@@ -127,7 +127,7 @@ def create_model():
 #MAIN_OUT_FOLDER = os.environ['PYTHONPATH'] + "/debug/" #"/ssd/recognition_neural/"
 MAIN_OUT_FOLDER = "media/ssd/recognition_neural"
 NEURAL_MODELS   = "nn_models/"
-FPS = 4.0
+FPS = 2.0
 
 def Inference(model, image):
     nn_img = tf.image.resize(image/255.0, [128, 128], "nearest").numpy()
