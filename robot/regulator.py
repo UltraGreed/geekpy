@@ -10,7 +10,7 @@ from base.message import X, Y, YAW, AXIS
 ########### X ##### Y # DEPTH ### YAW # PITCH ## ROLL
 P   = [  1.00,   1.00,   0.50,   2.00,   1.50,   1.00]  # Proportional coefficients of regulator.
 D   = [  1.00,   1.00,   0.50,   2.00,   1.50,   1.00]  # Differential coefficients of regulator.
-MAX = [  0.10,   0.30,   0.30,  45.00,  45.00,  45.00]  # Maximal possible velocity in stabilization mode.
+MAX = [  0.10,   0.10,   0.30,  45.00,  45.00,  45.00]  # Maximal possible velocity in stabilization mode.
 MIN = [ -0.10,  -0.10,  -0.30, -45.00, -45.00, -45.00]  # Minimal possible velocity in stabilization mode.
 TIMER = 0.05                                            # 'Motion' message publication timer.
 MIN_STAB_DIST = 0.001                                   # Min distance to make stabilization.
