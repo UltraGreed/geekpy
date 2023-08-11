@@ -4,10 +4,10 @@ from base import network, message
 
 # Linear (1) & quadric (2) thrusters' spread by axis
 #######            X,      Y,   DEPTH,    YAW,  PITCH,   ROLL
-SPREAD1 = [[ -240.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 0: bow_left
-           [  240.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 1: bow_right
-           [  182.00,   0.00, -300.00,   0.00,  -1.00,   1.00],  # Thruster 2: middle_left
-           [ -182.00,   0.00, -300.00,   0.00,  -1.00,  -1.00],  # Thruster 3: middle_right
+SPREAD1 = [[ -300.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 0: bow_left
+           [  300.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 1: bow_right
+           [  160.00,   0.00, -300.00,   0.00,  -1.00,   1.00],  # Thruster 2: middle_left
+           [ -160.00,   0.00, -300.00,   0.00,  -1.00,  -1.00],  # Thruster 3: middle_right
            [ -280.00,  67.00,    0.00,   0.43,   0.00,  -0.00],  # Thruster 4: stern_left
            [  280.00,  67.00,    0.00,  -0.43,   0.00,   0.00]]  # Thruster 5: stern_right
 #######            X,      Y,   DEPTH,    YAW,  PITCH,   ROLL
