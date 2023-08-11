@@ -21,14 +21,14 @@
   python3 imu.py &
 
 # Objects simulation:    X    Y   OBJ    DISP PERIOD PROB DIST
-  python3 object.py    -5.5  5.5 BallR  0.10   0.25 0.98  1.0 &
-  python3 object.py    -6.5  6.5 BallY  0.10   0.25 0.98  1.0 &
-  python3 object.py    -7.5  5.5 BallG  0.10   0.25 0.98  1.0 &
-  python3 object.py   -10.5 12.0 CellR  0.10   0.25 0.98  1.0 &
-  python3 object.py   -10.5 11.5 CellY  0.10   0.25 0.98  1.0 &
-  python3 object.py   -10.5 11.0 CellB  0.10   0.25 0.98  1.0 &
-  # python3 object.py    -3   11   Frame  0.50   1.00 1.00  90.0 &
-  # SoundDelay simulation:
-  python3 acoustic.py -10.5 10.5 1.2      0.01 30000 9.95  50.0 &
-  python3 acoustic.py  -7.0 12.2 2.0      0.01 37500 9.95  50.0 &
+  # python3 object.py    -5.5  5.5 BallR  0.10   0.25 0.98  1.0 &
+  # python3 object.py    -6.5  6.5 BallY  0.10   0.25 0.98  1.0 &
+  # python3 object.py    -7.5  5.5 BallG  0.10   0.25 0.98  1.0 &
+  # python3 object.py   -10.5 12.0 CellR  0.10   0.25 0.98  1.0 &
+  # python3 object.py   -10.5 11.5 CellY  0.10   0.25 0.98  1.0 &
+  # python3 object.py   -10.5 11.0 CellB  0.10   0.25 0.98  1.0 &
+  # # python3 object.py    -3   11   Frame  0.50   1.00 1.00  90.0 &
+  # # SoundDelay simulation:
+  # python3 acoustic.py -10.5 10.5 1.2      0.01 30000 9.95  50.0 &
+  # python3 acoustic.py  -7.0 12.2 2.0      0.01 37500 9.95  50.0 &
 )
