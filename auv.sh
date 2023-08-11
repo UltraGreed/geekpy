@@ -13,7 +13,7 @@
   python spreader.py &
   python kotleta.py &
 
-  python ctd_i2c.py &
+#  python ctd_i2c.py &
   python ctd_uart.py &
 
   python acoustic.py &
