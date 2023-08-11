@@ -125,7 +125,7 @@ def create_model():
 # --------------------- #
 
 #MAIN_OUT_FOLDER = os.environ['PYTHONPATH'] + "/debug/" #"/ssd/recognition_neural/"
-MAIN_OUT_FOLDER = "media/ssd/recognition_neural"
+MAIN_OUT_FOLDER = "/media/ssd/recognition_neural"
 NEURAL_MODELS   = "nn_models/"
 FPS = 2.0
 
