@@ -1,6 +1,6 @@
 #!python3
 ### DO IT ONCE IN CONSOLE: export PYTHONPATH=$(realpath ..)
-import sys, setproctitle
+import sys, setproctitle, time
 from actions.tack import tack
 from actions.stab import stab
 from actions.goto import goto
@@ -54,17 +54,18 @@ detection.on(obj='CellR', timeout=10.0)
 tack(origin='Navigation', yaw=CORRECTION, dist=0.5, speed=0.4, dt=4.0, depth=0.5)
 stab(origin='CellR', yaw=CORRECTION, front=-0.065, right=0.035, dt=10.0, depth=1.0)
 key.on(key='Right', hold_time=1.0)
-stab(origin='CellR', yaw=CORRECTION, front=-0.065, right=-0.035, dt=10.0, depth=1.0)
-key.on(key='Left', hold_time=1.0)
+# stab(origin='CellR', yaw=CORRECTION, front=-0.065, right=-0.035, dt=10.0, depth=1.0)
+# key.on(key='Left', hold_time=1.0)
 tack(origin='Current', dist=1.0, speed=0.0, yaw=0.0, dt=3.0, depth=1.0)
 detection.off(obj='CellR', timeout=100.0)
 
 print('frame')
 detection.on(obj='Frame', timeout=10.0)
 tack(origin='Current', dist=1.0, speed=0.0, yaw=0.0, dt=5.0, depth=0.5)
-goto(origin='Frame', radius=1.0, speed=0.4, hold_time=4.0, depth=0.5)
-stab(origin='Frame', dt=5.0, depth=0.5)
-stab(origin='Frame', dt=8.0, depth=None)
+goto(origin='Frame', radius=1.0, speed=0.4, hold_time=8.0, depth=0.5)
+time.sleep(8.0)
+# stab(origin='Frame', dt=5.0, depth=0.5)
+# stab(origin='Frame', dt=8.0, depth=None)
 stab(origin='Frame', dt=5.0, depth=0.5)
 
 print('get back')
