@@ -44,7 +44,7 @@ CORRECTION = 15.0
 
 print('cells')
 detection.on(obj='Cells', timeout=10.0)
-goto(origin='Cells', radius=1.0, speed=0.4, hold_time=4.0, depth=0.4)
+goto(origin='Cells', radius=1.0, speed=0.4, hold_time=4.0, depth=0.5)
 stab(origin='Cells', yaw=CORRECTION, dt=10.0, depth=0.5)
 detection.off(obj='Cells', timeout=100.0)
 tack(origin='Navigation', yaw=CORRECTION, dist=1.0, speed=0.4, dt=4.0, depth=0.5)
@@ -63,12 +63,12 @@ print('frame')
 detection.on(obj='Frame', timeout=10.0)
 tack(origin='Current', dist=1.0, speed=0.0, yaw=0.0, dt=5.0, depth=0.5)
 goto(origin='Frame', radius=1.0, speed=0.4, hold_time=8.0, depth=0.5)
-time.sleep(8.0)
+time.sleep(7.0)
 # stab(origin='Frame', dt=5.0, depth=0.5)
 # stab(origin='Frame', dt=8.0, depth=None)
 stab(origin='Frame', dt=5.0, depth=0.5)
 
 print('get back')
-tack(origin='Navigation', yaw=-180.0, speed=0.4, dist=2.0, depth=0.5)
+tack(origin='Navigation', yaw=-180.0, speed=0.6, dist=3.0, depth=0.5)
 
 print(' '.join(sys.argv), "end!")
