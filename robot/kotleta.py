@@ -21,11 +21,8 @@ def send_raw_command(node, power):
         sign = int(math.copysign(1, power.power[i]))
         current_power = round(abs(power.power[i]) / 100 * _MAX_POWER)
 
-        if current_power > _MAX_POWER:
-            current_power = _MAX_POWER
-
-        if sign > 0 and current_power != 0:
-            current_power -= 1
+        if current_power > 8191:
+            current_power = 8191 
 
         cmd[i] = current_power * rotation_params[i] * sign
 
