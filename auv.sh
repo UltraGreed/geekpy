@@ -7,9 +7,8 @@
   python3 scene.py &
 
 #  python physoptic.py &
-  python navigation.py &
+  python main.py &
   python odometry.py &
-  python regulator.py &
   python spreader.py &
   python kotleta.py &
 

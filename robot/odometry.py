@@ -40,9 +40,7 @@ while net.receive():
         net.send(sensor)                                                 # Send sensor data to consumers
         net.send(raw)                                                    # and raw data to charts.
 
-    elif net.id == 'Motion':        # If Motion message has come
-        speed      = net.msg.speed  # then save speed vector
-        speed_time = time.time()    # and current time.
-
     elif net.id == 'Coord':     # If robot cordinates obtained
         yaw = net.msg.pos[YAW]  # then save robot yaw.
+        speed      = net.msg.speed  # then save speed vector
+        speed_time = time.time()    # and current time.

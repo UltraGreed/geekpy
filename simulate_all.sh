@@ -3,9 +3,8 @@
   export PYTHONPATH=$(pwd)
 
   cd robot
-  python3 navigation.py &
+  python3 main.py &
   python3 odometry.py &
-  python3 regulator.py &
   python3 scene.py &
   # Acoustic objects detection:
   python3 bearing.py  29500 30500 Cells &

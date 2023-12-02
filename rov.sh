@@ -6,9 +6,8 @@
   cd robot
 
 #  python physoptic.py &
-  python navigation.py &
   python odometry.py &
-  python regulator.py &
+  python main.py &
   python spreader.py &
   python kotleta.py &
 

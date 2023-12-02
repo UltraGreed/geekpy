@@ -62,12 +62,11 @@ class SensorRU(Message):
 
 # Used navigation data
 class Coord(Message):
-    def __init__(self, pos_x=0.0, pos_y=0.0, pos_depth=0.0, pos_yaw=0.0, pos_pitch=0.0, pos_roll=0.0,
-                       vel_x=0.0, vel_y=0.0, vel_depth=0.0, vel_yaw=0.0, vel_pitch=0.0, vel_roll=0.0,
-                       acc_x=0.0, acc_y=0.0, acc_depth=0.0, acc_yaw=0.0, acc_pitch=0.0, acc_roll=0.0):
-        self.pos = [pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll]  # Vehicle position
-        self.vel = [vel_x, vel_y, vel_depth, vel_yaw, vel_pitch, vel_roll]  # Vehicle velocity
-        self.acc = [acc_x, acc_y, acc_depth, acc_yaw, acc_pitch, acc_roll]  # Vehicle acceleration
+    def __init__(self):
+        self.pos   = [0.0] * AXIS  # Current vehicle position, m | deg
+        self.vel   = [0.0] * AXIS  # Current vehicle velocity, m/s | deg/sec
+        self.acc   = [0.0] * AXIS  # Current vehicle acceleration, m/s^2 | deg/sec^2
+        self.speed = [0.0] * AXIS  # Required vehicle speed, m/s | deg/sec
 
 
 ############################
@@ -83,12 +82,6 @@ class Tack(Message):
         self.time = time  # Time of movement control
         self.speed = [speed_x, speed_y, speed_depth, speed_yaw, speed_pitch, speed_roll]  # Speed mode, m/s, deg/s
         self.stab = [stab_x, stab_y, stab_depth, stab_yaw, stab_pitch, stab_roll]  # Stabilization mode, m, deg
-
-
-# Motion speed vector, m/s and deg/s (from regulator to spreader)
-class Motion(Message):  # Motion speed, m/s, deg/s
-    def __init__(self, x=0.0, y=0.0, depth=0.0, yaw=0.0, pitch=0.0, roll=0.0):
-        self.speed = [x, y, depth, yaw, pitch, roll]
 
 
 # Control vector of each truster power, % (from spreader to electronic speed controller)
