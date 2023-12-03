@@ -144,7 +144,6 @@ class MainWindow(QMainWindow):
                 m.SensorRU(), 
                 m.Coord(), 
                 m.Tack(),
-                m.Motion(), 
                 m.Control(), 
                 m.InitRobot(), 
                 m.InitObject(), 
