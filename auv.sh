@@ -9,7 +9,6 @@
 #  python physoptic.py &
   python main.py &
   python odometry.py &
-  python spreader.py &
   python kotleta.py &
 
 #  python ctd_i2c.py &
