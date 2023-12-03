@@ -12,6 +12,15 @@ _MAX_POWER = 7000
 
 _NO_SENSE = 200
 
+# Linear (1) & quadric (2) thrusters' spread by axis
+#######            X,      Y,   DEPTH,    YAW,  PITCH,   ROLL
+SPREAD1 = [[ -300.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 0: bow_left
+           [  300.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 1: bow_right
+           [  160.00,   0.00, -300.00,   0.00,  -1.00,   1.00],  # Thruster 2: middle_left
+           [ -160.00,   0.00, -300.00,   0.00,  -1.00,  -1.00],  # Thruster 3: middle_right
+           [ -280.00,  67.00,    0.00,   0.43,   0.00,  -0.00],  # Thruster 4: stern_left
+           [  280.00,  67.00,    0.00,  -0.43,   0.00,   0.00]]  # Thruster 5: stern_right
+
 
 def send_raw_command(node, power):
     cmd = [ 0, 0, 0, 0, 0, 0]
@@ -33,6 +42,10 @@ def send_raw_command(node, power):
     node.broadcast(message)
 
 
+def matrixing(speed):
+    return (SPREAD1 @ speed).tolist()
+
+
 def main():
     setproctitle.setproctitle(' '.join(sys.argv)) 
 
@@ -45,6 +58,11 @@ def main():
 
         if net.id == "Control":
             power.power = net.msg.power
+            send_raw_command(node, power)
+            continue
+
+        if net.id == "Coord":
+            power.power = matrixing(net.msg.speed)
             send_raw_command(node, power)
 
     node.close()
