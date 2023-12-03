@@ -5,6 +5,8 @@ import math
 import dronecan
 from dronecan import uavcan
 
+import numpy as np
+
 from base import message, network
 
 _PORT_NAME = 'can0'
@@ -43,7 +45,7 @@ def send_raw_command(node, power):
 
 
 def matrixing(speed):
-    return (SPREAD1 @ speed).tolist()
+    return (np.array(SPREAD1) @ np.array(speed)).tolist()
 
 
 def main():
