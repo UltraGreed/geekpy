@@ -177,7 +177,7 @@ class InferenceModel:
         ]
         b_layer = np.where(np.asarray(self.image_weight_raw) == 0, 255, self.image_weight_raw * 255)
 
-        return np.dstack((np.asarray(layer, dtype='uint8') for layer in (r_layer, g_layer, b_layer)))
+        return np.dstack(tuple(np.asarray(layer, dtype='uint8') for layer in (r_layer, g_layer, b_layer)))
 
     # Function creating a black and white array image of object
     def get_grayscale(self):
@@ -191,7 +191,7 @@ class InferenceModel:
 
         b_layer = np.where(self.image_weight == 0, 255, self.image_weight * 255)
 
-        image_grayscale = np.dstack((np.asarray(layer, dtype='uint8') for layer in (r_layer, g_layer, b_layer)))
+        image_grayscale = np.dstack(tuple(np.asarray(layer, dtype='uint8') for layer in (r_layer, g_layer, b_layer)))
 
         cross_color = np.asarray([0, 255, 0], dtype='uint8') if self.check_object() else np.asarray([255, 0, 0],
                                                                                                     dtype='uint8')

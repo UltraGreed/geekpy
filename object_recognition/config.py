@@ -3,7 +3,7 @@
 COLOR_SCHEME = 'HSV'
 # LOADING PARAMETERS #
 MODEL_DIRECTORY = 'models/'
-OBJ_NAME = "BallR"
+OBJ_NAME = "CellYsim"
 # OBJECT RECOGNITION PARAMETERS #
 # Part of maximum image weight sum needed to recognize object
 THRESHOLD_OBJECT = 0.001
