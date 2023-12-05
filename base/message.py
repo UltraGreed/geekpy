@@ -62,11 +62,14 @@ class SensorRU(Message):
 
 # Used navigation data
 class Coord(Message):
-    def __init__(self):
-        self.pos   = [0.0] * AXIS  # Current vehicle position, m | deg
-        self.vel   = [0.0] * AXIS  # Current vehicle velocity, m/s | deg/sec
-        self.acc   = [0.0] * AXIS  # Current vehicle acceleration, m/s^2 | deg/sec^2
-        self.speed = [0.0] * AXIS  # Required vehicle speed, m/s | deg/sec
+    def __init__(self, pos_x=0.0, pos_y=0.0, pos_depth=0.0, pos_yaw=0.0, pos_pitch=0.0, pos_roll=0.0,
+                       vel_x=0.0, vel_y=0.0, vel_depth=0.0, vel_yaw=0.0, vel_pitch=0.0, vel_roll=0.0,
+                       acc_x=0.0, acc_y=0.0, acc_depth=0.0, acc_yaw=0.0, acc_pitch=0.0, acc_roll=0.0,
+                       spd_x=0.0, spd_y=0.0, spd_depth=0.0, spd_yaw=0.0, spd_pitch=0.0, spd_roll=0.0):
+        self.pos   = [pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll]  # Vehicle position
+        self.vel   = [vel_x, vel_y, vel_depth, vel_yaw, vel_pitch, vel_roll]  # Vehicle velocity
+        self.acc   = [acc_x, acc_y, acc_depth, acc_yaw, acc_pitch, acc_roll]  # Vehicle acceleration
+        self.speed = [spd_x, spd_y, spd_depth, spd_yaw, spd_pitch, spd_roll]  # Vehicle speed
 
 
 ############################
