@@ -4,7 +4,7 @@
   export PYTHONPATH=$(pwd)
 
   cd robot
-  python3 scene.py &
+  # python3 scene.py &
 
 #  python physoptic.py &
   python main.py &
@@ -14,9 +14,9 @@
 #  python ctd_i2c.py &
   python ctd_uart.py &
 
-  python acoustic.py &
-  python bearing.py 29500 30500 Cells &
-  python bearing.py 37000 38000 Frame &
+  # python acoustic.py &
+  # python bearing.py 29500 30500 Cells &
+  # python bearing.py 37000 38000 Frame &
 
   python gpio.py &
 
@@ -26,7 +26,7 @@
   python3 zed.py Front  16909428 False        False &
 
   #                   camera_name  model_type  model_name   object_name
-  python3 obj_recogn.py Bottom        sub      CellR           CellR &
-  python3 obj_recogn.py Bottom        sub      CellY           CellY &
-  python3 obj_recogn.py Front         sub      BallY           BallY &
+  # python3 obj_recogn.py Bottom        sub      CellR           CellR &
+  # python3 obj_recogn.py Bottom        sub      CellY           CellY &
+  # python3 obj_recogn.py Front         sub      BallY           BallY &
 )
