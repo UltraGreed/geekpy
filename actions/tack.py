@@ -7,8 +7,9 @@ from base.message import YAW, X, Y
 # Timer period to send 'Tack' message to regulator.
 TIMER = 0.25
 
+
 ## Robot ahead moving function with given yaw
-def tack(origin='Current', yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None):
+def tack(origin='Current', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None):
     start_time = time.time()
 
     if not mat.is_num(dist) and not mat.is_num(dt):
@@ -19,19 +20,21 @@ def tack(origin='Current', yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None):
     pos   = network.wait_message('Coord').pos
 
     # Read target yaw.
-    target_yaw = None
     if origin == 'Navigation':                # Navigation yaw
-        target_yaw = yaw                      # = yaw from param.
+        original_yaw = yaw                      # = yaw from param.
     elif origin == 'Current':                 # Current yaw
-        target_yaw = yaw + pos[YAW]           # = yaw + current robot yaw.
+        original_yaw = yaw + pos[YAW]           # = yaw + current robot yaw.
     else:                                     # If origin object is necessary
+        if has_target:
+            raise "Tack shouldn't have both target and object at the same time"
         obj   = network.wait_message('FilteredObjects').objs[origin]
-        target_yaw = mat.direction(pos, obj)  # and save target yaw.
+        original_yaw = mat.direction(pos, obj)  # and save target yaw.
 
-    # Infinit loop until reach destination.
+    target_yaw = original_yaw
+
+    # Infinite loop until reach destination.
     net = network.Net(timer=TIMER)  # Wait for timer or message.
     while net.receive():            # Wait for timer ticks and messages.
-
         if net.id == 'Timer':                           # If timer tick occures then:
             d = mat.dist2d(start, pos)                  # Calc distance
             net.send(message.Tack(time=1.0,             # Control time.speed_x=0.0,  # Send 'Tack'
@@ -47,3 +50,9 @@ def tack(origin='Current', yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None):
 
         elif net.id == 'Coord':  # If coordinates has come
             pos = net.msg.pos    # then save robot position.
+
+        elif net.id == 'Target' and has_target:
+            if net.msg.is_detected:
+                target_yaw = original_yaw + net.msg.offset_yaw
+            else:
+                target_yaw = 0  # TODO: choose either reset to initial or keep old value

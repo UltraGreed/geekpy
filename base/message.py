@@ -143,6 +143,12 @@ class DetectedObject(Message):
         self.pos = [x, y, depth]
 
 
+class Target(Message):
+    def __init__(self, offset_yaw=0, is_detected=False):
+        self.offset_yaw = offset_yaw
+        self.is_detected = is_detected
+
+
 # Filtered objects sended from scene
 class FilteredObjects(Message):
     def __init__(self, objs=None):
