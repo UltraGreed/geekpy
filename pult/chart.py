@@ -132,7 +132,7 @@ while net.receive():
                 value = [value]
             finally:
                 for i, field_value in enumerate(value):
-                    if net.id in ('Sensor', 'Tack', 'Coord', 'Motion', 'InitRobot'):
+                    if net.id in ('Sensor', 'Tack', 'Coord', 'InitRobot'):
                         field_type = {X: 'X', Y: 'Y', DEPTH: 'DEPTH', YAW: 'YAW', PITCH: 'PITCH', ROLL: 'ROLL'}[i]
                     else:
                         field_type = str(i)  # TODO: hardcode sensor, tack, and others with X Y DEPTH YAW PITCH ROLL
