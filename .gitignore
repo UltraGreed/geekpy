@@ -6,3 +6,4 @@ venv369/
 object_recognition/models
 object_recognition/images
 debug
+nn_train/nn_train.py
