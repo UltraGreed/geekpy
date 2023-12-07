@@ -9,7 +9,7 @@ from keras import Model, layers
 import object_recognition.object_position as obj_pos
 
 from base import network, message
-from base.message import FilteredObjects, ImageLink, X, Y, DEPTH, DIAMETER
+from base.message import Target, ImageLink, X, Y, DEPTH, DIAMETER
 from object_recognition.model_class import InferenceModel
 
 import copy
@@ -70,7 +70,7 @@ def create_model():
     Conv2D_11_Layer = Gen_Conv2D_Block_11(Conv2D_11_Layer, filters = 48)
     Conv2D_11_Layer = Gen_Conv2D_Block_11(Conv2D_11_Layer, filters = 24)
     Conv2D_11_Layer = Gen_Conv2D_Block_11(Conv2D_11_Layer, filters = 12)
-    Conv2D_11_Layer = Gen_Conv2D_Block_11(Conv2D_11_Layer, filters = 2, act_func = "softmax")
+    Conv2D_11_Layer = Gen_Conv2D_Block_11(Conv2D_11_Layer, filters = 2)
 
     model = keras.Model(Input, Conv2D_11_Layer)
 
@@ -86,7 +86,8 @@ def create_model():
 
 MAIN_OUT_FOLDER = os.environ['PYTHONPATH'] + "/debug/" #"/ssd/recognition_neural/"
 #MAIN_OUT_FOLDER = "/media/ssd/recognition_neural"
-NEURAL_MODELS   = "nn_models/"
+THRESHOLD_DETECT = 2.0
+NEURAL_MODELS    = "nn_models/"
 FPS = 5.0
 
 
@@ -98,8 +99,7 @@ def Inference(model, image):
     #nn_out  = tf.cast(tf.argmax(nn_out, axis = -1), dtype=tf.float32)[0]
     #nn_out  = tf.reshape(nn_out, [128, 128, 1])
 
-    #nn_out = tf.image.resize(nn_out, [256, 256], "nearest").numpy()[..., 0]  
-    nn_out = tf.stack([nn_out[0, ..., 1], nn_out[0, ..., 1],  nn_out[0, ..., 1]], axis = 2)      
+    #nn_out = tf.stack([nn_out[0, ..., 0], nn_out[0, ..., 1],  0], axis = 2)      
     #print(nn_out.max(), nn_out.min())  
     return nn_out   
 
@@ -128,6 +128,15 @@ def main(argv):
     
     local_img_link = None 
 
+    _X = np.arange(0, 128)
+    _Y = np.arange(0, 128)
+    X,Y = np.meshgrid(_X, _Y) 
+
+    t_X = tf.convert_to_tensor(X)
+    t_Y = tf.convert_to_tensor(Y)
+    tens_pos = tf.stack([t_X, t_Y], axis = 2)
+
+
     while net.receive():
         if net.id == "Timer":
             if local_img_link != None:            
@@ -136,8 +145,23 @@ def main(argv):
 
                 file_name  = f"{counter:05}.png"
 
-                
-                tf_img = tf.cast(Inference(model, image)*255.0, tf.uint8)
+                tf_img = tf.nn.softmax(Inference(model, image))
+                obj_mask = tf.math.argmax(tf_img[0,...], axis = 2)
+
+                obj_mask_pixels = tf.reduce_sum(obj_mask)
+                obj_mask_mean   = tf.stack([obj_mask, obj_mask], axis = 2)
+                mean_center     = tf.math.reduce_sum(tf.math.multiply(obj_mask_mean, tens_pos), [0, 1], keepdims = True)/obj_mask_pixels
+                mean_center     = tf.where(tf.math.is_nan(mean_center), 0, mean_center)
+                mean_center     = tf.cast(mean_center[0,0], "int64")
+                #tf_img = tf.stack([tf.zeros([128, 128]), tf_img[0, ..., 0], tf_img[0, ..., 1]], axis = 2) 
+
+                tf_img = tf.stack([obj_mask, obj_mask, obj_mask], axis = 2) 
+
+
+                tf_img = tf.cast(tf_img*255, "uint8").numpy()
+                tf_img[mean_center[1], mean_center[0]] = [255, 0, 0]
+                tf_img = tf.image.resize(tf_img, [256, 256], "nearest")
+
                 save_image = tf.image.encode_png(tf_img)
                 tf.io.write_file(save_folder + file_name, save_image)
 
@@ -148,9 +172,16 @@ def main(argv):
                     counter=counter
                 ))
 
+                obj_detected = obj_mask_pixels.numpy() > 128*128*THRESHOLD_DETECT
+                net.send(Target(
+                    mean_center[1],
+                    obj_detected,
+                    missing_counter
+                ))
+
                 counter += 1
                 local_img_link = None
-                missing_counter = 0
+                missing_counter -= 1
     
 
         elif net.id == "ImageLink":

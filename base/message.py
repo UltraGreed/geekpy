@@ -144,11 +144,11 @@ class DetectedObject(Message):
 
 
 class Target(Message):
-    def __init__(self, offset_yaw=0, is_detected=False):
+    def __init__(self, offset_yaw=0, is_detected=False, counter = 0):
         self.offset_yaw = offset_yaw
         self.is_detected = is_detected
-
-
+        self.counter = counter
+        
 # Filtered objects sended from scene
 class FilteredObjects(Message):
     def __init__(self, objs=None):
