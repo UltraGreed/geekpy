@@ -48,7 +48,11 @@ while net.receive():
         link = PATH_PREFIX + net.msg.path
         label_widget = label_widgets[net.msg.obj]
 
-        image_widgets[net.msg.obj] = ImageTk.PhotoImage(Image.fromarray(iio.imread(link)).resize((512, 512)))
+        try:
+            image_widgets[net.msg.obj] = ImageTk.PhotoImage(Image.fromarray(iio.imread(link)).resize((512, 512)))
+        except TimeoutError:
+            print("hz cheto upalo v imaginariume")
+            continue
 
         label_widget.config(image=image_widgets[net.msg.obj])
 
