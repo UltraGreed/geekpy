@@ -16,8 +16,8 @@ BAUDRATE = 115200
 PACKAGE_FREQ = 1200  # Packages per second
 PORT_NAME = '/dev/ttyUSB0'
 
-EARTH_ROTATION = 2.6656648454566797e-05
-SENSOR_ERROR = 1.588
+EARTH_ROTATION = -0.008
+SENSOR_ERROR = 1.5
 #################
 
 
@@ -87,8 +87,6 @@ class PhysopticSerial(serial.Serial):
     def bytes_to_unit(data):
         rate = int.from_bytes((data[2], data[3], data[1]), byteorder='big', signed=True) * 5 / 2 ** 24 / math.pi * 180
 
-        rate += EARTH_ROTATION
-
         rate *= SENSOR_ERROR
 
         counter = data[4]
@@ -117,14 +115,10 @@ def send_yaw_thread():
 
     net = network.Net()
     with PhysopticSerial(port=PORT_NAME, baudrate=BAUDRATE) as ser:
-        delta_pos_list = [0]
-        acc_yaw_list = [0]
         vel_yaw_list = [0]
 
         last_time = 0
         while True:
-            delta_pos_list = [delta_pos_list[-1]]  # We keep last element to calculate speed
-            acc_yaw_list = [acc_yaw_list[-1]]
             vel_yaw_list = [vel_yaw_list[-1]]
 
             # results in 20 packages per second (one package is an average of 60 data units)
@@ -132,29 +126,23 @@ def send_yaw_thread():
                 try:
                     data_unit = ser.get_data_unit()
 
-                    delta_pos_list.append(vel_yaw_list[-1] * (time.time() - last_time))
-
-                    acc_yaw_list.append((vel_yaw_list[-1] - data_unit.rate) / (time.time() - last_time))
-
                     vel_yaw_list.append(data_unit.rate)
 
-                    last_time = time.time()
                 except ByteLostException:
-                    delta_pos_list.append(delta_pos_list[-1])
-                    acc_yaw_list.append(acc_yaw_list[-1])
                     vel_yaw_list.append(vel_yaw_list[-1])
 
                     print('Byte lost')  # TODO: handle error.
 
-            delta_pos = sum(delta_pos_list)
-            acc_yaw = sum(acc_yaw_list) / len(acc_yaw_list)
-            vel_yaw = sum(vel_yaw_list) / len(vel_yaw_list)
+            vel_yaw = sum(vel_yaw_list) / len(vel_yaw_list) - EARTH_ROTATION
+            delta_pos = vel_yaw * (time.time() - last_time)
+
+            last_time = time.time()
 
             lock.acquire()
-            pos_yaw += delta_pos
+            pos_yaw = (pos_yaw + delta_pos + 180) % 360 - 180
             lock.release()
 
-            net.send(message.SensorRU(pos_yaw=pos_yaw, vel_yaw=vel_yaw, acc_yaw=acc_yaw))
+            net.send(message.SensorRU(pos_yaw=pos_yaw, vel_yaw=vel_yaw))
 
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.

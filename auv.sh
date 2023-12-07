@@ -6,7 +6,7 @@
   cd robot
   # python3 scene.py &
 
-#  python physoptic.py &
+  python physoptic.py &
   python main.py &
   python odometry.py &
   python kotleta.py &
