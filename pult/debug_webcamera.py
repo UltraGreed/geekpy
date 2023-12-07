@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from base import network, message
 from base.message import ImageLink
 import threading
@@ -11,7 +13,7 @@ import sys
 
 class MainWindow(QWidget):
     
-    def __init__(self, fps = 10):
+    def __init__(self, fps = 5):
         super(MainWindow, self).__init__()
         self.setWindowTitle("PyQt6 Camera test")
         self.setGeometry(0,0,720*2,750)
@@ -55,7 +57,7 @@ class MainWindow(QWidget):
         self.fps_timer.start()
 
         self.right_path = None
-        self.received = False
+        self.received   = False
 
         self.net_thread = threading.Thread(target = self.receive_picture)
         self.net_thread.start()
@@ -64,32 +66,35 @@ class MainWindow(QWidget):
         print(error_string)
 
     def capture_image(self):
-        self.image_capture.capture() 
+        if self.image_capture.isReadyForCapture():
+            self.image_capture.capture() 
 
     def receive_picture(self):
         while self.net.receive():
             if self.net.id == "ImageLink":
-                if self.net.msg.obj == "NN_CellB":
+                if self.net.msg.obj == "NN_Target":
                     self.right_path = self.net.msg.path     
                     self.received = True       
 
-    def image_captured(self, id, image):   
+    def image_captured(self, id, image):  
         pixmap = QPixmap.fromImage(image).copy(280,0,720,720)
         self.left_pixmap.setPixmap(pixmap)
 
         self.counter += 1
         self.counter %= 20
         pixmap.scaled(256,256).save(f"debug/{self.counter:05d}.png")
-        
+
+         
         self.net.send(ImageLink(
-            obj  = "Bottom",
+            obj  = "Front",
             path = f"debug/{self.counter:05d}.png",
             file = f"{self.counter:05d}.png",
             counter = self.counter
         ))
-
-        while self.received == False:
-            pass
+ 
+        #while self.received == False:
+        #    pass
+        
 
         if self.right_path != None:
             pixmap = QPixmap()
