@@ -14,7 +14,7 @@ import setproctitle
 
 sys.path.append('./')
 
-from base.message import ImageLink, Sensor
+from base.message import ImageLink, Sensor, SensorZ
 from base.network import Net
 from base.timer import Timer
 
@@ -177,8 +177,12 @@ def main(name: str, serial: np.uint32, is_stream: bool = False, pose_tracking: b
                     y = 90
 
                 net.send(Sensor(
-                    pos_yaw=-x.item(), pos_pitch=z.item(), pos_roll=y - ROLL_OFFSET,
-                    vel_yaw=vy.item(), vel_pitch=vz.item(), vel_roll=-vx.item(),
+                    pos_pitch=z.item(), pos_roll=y - ROLL_OFFSET,
+                    vel_pitch=vz.item(), vel_roll=-vx.item(),
+                ))
+                net.send(SensorZ(
+                    pos_yaw=-x.item(),
+                    vel_yaw=vy.item(),
                 ))
 
             time2 = time.time()

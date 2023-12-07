@@ -97,62 +97,36 @@ class PhysopticSerial(serial.Serial):
         return self.bytes_to_unit(self.get_data_bytes())
 
 
-# Thread for pitch receiving
-def get_init_robot_thread():
-    global pos_yaw
-
-    net = network.Net()
-    while net.receive():
-        if net.id == "InitRobot":
-            lock.acquire()  # Acquire the lock
-            pos_yaw = net.msg.pos[YAW]  # Modify the shared variable
-            lock.release()  # Release the lock
-
-
-# Thread for depth meter reading
-def send_yaw_thread():
-    global pos_yaw
-
-    net = network.Net()
-    with PhysopticSerial(port=PORT_NAME, baudrate=BAUDRATE) as ser:
-        vel_yaw_list = [0]
-
-        last_time = 0
-        while True:
-            vel_yaw_list = [vel_yaw_list[-1]]
-
-            # results in 20 packages per second (one package is an average of 60 data units)
-            for i in range(PACKAGE_FREQ // 20):
-                try:
-                    data_unit = ser.get_data_unit()
-
-                    vel_yaw_list.append(data_unit.rate)
-
-                except ByteLostException:
-                    vel_yaw_list.append(vel_yaw_list[-1])
-
-                    print('Byte lost')  # TODO: handle error.
-
-            vel_yaw = sum(vel_yaw_list) / len(vel_yaw_list) - EARTH_ROTATION
-            delta_pos = vel_yaw * (time.time() - last_time)
-
-            last_time = time.time()
-
-            lock.acquire()
-            pos_yaw = (pos_yaw + delta_pos + 180) % 360 - 180
-            lock.release()
-
-            net.send(message.SensorRU(pos_yaw=pos_yaw, vel_yaw=vel_yaw))
-
-
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
 pos_yaw = 0
-lock = threading.Lock()
 
-# Create and start the threads
-yaw_receiver = threading.Thread(target=get_init_robot_thread)
-yaw_sender = threading.Thread(target=send_yaw_thread)
+# Depth meter reading
+net = network.Net()
+with PhysopticSerial(port=PORT_NAME, baudrate=BAUDRATE) as ser:
+    vel_yaw_list = [0]
 
-yaw_receiver.start()
-yaw_sender.start()
+    last_time = 0
+    while True:
+        vel_yaw_list = [vel_yaw_list[-1]]
+
+        # results in 20 packages per second (one package is an average of 60 data units)
+        for i in range(PACKAGE_FREQ // 20):
+            try:
+                data_unit = ser.get_data_unit()
+
+                vel_yaw_list.append(data_unit.rate)
+
+            except ByteLostException:
+                vel_yaw_list.append(vel_yaw_list[-1])
+
+                print('Byte lost')  # TODO: handle error.
+
+        vel_yaw = sum(vel_yaw_list) / len(vel_yaw_list) - EARTH_ROTATION
+        delta_pos = vel_yaw * (time.time() - last_time)
+
+        last_time = time.time()
+
+        pos_yaw = (pos_yaw + delta_pos + 180) % 360 - 180
+
+        net.send(message.Sensor(pos_yaw=pos_yaw, vel_yaw=vel_yaw))
