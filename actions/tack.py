@@ -53,6 +53,6 @@ def tack(origin='Current', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=No
 
         elif net.id == 'Target' and has_target:
             if net.msg.is_detected:
-                target_yaw = original_yaw + net.msg.offset_yaw
+                target_yaw = pos[YAW] + net.msg.offset_yaw
             else:
-                target_yaw = 0  # TODO: choose either reset to initial or keep old value
+                target_yaw = original_yaw  # TODO: choose either reset to initial or keep old value
