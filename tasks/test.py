@@ -18,7 +18,7 @@ print(task_name, 'begin...')
 network.Net().send(InitRobot(yaw=0, depth=0))
 
 tack(origin='Navigation', yaw=0.0, dist=1.0, speed=0.0, depth=0.5)
-tack(origin='Navigation', yaw=-30, dist=1.0, speed=0.0, depth=0.5, dt=3)
+tack(origin='Navigation', yaw=30, dist=1.0, speed=0.0, depth=0.5, dt=3)
 tack(origin='Navigation', yaw=-30, dist=1.0, speed=0.0, depth=0.5, dt=3)
 tack(origin='Navigation', yaw=0.0, dist=1.0, speed=0.0, depth=0)
 
