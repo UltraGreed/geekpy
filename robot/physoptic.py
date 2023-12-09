@@ -106,7 +106,7 @@ net = network.Net()
 with PhysopticSerial(port=PORT_NAME, baudrate=BAUDRATE) as ser:
     vel_yaw_list = [0]
 
-    last_time = 0
+    last_time = time.time()
     while True:
         vel_yaw_list = [vel_yaw_list[-1]]
 
