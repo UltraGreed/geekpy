@@ -104,6 +104,7 @@ pos_yaw = 0
 # Depth meter reading
 net = network.Net()
 with PhysopticSerial(port=PORT_NAME, baudrate=BAUDRATE) as ser:
+    is_connected = True
     vel_yaw_list = [0]
 
     last_time = time.time()
@@ -118,9 +119,21 @@ with PhysopticSerial(port=PORT_NAME, baudrate=BAUDRATE) as ser:
                 vel_yaw_list.append(data_unit.rate)
 
             except ByteLostException:
-                vel_yaw_list.append(vel_yaw_list[-1])
+                print('!\nPhysoptic byte lost\n!')  # TODO: handle error.
+            except serial.serialutil.SerialException:
+                print('!\nPhysoptica naebnulas\'!!!\n!')
 
-                print('Byte lost')  # TODO: handle error.
+                pos_yaw = 0
+
+                ser.close()
+
+                time.sleep(1)
+
+                try:
+                    ser.open()
+                    print('Physoptica reconnected')
+                except serial.serialutil.SerialException:
+                    print('!\nPhysoptica reconnected failed!\n!')
 
         vel_yaw = sum(vel_yaw_list) / len(vel_yaw_list) - EARTH_ROTATION
         delta_pos = vel_yaw * (time.time() - last_time)

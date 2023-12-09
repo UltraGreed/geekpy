@@ -30,5 +30,5 @@
   # python3 obj_recogn.py Bottom        sub      CellY           CellY &
 
   #                   camera_name  model_type  model_name
-#   python3 obj_recogn_target.py Front sub      TargetDirt           &
+   python3 obj_recogn_target.py Front sub      Target           &
 )
