@@ -1,6 +1,7 @@
 import sys
 import setproctitle
 import math
+import random
 
 import dronecan
 from dronecan import uavcan
@@ -10,7 +11,7 @@ import numpy as np
 from base import message, network
 
 _MAX_POWER = 7000
-_NO_SENSE = 0.0285
+_MIN_POWER = 200
 
 # Linear (1) & quadric (2) thrusters' spread by axis
 #######            X,      Y,   DEPTH,    YAW,  PITCH,   ROLL
@@ -27,15 +28,15 @@ def send_raw_command(node, power):
     rotation_params = [ 1, -1, -1, 1, -1, 1 ]
 
     for i in range(len(cmd)):
-        sign = int(math.copysign(1, power.power[i]))
-        current_power = round(abs(power.power[i]) / 100 * _MAX_POWER)
+        sign = int(math.copysign(1, power[i]))
+        current_power = round(abs(power[i]) / 100 * _MAX_POWER)
 
         if current_power > 8191:
             current_power = 8191 
 
         cmd[i] = current_power * rotation_params[i] * sign
 
-        if abs(cmd[i]) < _NO_SENSE * _MAX_POWER:
+        if abs(cmd[i]) < _MIN_POWER and power / (_MIN_POWER / _MAX_POWER) < random.random():
             cmd[i] = 0
 
     node.broadcast(uavcan.equipment.esc.RawCommand(cmd=cmd))
@@ -57,12 +58,11 @@ def main():
 
         if net.id == "Control":
             power.power = net.msg.power
-            send_raw_command(node, power)
-            continue
+            send_raw_command(node, power.power)
 
         if net.id == "Coord":
             power.power = matrixing(net.msg.speed)
-            send_raw_command(node, power)
+            send_raw_command(node, power.power)
 
     node.close()
 
