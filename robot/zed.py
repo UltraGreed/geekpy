@@ -1,37 +1,142 @@
-import math
 import os
-import socket
 import sys
+import threading
 import time
 from datetime import datetime
+from enum import IntFlag
 from pathlib import Path
+from typing import Callable
 
-import cv2
 import numpy as np
+
 import pyzed.sl as sl
 import setproctitle
 
 sys.path.append("./")
 
+import argparse
+import logging
+
 from base.message import ImageLink, Sensor, SensorZ
 from base.network import Net
-from base.timer import Timer
 from PIL import Image
 
-import argparse  # IMP: argparse
-import logging  # IMP: logging
-
-setproctitle.setproctitle(" ".join(sys.argv))
-
+## CONSTANTS
 SAVE_PATH = "/media/ssd/photo"
 ROLL_OFFSET = 3.3
 
-sock_set = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-sock_set.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-sock_set.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-PORT_FRONT = 1111
-PORT_BOTTOM = 1112
+class SaveMode(IntFlag):
+    Left = 1
+    Right = 2
+    Depth = 4
+
+    @classmethod
+    def get_str(cls) -> str:
+        return " ".join([f"'{i._name_}'" for i in cls])
+
+
+class Action(argparse.Action):
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: str | list[str],
+        option_string: str | None = None,
+    ) -> None:
+        flag_val = SaveMode(0)
+        name2val = {i._name_.lower(): i for i in SaveMode}
+        vals = [v for val in values for v in val.lower().split("|")]
+
+        for v in vals:
+            if v not in name2val.keys():
+                raise argparse.ArgumentError(
+                    self, f"invalid choice: '{v}' (choose from {SaveMode.get_str()})"
+                )
+            flag_val |= name2val[v]
+
+        setattr(namespace, self.dest, SaveMode(flag_val))
+
+
+## END CONSTANTS
+
+## PARSER
+parser = argparse.ArgumentParser(
+    # prog="Zed camera",
+    description="Provide the camera photo and position",
+)
+
+parser.add_argument(
+    "--serial", required=True, type=int, help="The camera serial number"
+)
+parser.add_argument(
+    "--camera-orientation",
+    required=True,
+    choices=["Front", "Bottom"],
+    help="The camera orientation",
+)
+parser.add_argument("--img-capture", action="store_true", help="Enable image capture")
+parser.add_argument(
+    "--disable-orientation", action="store_false", help="Disable orientation publishing"
+)
+parser.add_argument(
+    "--sensor-buffer", type=int, default=5, help="The amount of data to be approximated"
+)
+parser.add_argument(
+    "--sensor-frequency",
+    type=int,
+    default=20,
+    help="The frequency of receiving data from the sensor in Hz",
+)
+parser.add_argument(
+    "--photo-frequency",
+    type=int,
+    default=5,
+    help="The frequency of image acquisition in Hz",
+)
+parser.add_argument(
+    "--save-mode",
+    type=str,
+    nargs="+",
+    action=Action,
+    default=SaveMode.Left,
+    help=f"Images saving mode ({SaveMode.get_str()})",
+)
+parser.add_argument(
+    "--log-level",
+    type=str.upper,
+    choices=list(logging._levelToName.values()),
+    default=logging.WARNING,
+    help="Logging level",
+)
+
+args = parser.parse_args()
+## END PARSER
+
+
+## LOGGER
+logging.basicConfig(
+    level=logging._nameToLevel[args.log_level],
+    format=f"[%(asctime)s] %(levelname)s(%(filename)s | {args.camera_orientation}): %(message)s",
+)
+## END LOGGER
+
+
+setproctitle.setproctitle(f"{args.camera_orientation}_{parser.prog}")
+
+
+# TODO:
+def lin_approx(data: np.ndarray, times: np.ndarray) -> np.ndarray:
+    s_x = np.sum(times)
+    s_x2 = np.sum(np.power(times, 2))
+
+    s_y = np.sum(data, axis=0)
+    s_xy = np.sum(data * times[..., None], axis=0)
+    n = data.shape[0]
+
+    a = (n * s_xy - s_x * s_y) / (n * s_x2 - s_x**2)
+    # b = (s_y - a * s_x) / 2
+    return a
 
 
 class TimestampHandler:
@@ -39,11 +144,11 @@ class TimestampHandler:
         self.ts = sl.Timestamp()
 
     def is_new(self, sensor) -> bool:
-        new_ = sensor.timestamp.get_microseconds() > self.ts.get_microseconds()
-        if new_:
+        is_new = sensor.timestamp.get_microseconds() > self.ts.get_microseconds()
+        if is_new:
             self.ts = sensor.timestamp
 
-        return new_
+        return is_new
 
 
 def quat2eul(qx, qy, qz, qw) -> np.ndarray:
@@ -62,92 +167,38 @@ def quat2eul(qx, qy, qz, qw) -> np.ndarray:
     return np.rad2deg((yaw, roll, pitch))
 
 
-def send_img(image, port):
-    des_res = (480, 270)
-    arr = image.get_data()
-    b, g, r, _ = [np.asarray(arr[:, :, layer], dtype="uint8") for layer in range(4)]
+def get_saver(rotate: bool, compress_level: int) -> Callable[[sl.Mat, str], None]:
+    def saver(img: sl.Mat, path: str) -> None:
+        png = Image.fromarray(img.get_data()).convert("RGB")
+        if rotate:
+            png.rotate(-90)
+        png.save(fp=path, compress_level=compress_level)
 
-    raw_img = np.dstack((b, g, r))
-    raw_img = cv2.resize(raw_img, des_res)
-
-    _, jpg_buff = cv2.imencode(".jpg", raw_img)
-
-    if sys.getsizeof(jpg_buff) > 65535:
-        ratio = 65535 / sys.getsizeof(jpg_buff)
-        raw_img = cv2.resize(
-            raw_img, (math.floor(des_res[0] * ratio), math.floor(des_res[1] * ratio))
-        )
-        _, jpg_buff = cv2.imencode(".jpg", raw_img)
-        print(
-            f"extra compressed:{(math.floor(des_res[0] * ratio), math.floor(des_res[1] * ratio))}"
-        )
-
-    sock_set.sendto(jpg_buff.tobytes(), ("255.255.255.255", port))
+    return saver
 
 
-def img_cap():
-    pass
-
-
-def sensor_cap():
-    pass
-
-
-def main(
+def img_cap(
     *,
-    name: str,
-    serial: int,
-    is_stream: bool = False,
-    pose_tracking: bool = False,
+    zed,
+    camera_orientation: str,
+    runtime_params,
+    frequency: float = 1 / 5,
     is_img_capture: bool = False,
-    fps: int = 20,
-    photo_capture_delay: float = 1 / 5,
+    save_mode: SaveMode = SaveMode.Left,
+    compress_level: int = 3,
 ) -> None:
-    net = Net(1 / fps)
-    photo_timer = Timer(photo_capture_delay)
-
-    # REMOVE
-    is_img_capture = True
-    # END REMOVE
-
-    print(f"[{name}] Configure init parameters")
-    init_params = sl.InitParameters()
-    init_params.set_from_serial_number(serial)
-    init_params.camera_resolution = sl.RESOLUTION.HD720
-    init_params.coordinate_system = sl.COORDINATE_SYSTEM.RIGHT_HANDED_Z_UP
-    init_params.coordinate_units = sl.UNIT.METER
-    # init_params.depth_minimum_distance = 0  # Units equals coordinate_units
-    init_params.depth_maximum_distance = 5  # Units equals coordinate_units
-    init_params.depth_mode = sl.DEPTH_MODE.ULTRA
-    # init_params.sensing_mode = sl.SENSING_MODE.FILL
-    init_params.camera_fps = 30
-    init_params.camera_image_flip = sl.FLIP_MODE.OFF
-
-    print(f"[{name}] Open the camera")
-    zed = sl.Camera()
-    zed_status = zed.open(init_params)
-    while zed_status != sl.ERROR_CODE.SUCCESS:
-        print(f"[{name}] {repr(zed_status)}")
-        zed_status = zed.open(init_params)
-
-    print(f"[{name}] Configure runtime parameters")
-    runtime_params = sl.RuntimeParameters()
-    # runtime_params.sensing_mode = sl.SENSING_MODE.FILL
-
-    print(f"[{name}] Init sensors data")
-    sensors_data = sl.SensorsData()
-
-    resolution = (1280, 720)  # TODO: уменьшить под VGA
-    image = sl.Mat(*resolution, sl.MAT_TYPE.U8_C1)
-    depth_map = sl.Mat(*resolution, sl.MAT_TYPE.U8_C1)
+    net = Net(frequency)
 
     save_path = (
-        SAVE_PATH + "/" + name + "/" + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
+        SAVE_PATH
+        + "/"
+        + camera_orientation
+        + "/"
+        + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
     )
-    if not os.path.exists(save_path):
-        Path(save_path).mkdir(parents=True, exist_ok=True)
+    saver = get_saver(camera_orientation == "Bottom", compress_level)
 
-    ts_handler = TimestampHandler()
+    img = sl.Mat()
     photo_counter = 0
 
     while net.receive():
@@ -155,12 +206,12 @@ def main(
             if net.msg is None:
                 continue
 
-            if net.msg.camera == name:
+            if net.msg.camera == camera_orientation:
                 is_img_capture = True
                 save_path = (
                     SAVE_PATH
                     + "/"
-                    + name
+                    + camera_orientation
                     + "/"
                     + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
                 )
@@ -171,92 +222,187 @@ def main(
             if net.msg is None:
                 continue
 
-            if net.msg.camera == name:
+            if net.msg.camera == camera_orientation:
                 is_img_capture = False
 
-        if net.id == "Timer":
+        if net.id == "Timer" and is_img_capture:
             zed_status = zed.grab(runtime_params)
             if zed_status != sl.ERROR_CODE.SUCCESS:
-                print(f"[{name}] {repr(zed_status)}")
+                logging.warning(repr(zed_status))
                 continue
 
-            if photo_timer.is_unlock and is_img_capture:
-                start = time.time()
-                if name == "Front":
-                    zed.retrieve_image(image, sl.VIEW.LEFT)
-                elif name == "Bottom":
-                    zed.retrieve_image(image, sl.VIEW.RIGHT)
+            photo_counter += 1
+            file = f"{photo_counter:05d}.png"
 
-                zed.retrieve_image(depth_map, sl.VIEW.DEPTH)
+            left_path = f"{save_path}/left_{file}"
+            right_path = f"{save_path}/right_{file}"
+            depth_path = f"{save_path}/depth_{file}"
 
-                photo_counter += 1
+            if save_mode & SaveMode.Left:
+                zed.retrieve_image(img, sl.VIEW.LEFT)
 
-                file = f"{photo_counter:05d}.png"
-                path = f"{save_path}/{file}"
+                saver(img, left_path)
 
-                b, g, r, _ = Image.fromarray(depth_map.get_data()).split()
-                png = Image.merge("RGB", (r, g, b))
+            if save_mode & SaveMode.Right:
+                zed.retrieve_image(img, sl.VIEW.RIGHT)
 
-                if name == "Bottom":
-                    png = png.rotate(-90)
+                saver(img, right_path)
 
-                png.save(
-                    fp=path, compress_level=3
-                )  # quality = 0-100; compress_level= 0-9
-                net.send(
-                    ImageLink(obj=name, path=path, file=file, counter=photo_counter)
+            if save_mode & SaveMode.Depth:
+                zed.retrieve_image(img, sl.VIEW.DEPTH)
+
+                saver(img, depth_path)
+
+            net.send(
+                ImageLink(
+                    obj=camera_orientation,
+                    path=left_path,
+                    file=file,
+                    counter=photo_counter,
                 )
+            )
 
-                print(time.time() - start)
 
-            if pose_tracking:
-                zed.get_sensors_data(sensors_data, sl.TIME_REFERENCE.CURRENT)
+def sensor_cap(
+    *, zed, runtime_params, buffer: int = 5, frequency: float = 1 / 20
+) -> None:
+    net = Net()
 
-                eul = np.zeros((5, 3))  # deg
-                vel = np.zeros((5, 3))  # deg/sec
+    ts_handler = TimestampHandler()
+    sensors_data = sl.SensorsData()
 
-                count = 0
-                zed_imu = sensors_data.get_imu_data()
+    eul = np.zeros((buffer, 3))  # deg
+    vel = np.zeros((buffer, 3))  # deg/sec
+    times = np.zeros((buffer, 1), dtype=float)
 
-                while count < 5:
-                    if not ts_handler.is_new(sensors_data.get_imu_data()):
-                        zed.get_sensors_data(sensors_data, sl.TIME_REFERENCE.CURRENT)
-                        continue
-                    zed_imu = sensors_data.get_imu_data()
+    while True:
+        zed_status = zed.grab(runtime_params)
+        if zed_status != sl.ERROR_CODE.SUCCESS:
+            logging.warning(repr(zed_status))
+            continue
 
-                    eul[count] = quat2eul(*zed_imu.get_pose().get_orientation().get())
-                    eul[count, 1] = min(max(-eul[count, 1] - 90, -90), 90)
-                    vel[count] = zed_imu.get_angular_velocity()
+        count = 0
+        while count < 5:
+            zed.get_sensors_data(sensors_data, sl.TIME_REFERENCE.CURRENT)
+            zed_imu = sensors_data.get_imu_data()
 
-                    count += 1
+            if not ts_handler.is_new(zed_imu):
+                continue
 
-                x, y, z = np.mean(eul, axis=0).tolist()
-                vx, vy, vz = np.mean(vel, axis=0).tolist()
+            eul[count] = quat2eul(*zed_imu.get_pose().get_orientation().get())
+            eul[count, 1] = min(max(-eul[count, 1] - 90, -90), 90)
+            vel[count] = zed_imu.get_angular_velocity()
+            times[count] = ts_handler.ts.get_nanoseconds()
 
-                net.send(
-                    Sensor(
-                        pos_pitch=z,
-                        pos_roll=y - ROLL_OFFSET,
-                        vel_pitch=vz,
-                        vel_roll=-vx,
-                    )
-                )
+            count += 1
 
-                net.send(
-                    SensorZ(
-                        pos_yaw=-x,
-                        vel_yaw=vy,
-                    )
-                )
+        x, y, z = lin_approx(eul, times).tolist()
+        vx, vy, vz = lin_approx(vel, times).tolist()
 
-    print(f"[{name}] Close the camera")
+        logging.debug(
+            f"X: {x:5f}, Y: {y:5f}, Z: {z:5f}, VX: {vx:5f}, VY: {vy:5f}, VZ: {vz:5f}"
+        )
+
+        net.send(
+            Sensor(
+                pos_pitch=z,
+                pos_roll=y - ROLL_OFFSET,
+                vel_pitch=vz,
+                vel_roll=-vx,
+            )
+        )
+
+        net.send(
+            SensorZ(
+                pos_yaw=-x,
+                vel_yaw=vy,
+            )
+        )
+
+        time.sleep(frequency)
+
+
+def main(
+    *,
+    name: str,
+    serial: int,
+    disable_orientation: bool = False,
+    is_img_capture: bool = False,
+    sensor_buffer: int = 5,
+    sensor_frequency: float = 1 / 20,
+    photo_frequency: float = 1 / 5,
+    save_mode: SaveMode = SaveMode.Left,
+) -> None:
+    logging.info("Configure init parameters")
+    init_params = sl.InitParameters()
+    init_params.set_from_serial_number(serial)
+    init_params.camera_resolution = sl.RESOLUTION.HD720
+    init_params.coordinate_system = sl.COORDINATE_SYSTEM.RIGHT_HANDED_Z_UP
+    init_params.coordinate_units = sl.UNIT.METER
+    # init_params.depth_minimum_distance = 0  # Units equals coordinate_units
+    init_params.depth_maximum_distance = 5  # Units equals coordinate_units
+    init_params.depth_mode = sl.DEPTH_MODE.ULTRA
+    init_params.camera_fps = 30
+    init_params.camera_image_flip = sl.FLIP_MODE.OFF
+
+    logging.info("Open the camera")
+    zed = sl.Camera()
+    zed_status = zed.open(init_params)
+    while zed_status != sl.ERROR_CODE.SUCCESS:
+        logging.warning(repr(zed_status))
+        zed_status = zed.open(init_params)
+
+    logging.info("Configure runtime parameters")
+    runtime_params = sl.RuntimeParameters()
+    # runtime_params.sensing_mode = sl.SENSING_MODE.FILL
+
+    threads = []
+
+    # image
+    threads.append(
+        threading.Thread(
+            target=img_cap,
+            kwargs=dict(
+                zed=zed,
+                runtime_params=runtime_params,
+                is_img_capture=is_img_capture,
+                frequency=photo_frequency,
+                save_mode=save_mode,
+            ),
+        )
+    )
+
+    # sensors
+    if not disable_orientation:
+        threads.append(
+            threading.Thread(
+                target=sensor_cap,
+                kwargs=dict(
+                    zed=zed,
+                    runtime_params=runtime_params,
+                    frequency=sensor_frequency,
+                    buffer=sensor_buffer,
+                ),
+            )
+        )
+
+    [t.start() for t in threads]
+
+    for t in threads:
+        t.join()
+
+    logging.info("Close the camera")
     zed.close()
 
 
 if __name__ == "__main__":
-    name = sys.argv[1]
-    serial = int(sys.argv[2])
-    pose_tracking = sys.argv[3] == "True"
-    is_stream = len(sys.argv) == 5 and sys.argv[4] == "True"
-
-    main(name=name, serial=serial, is_stream=is_stream, pose_tracking=pose_tracking)
+    main(
+        name=args.camera_orientation,
+        serial=args.serial,
+        disable_orientation=args.disable_orientation,
+        is_img_capture=args.img_capture,
+        sensor_buffer=args.sensor_buffer,
+        sensor_frequency=args.sensor_frequency,
+        photo_frequency=args.photo_frequency,
+        save_mode=args.save_mode,
+    )
