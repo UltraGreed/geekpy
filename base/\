@@ -26,8 +26,8 @@ class Net:
         self.sock_set.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self.sock_get = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.sock_get.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.sock_get.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock_get.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
+        self.sock_get.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock_get.bind(('', get_port))
         self.data = ["Unknown", None]
 
