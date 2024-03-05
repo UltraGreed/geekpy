@@ -13,23 +13,42 @@ if not hasattr(socket, "SO_REUSEPORT"):
 # Network communication class
 class Net:
     # Initialize network communication
-    def __init__(self, timer=-1, timer_delay=0.5, get_port=31000, set_ports=None, set_ip="255.255.255.255", serializer=pickle.dumps, deserializer=pickle.loads):
+    def __init__(
+        self,
+        timer=-1,
+        timer_delay=0.5,
+        get_port=31000,
+        set_ports=None,
+        set_ip="255.255.255.255",
+        serializer=pickle.dumps,
+        deserializer=pickle.loads,
+    ):
+        self.timer = timer
+
         if set_ports is None:
             set_ports = [31000]
-        self.timer = timer
+
         self.set_ip = set_ip
         self.set_ports = set_ports
+
         self.last_OSError = time.time()
-        self.next      = time.time() + self.timer + timer_delay
-        self.sock_set = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.next = time.time() + self.timer + timer_delay
+
+        self.sock_set = socket.socket(
+            socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP
+        )
         self.sock_set.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self.sock_set.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        self.sock_get = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+
+        self.sock_get = socket.socket(
+            socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP
+        )
         self.sock_get.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        self.sock_get.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock_get.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
-        self.sock_get.bind(('', get_port))
+        self.sock_get.bind(("", get_port))
+
         self.data = ["Unknown", None]
+
         self.serializer = serializer
         self.deserializer = deserializer
 
@@ -51,7 +70,7 @@ class Net:
             try:
                 self.sock_set.sendto(buf, (self.set_ip, port))
             except OSError as err:
-                if (time.time() - self.last_OSError > DELAY_OSError):
+                if time.time() - self.last_OSError > DELAY_OSError:
                     self.last_OSError = time.time()
                     print("ERROR: OSError:", err)
 
@@ -61,7 +80,7 @@ class Net:
             now = time.time()
             if now > self.next:
                 self.next += self.timer
-                self.data = ['Timer', None]
+                self.data = ["Timer", None]
                 return True
             self.sock_get.settimeout(self.next - now)
         try:
@@ -69,13 +88,13 @@ class Net:
         except socket.timeout:
             if self.timer > 0:
                 self.next += self.timer
-                self.data = ['Timer', None]
+                self.data = ["Timer", None]
             else:
                 print("ERROR: UnknownTimeout")
-                self.data = ['UnknownTimeout', None]
+                self.data = ["UnknownTimeout", None]
             return True
         except BlockingIOError as err:
-            self.data = ['BlockingIOError', None]
+            self.data = ["BlockingIOError", None]
             print("ERROR: BlockingIOError", err)
             return True
         else:
@@ -86,7 +105,7 @@ class Net:
 
 
 # Identification name of the received message (ClassName)
-def wait_message(id=''):
+def wait_message(id=""):
     net = Net()  # Will wait for messages without timer.
     while net.receive():  # Wait all messages.
         if net.id == id:  # If id is necessary then
