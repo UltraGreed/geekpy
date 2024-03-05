@@ -13,7 +13,7 @@ if not hasattr(socket, "SO_REUSEPORT"):
 # Network communication class
 class Net:
     # Initialize network communication
-    def __init__(self, timer=-1, timer_delay=0.5, get_port=31000, set_ports=None, set_ip="255.255.255.255"):
+    def __init__(self, timer=-1, timer_delay=0.5, get_port=31000, set_ports=None, set_ip="255.255.255.255", serializer=pickle.dumps, deserializer=pickle.loads):
         if set_ports is None:
             set_ports = [31000]
         self.timer = timer
@@ -30,6 +30,8 @@ class Net:
         self.sock_get.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self.sock_get.bind(('', get_port))
         self.data = ["Unknown", None]
+        self.serializer = serializer
+        self.deserializer = deserializer
 
     # Identification name of the received message (ClassName)
     @property
@@ -45,7 +47,7 @@ class Net:
     def send(self, set_msg):
         for port in self.set_ports:
             name = set_msg.id
-            buf = pickle.dumps([name, set_msg])
+            buf = self.serializer([name, set_msg])
             try:
                 self.sock_set.sendto(buf, (self.set_ip, port))
             except OSError as err:
@@ -63,7 +65,7 @@ class Net:
                 return True
             self.sock_get.settimeout(self.next - now)
         try:
-            buf, addr = self.sock_get.recvfrom(65535)
+            buf, _ = self.sock_get.recvfrom(65535)
         except socket.timeout:
             if self.timer > 0:
                 self.next += self.timer
@@ -77,7 +79,7 @@ class Net:
             print("ERROR: BlockingIOError", err)
             return True
         else:
-            self.data = pickle.loads(buf)
+            self.data = self.deserializer(buf)
             print(type(self.data))
             print(type(self.data[1]))
             return True
