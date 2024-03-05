@@ -1,3 +1,4 @@
+import inspect
 import json
 
 # Aliases of navigation vector elements (AXIS = size)
@@ -274,3 +275,15 @@ class LogShow(Message):
         self.port = port
 
 """
+
+
+# get all message from this file as dict {name: class}
+def get_msg_table():
+    import message
+
+    table = {}
+    for name, obj in inspect.getmembers(message):
+        if inspect.isclass(obj):
+            table[name] = obj
+
+    return table

@@ -1,7 +1,6 @@
 import network
-import message
 
-net = network.Net()
+net = network.Net(serialization_type="json")
 
 while net.receive():
     print(net.id)

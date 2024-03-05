@@ -1,13 +1,52 @@
 import copy
 import pickle
+import json
 import socket
 import time
 
+import message
+
+msg_table = message.get_msg_table()
 
 DELAY_OSError = 5.0
 
 if not hasattr(socket, "SO_REUSEPORT"):
     socket.SO_REUSEPORT = socket.SO_REUSEADDR
+
+
+class MessageJSONEncoder(json.JSONEncoder):
+    def default(self, o: list):
+        try:
+            assert isinstance(o[1], message.Message)
+            return json.dumps([o[0], o[1].__dict__])
+        except AssertionError:
+            pass
+
+        return super().default(o)
+
+
+def serialize(obj: list, type="pickle") -> bytes:
+    if type == "pickle":
+        return pickle.dumps(obj)
+    elif type == "json":
+        return MessageJSONEncoder().default(obj).encode("utf-8")
+    else:
+        raise TypeError
+
+
+# ahuet ono rabotaet
+def as_message(obj: list):
+    msg = msg_table[obj[0]](**(obj[1]))
+    return [obj[0], msg]
+
+
+def deserialize(data: bytes, type="pickle"):
+    if type == "pickle":
+        return pickle.loads(data)
+    elif type == "json":
+        return as_message(json.loads(data.decode("utf-8")))
+    else:
+        raise TypeError
 
 
 # Network communication class
@@ -20,8 +59,7 @@ class Net:
         get_port=31000,
         set_ports=None,
         set_ip="255.255.255.255",
-        serializer=pickle.dumps,
-        deserializer=pickle.loads,
+        serialization_type="pickle",
     ):
         self.timer = timer
 
@@ -49,8 +87,7 @@ class Net:
 
         self.data = ["Unknown", None]
 
-        self.serializer = serializer
-        self.deserializer = deserializer
+        self.serialization_type = serialization_type
 
     # Identification name of the received message (ClassName)
     @property
@@ -66,7 +103,7 @@ class Net:
     def send(self, set_msg):
         for port in self.set_ports:
             name = set_msg.id
-            buf = self.serializer([name, set_msg])
+            buf = serialize(obj=[name, set_msg], type=self.serialization_type)
             try:
                 self.sock_set.sendto(buf, (self.set_ip, port))
             except OSError as err:
@@ -98,9 +135,7 @@ class Net:
             print("ERROR: BlockingIOError", err)
             return True
         else:
-            self.data = self.deserializer(buf)
-            print(type(self.data))
-            print(type(self.data[1]))
+            self.data = deserialize(buf, self.serialization_type)
             return True
 
 
