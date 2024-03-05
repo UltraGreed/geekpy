@@ -77,7 +77,7 @@ parser.add_argument(
 )
 parser.add_argument("--img-capture", action="store_true", help="Enable image capture")
 parser.add_argument(
-    "--disable-orientation", action="store_false", help="Disable orientation publishing"
+    "--disable-orientation", action="store_true", help="Disable orientation publishing"
 )
 parser.add_argument(
     "--sensor-buffer", type=int, default=5, help="The amount of data to be approximated"
@@ -106,7 +106,7 @@ parser.add_argument(
     "--log-level",
     type=str.upper,
     choices=list(logging._levelToName.values()),
-    default=logging.WARNING,
+    default=logging._levelToName[logging.WARNING],
     help="Logging level",
 )
 
@@ -126,7 +126,7 @@ setproctitle.setproctitle(f"{args.camera_orientation}_{parser.prog}")
 
 
 # TODO:
-def lin_approx(data: np.ndarray, times: np.ndarray) -> np.ndarray:
+def lin_approx(data: np.ndarray, times: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     s_x = np.sum(times)
     s_x2 = np.sum(np.power(times, 2))
 
@@ -135,8 +135,8 @@ def lin_approx(data: np.ndarray, times: np.ndarray) -> np.ndarray:
     n = data.shape[0]
 
     a = (n * s_xy - s_x * s_y) / (n * s_x2 - s_x**2)
-    # b = (s_y - a * s_x) / 2
-    return a
+    b = (s_y - a * s_x) / n
+    return a, b
 
 
 class TimestampHandler:
@@ -196,6 +196,8 @@ def img_cap(
         + "/"
         + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
     )
+    if is_img_capture and not os.path.exists(save_path):
+        Path(save_path).mkdir(parents=True, exist_ok=True)
     saver = get_saver(camera_orientation == "Bottom", compress_level)
 
     img = sl.Mat()
@@ -203,27 +205,28 @@ def img_cap(
 
     while net.receive():
         if net.id == "PhotoOn":
-            if net.msg is None:
+            if net.msg is None or net.msg.camera != camera_orientation:
                 continue
 
-            if net.msg.camera == camera_orientation:
-                is_img_capture = True
-                save_path = (
-                    SAVE_PATH
-                    + "/"
-                    + camera_orientation
-                    + "/"
-                    + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
-                )
-                if not os.path.exists(save_path):
-                    Path(save_path).mkdir(parents=True, exist_ok=True)
+            logging.info("Image capture enable")
+
+            is_img_capture = True
+            save_path = (
+                SAVE_PATH
+                + "/"
+                + camera_orientation
+                + "/"
+                + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
+            )
+            if not os.path.exists(save_path):
+                Path(save_path).mkdir(parents=True, exist_ok=True)
 
         if net.id == "PhotoOff":
-            if net.msg is None:
+            if net.msg is None or net.msg.camera != camera_orientation:
                 continue
 
-            if net.msg.camera == camera_orientation:
-                is_img_capture = False
+            logging.info("Image capture disable")
+            is_img_capture = False
 
         if net.id == "Timer" and is_img_capture:
             zed_status = zed.grab(runtime_params)
@@ -233,30 +236,33 @@ def img_cap(
 
             photo_counter += 1
             file = f"{photo_counter:05d}.png"
-
-            left_path = f"{save_path}/left_{file}"
-            right_path = f"{save_path}/right_{file}"
-            depth_path = f"{save_path}/depth_{file}"
+            photos = {"left": "", "right": "", "depth": ""}
 
             if save_mode & SaveMode.Left:
                 zed.retrieve_image(img, sl.VIEW.LEFT)
+                path = f"{save_path}/left_{file}"
+                saver(img, path)
 
-                saver(img, left_path)
+                photos["left"] = path
 
             if save_mode & SaveMode.Right:
                 zed.retrieve_image(img, sl.VIEW.RIGHT)
+                path = f"{save_path}/right_{file}"
+                saver(img, path)
 
-                saver(img, right_path)
+                photos["right"] = path
 
             if save_mode & SaveMode.Depth:
                 zed.retrieve_image(img, sl.VIEW.DEPTH)
+                path = f"{save_path}/depth_{file}"
+                saver(img, path)
 
-                saver(img, depth_path)
+                photos["depth"] = path
 
             net.send(
                 ImageLink(
                     obj=camera_orientation,
-                    path=left_path,
+                    path=photos,
                     file=file,
                     counter=photo_counter,
                 )
@@ -273,7 +279,7 @@ def sensor_cap(
 
     eul = np.zeros((buffer, 3))  # deg
     vel = np.zeros((buffer, 3))  # deg/sec
-    times = np.zeros((buffer, 1), dtype=float)
+    times = np.zeros(buffer)
 
     while True:
         zed_status = zed.grab(runtime_params)
@@ -283,6 +289,7 @@ def sensor_cap(
 
         count = 0
         while count < 5:
+            time.sleep(1 / 400)
             zed.get_sensors_data(sensors_data, sl.TIME_REFERENCE.CURRENT)
             zed_imu = sensors_data.get_imu_data()
 
@@ -292,16 +299,20 @@ def sensor_cap(
             eul[count] = quat2eul(*zed_imu.get_pose().get_orientation().get())
             eul[count, 1] = min(max(-eul[count, 1] - 90, -90), 90)
             vel[count] = zed_imu.get_angular_velocity()
-            times[count] = ts_handler.ts.get_nanoseconds()
+            times[count] = ts_handler.ts.get_nanoseconds() - times[(count - 1) % buffer]
 
             count += 1
 
-        x, y, z = lin_approx(eul, times).tolist()
-        vx, vy, vz = lin_approx(vel, times).tolist()
+        delay = times[-1] - times[-2]
 
-        logging.debug(
-            f"X: {x:5f}, Y: {y:5f}, Z: {z:5f}, VX: {vx:5f}, VY: {vy:5f}, VZ: {vz:5f}"
-        )
+        a, b = lin_approx(eul, times)
+        x, y, z = (a * delay + b).tolist()
+        a, b = lin_approx(vel, times)
+        vx, vy, vz = (a * delay + b).tolist()
+
+        # logging.debug(
+        #     f"X: {x:5f}, Y: {y:5f}, Z: {z:5f}, VX: {vx:5f}, VY: {vy:5f}, VZ: {vz:5f}"
+        # )
 
         net.send(
             Sensor(
@@ -359,6 +370,7 @@ def main(
     threads = []
 
     # image
+    logging.info("Init image capture thread")
     threads.append(
         threading.Thread(
             target=img_cap,
@@ -368,12 +380,14 @@ def main(
                 is_img_capture=is_img_capture,
                 frequency=photo_frequency,
                 save_mode=save_mode,
+                camera_orientation=name,
             ),
         )
     )
 
     # sensors
     if not disable_orientation:
+        logging.info("Init orientation capture thread")
         threads.append(
             threading.Thread(
                 target=sensor_cap,
@@ -396,13 +410,22 @@ def main(
 
 
 if __name__ == "__main__":
+    logging.info(f"Camera orientation: {args.camera_orientation}")
+    logging.info(f"Camera serial number: {args.serial}")
+    logging.info(f"Orientation capture: {not args.disable_orientation}")
+    logging.info(f"Image capture: {args.img_capture}")
+    logging.info(f"Sensor data buffer: {args.sensor_buffer}")
+    logging.info(f"Sensor sending frequency: {args.sensor_frequency} Hz")
+    logging.info(f"Photo capture frequency: {args.photo_frequency} Hz")
+    logging.info(f"Image capture mode: {args.save_mode}")
+
     main(
         name=args.camera_orientation,
         serial=args.serial,
         disable_orientation=args.disable_orientation,
         is_img_capture=args.img_capture,
         sensor_buffer=args.sensor_buffer,
-        sensor_frequency=args.sensor_frequency,
-        photo_frequency=args.photo_frequency,
+        sensor_frequency=1 / args.sensor_frequency,
+        photo_frequency=1 / args.photo_frequency,
         save_mode=args.save_mode,
     )
