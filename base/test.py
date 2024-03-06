@@ -1,7 +1,9 @@
-import network
+import sys
+sys.path.append("./")
 
-net = network.Net(serialization_type="json")
+from base import network
+
+net = network.Net()
 
 while net.receive():
-    print(net.id)
-    print(type(net.msg))
+    print(net.msg)
