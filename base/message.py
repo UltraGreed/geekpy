@@ -279,7 +279,7 @@ class LogShow(Message):
 
 # get all message from this file as dict {name: class}
 def get_msg_table():
-    import message
+    from base import message
 
     table = {}
     for name, obj in inspect.getmembers(message):

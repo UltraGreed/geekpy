@@ -4,7 +4,7 @@ import json
 import socket
 import time
 
-import message
+from base import message
 
 msg_table = message.get_msg_table()
 
