@@ -15,8 +15,9 @@ net_gd = network.Net(
 
 stop_event = threading.Event()
 
+# should be different or there will be recursion
 TX_MSGS = [m.Coord, m.PhotoOn, m.PhotoOff]
-RX_MSGS = [m.ImageLink, m.TestMessage]
+RX_MSGS = [m.ImageLink]
 
 
 def tx_thread(stop):
