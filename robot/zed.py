@@ -169,7 +169,8 @@ def quat2eul(qx, qy, qz, qw) -> np.ndarray:
 
 def get_saver(rotate: bool, compress_level: int) -> Callable[[sl.Mat, str], None]:
     def saver(img: sl.Mat, path: str) -> None:
-        png = Image.fromarray(img.get_data()).convert("RGB")
+        b, g, r, _ = Image.fromarray(img.get_data()).split()
+        png = Image.merge("RGB", (r, g, b))
         if rotate:
             png.rotate(-90)
         png.save(fp=path, compress_level=compress_level)
