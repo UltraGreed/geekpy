@@ -36,7 +36,10 @@ def serialize(obj: list, type="pickle") -> bytes:
 
 # ahuet ono rabotaet
 def as_message(obj: list):
-    msg = msg_table[obj[0]](**(obj[1]))
+    msg = msg_table[obj[0]]()
+    for k, v in obj[1].items():
+        setattr(msg, k, v)
+
     return [obj[0], msg]
 
 
