@@ -178,6 +178,7 @@ class FilteredObjects(Message):
                 "CellB": [-21.25, 4.625,  1.9,   0.0,   0.0,  0.0, "#0000AA99",   0.15],
                 "QR3":   [-21.25,  6.25,  0.0,   0.0,   0.0,  0.0, "#00000033"], 
                 "Frame": [ -18.0,   6.5,  1.9,   0.0,   0.0,  0.0, "#CC00CC99"],
+                "Spiral": [-10.0, 5, 1.9, 0.0, 0.0, 0.0, "#CC00CC99"],
             }
         self.objs = objs
 
@@ -188,7 +189,7 @@ class FilteredObjects(Message):
 
 # Image link from saved object
 class ImageLink(Message):
-    def __init__(self, obj='', path="", file="", counter=0):
+    def __init__(self, obj='', path={"left": "", "right": "", "depth": ""}, file="", counter=0):
         self.obj = obj
         self.path = path
         self.file = file
