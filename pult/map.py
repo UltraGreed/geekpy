@@ -38,7 +38,7 @@ ROBOT = [( 0.000,  1.237 - CENTER_OFFSET),
          ( 0.000,  1.000 - CENTER_OFFSET)]
 
 REFRESH = 0.2       # Refresh time, sec.
-POINTS  = 20 * 120  # Number of points in trajectories.
+POINTS  = 20 * 1000  # Number of points in trajectories.
 
 # matplotlib.use('TkAgg')
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
@@ -61,6 +61,7 @@ robot_x, robot_y = [0] * len(ROBOT), [0] * len(ROBOT)
 way_x,   way_y   = [], []
 objs_x,  objs_y  = [], []
 obj_x,   obj_y   = [], []
+
 
 # Update plots in infinit loop.
 while net.receive():

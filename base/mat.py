@@ -31,6 +31,14 @@ def to180(x):
     return angle
 
 
+def to360(angle):
+    while angle > 360.0:
+        angle -= 360.0
+    while angle < 0:
+        angle += 360.0
+    return angle
+
+
 # Projection of xy-vector to x-axis after rotation
 def proj_x(x, y, angle):
     return cosd(angle) * x + sind(angle) * y
