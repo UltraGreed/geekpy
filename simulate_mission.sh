@@ -14,7 +14,7 @@
   python3 map.py &
 
   cd ../tasks
-  python3 test_mission.py &
+  python3 spiral_test.py &
 
   cd ../simulation
   python3 imu.py &

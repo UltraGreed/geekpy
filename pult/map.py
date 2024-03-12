@@ -2,6 +2,7 @@
 import sys, setproctitle, matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
+sys.path.append('./')
 from base import network, mat
 from base.message import X, Y, YAW, AXIS
 
