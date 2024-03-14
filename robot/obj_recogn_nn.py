@@ -49,7 +49,7 @@ def create_model():
 
     CONV_LAYERS = 8
 
-    Input         = layers.Input(INPUT_SHAPE)
+    Input         = layers.Input(INPUT_SHAPE, batch_size = 1)
 
     Conv2D_Layers = []
     Res_Layers    = []
