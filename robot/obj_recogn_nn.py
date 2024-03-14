@@ -108,6 +108,7 @@ def main(argv):
     datetime_now_str = datetime_now.strftime("%d-%m-%Y-%H-%M-%S")
     camera = argv[1]
     object = argv[2]
+    key    = argv[3]
 
     save_folder = MAIN_OUT_FOLDER + f"/{camera}_{object}/{datetime_now_str}/"
     try:
@@ -128,19 +129,10 @@ def main(argv):
     
     local_img_link = None 
 
-    _X = np.arange(0, 128)
-    _Y = np.arange(0, 128)
-    X,Y = np.meshgrid(_X, _Y) 
-
-    t_X = tf.convert_to_tensor(X)
-    t_Y = tf.convert_to_tensor(Y)
-    tens_pos = tf.stack([t_X, t_Y], axis = 2)
-
-
     while net.receive():
         if net.id == "Timer":
             if local_img_link != None:            
-                file    = tf.io.read_file(local_img_link.path)
+                file    = tf.io.read_file(local_img_link.path[key])
                 image   = tf.cast(tf.image.decode_png(file, channels = 3), 'float32')
 
                 file_name  = f"{counter:05}.png"
@@ -148,19 +140,7 @@ def main(argv):
                 tf_img = tf.nn.softmax(Inference(model, image))
                 obj_mask = tf.math.argmax(tf_img[0,...], axis = 2)
 
-                obj_mask_pixels = tf.reduce_sum(obj_mask)
-                obj_mask_mean   = tf.stack([obj_mask, obj_mask], axis = 2)
-                mean_center     = tf.math.reduce_sum(tf.math.multiply(obj_mask_mean, tens_pos), [0, 1], keepdims = True)/obj_mask_pixels
-                mean_center     = tf.where(tf.math.is_nan(mean_center), 0, mean_center)
-                mean_center     = tf.cast(mean_center[0,0], "int64")
-                #tf_img = tf.stack([tf.zeros([128, 128]), tf_img[0, ..., 0], tf_img[0, ..., 1]], axis = 2) 
-
-                tf_img = tf.stack([obj_mask, obj_mask, obj_mask], axis = 2) 
-
-
-                tf_img = tf.cast(tf_img*255, "uint8").numpy()
-                tf_img[mean_center[1], mean_center[0]] = [255, 0, 0]
-                tf_img = tf.image.resize(tf_img, [256, 256], "nearest")
+                tf_img = tf.stack([obj_mask, obj_mask, obj_mask], axis = 2)
 
                 save_image = tf.image.encode_png(tf_img)
                 tf.io.write_file(save_folder + file_name, save_image)
@@ -172,13 +152,6 @@ def main(argv):
                     counter=counter
                 ))
 
-                obj_detected = obj_mask_pixels.numpy() > 128*128*THRESHOLD_DETECT
-                net.send(Target(
-                    mean_center[1],
-                    obj_detected,
-                    missing_counter
-                ))
-
                 counter += 1
                 local_img_link = None
                 missing_counter -= 1
@@ -188,13 +161,6 @@ def main(argv):
             if net.msg.obj == camera:
                 local_img_link = copy.deepcopy(net.msg)
                 missing_counter += 1
-                #DEBUG: Send grayscale output of neural network  
-                #
-                
-                #DEBUG: Get argmax of channels
-                #nn_out  = tf.cast(tf.argmax(nn_out, axis = -1), dtype=tf.float32)[0]
-                #nn_out  = tf.reshape(nn_out, [128, 128, 1])
-
                
         elif net.id == "Coord":
             robot_pos = net.msg.pos
