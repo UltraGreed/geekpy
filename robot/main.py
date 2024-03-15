@@ -13,7 +13,7 @@ P = [0.50, 1.00, 0.50, 2.00, 1.50, 1.00]  # Proportional coefficients of regulat
 D = [0.00, 1.00, 0.50, 2.00, 1.50, 1.00]  # Differential coefficients of regulator.
 MAX = [0.15, 0.15, 0.30, 45.00, 45.00, 45.00]  # Maximal possible velocity in stabilization mode.
 MIN = [-0.15, -0.15, -0.30, -45.00, -45.00, -45.00]  # Minimal possible velocity in stabilization mode.
-TIMER = 0.05  # 'Coord' message publication timer.
+TIMER: float = 1 / 12  # 'Coord' message publication timer.
 MIN_STAB_DIST = 0.001  # Min distance to make stabilization.
 
 
