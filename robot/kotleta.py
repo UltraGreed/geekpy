@@ -210,7 +210,7 @@ class EngineConfigurationRevFix:
 def send_raw_command(node, engines, power):
     cmd = []
     for i in range(0, len(engines)):
-        cmd.append(engines[i].get_raw_command(power))
+        cmd.append(engines[i].get_raw_command(power[i]))
 
     node.broadcast(uavcan.equipment.esc.RawCommand(cmd=cmd))
 
