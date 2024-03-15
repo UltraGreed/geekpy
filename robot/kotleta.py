@@ -18,6 +18,14 @@ SPREAD1 = [[ -300.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 0: b
            [ -280.00,  67.00,    0.00,   0.43,   0.00,  -0.00],  # Thruster 4: stern_left
            [  280.00,  67.00,    0.00,  -0.43,   0.00,   0.00]]  # Thruster 5: stern_right
 
+#          i   min   max  coff rdir
+CONF = [[  0,  250, 8191, 0.33,  1],
+        [  1,  250, 8191, 0.33, -1],
+        [  2,  250, 8191, 0.33, -1],
+        [  3,  250, 8191, 0.33,  1],
+        [  4,  300, 8191, 0.33, -1],
+        [  5,  300, 8191, 0.33,  1]]
+
 
 class EngineConfiguration:
 
@@ -103,7 +111,7 @@ def sing(x: int) -> int:
     return 0
 
 
-class EngineConfigurationRevFix:
+class EngineConfigurationAlarm:
 
     _index: int = 0
     _min: int = 0
@@ -111,6 +119,7 @@ class EngineConfigurationRevFix:
     _cutoff: float = 0.33
     _rotation_dir: int = 1
     _last_input: int = 0
+    _need_more: bool = False
 
     def __init__(
         self,
@@ -177,34 +186,18 @@ class EngineConfigurationRevFix:
         input *= int(math.copysign(1, percents))
 
         result = input
-        if sing(input) != sing(self._last_input):
+
+        if self._need_more:
             result = self._last_input
+            self._need_more = False
+        elif sing(input) != sing(self._last_input):
+            self._need_more = True
 
         self._last_input = input
 
         result *= self._rotation_dir
         
         return result
-
-
-# in case of returning random input
-# def send_raw_command(node, power):
-#     cmd = [ 0, 0, 0, 0, 0, 0]
-#     rotation_params = [ 1, -1, -1, 1, -1, 1 ]
-#
-#     for i in range(len(cmd)):
-#         sign = int(math.copysign(1, power[i]))
-#         current_power = round(abs(power[i]) / 100 * _MAX_POWER)
-#
-#         if current_power > 8191:
-#             current_power = 8191 
-#
-#         cmd[i] = current_power * rotation_params[i] * sign
-#
-#         if abs(cmd[i]) < _MIN_POWER and power / (_MIN_POWER / _MAX_POWER) < random.random():
-#             cmd[i] = 0
-#
-#     node.broadcast(uavcan.equipment.esc.RawCommand(cmd=cmd))
 
 
 def send_raw_command(node, engines, power):
@@ -231,15 +224,13 @@ def main():
 
     engine_conf = EngineConfiguration
     if use_rev_fix:
-        engine_conf = EngineConfigurationRevFix
+        engine_conf = EngineConfigurationAlarm
 
     engines = []
-    engines.append(engine_conf(index=0, min=250, max=7000, rotation_dir=1))
-    engines.append(engine_conf(index=1, min=250, max=7000, rotation_dir=-1))
-    engines.append(engine_conf(index=2, min=250, max=7000, rotation_dir=-1))
-    engines.append(engine_conf(index=3, min=250, max=7000, rotation_dir=1))
-    engines.append(engine_conf(index=4, min=300, max=7000, rotation_dir=-1))
-    engines.append(engine_conf(index=5, min=300, max=7000, rotation_dir=1))
+    for i in CONF:
+        engines.append(
+            engine_conf(index=i[0], min=i[1], max=i[2], cutoff=i[3], rotation_dir=i[4])
+        )
 
     while net.receive():
 
