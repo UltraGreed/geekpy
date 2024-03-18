@@ -7,7 +7,7 @@ from dronecan import uavcan
 
 import numpy as np
 
-from base import message, network
+from base import message as m, network
 
 # Linear (1) & quadric (2) thrusters' spread by axis
 #######            X,      Y,   DEPTH,    YAW,  PITCH,   ROLL
@@ -15,7 +15,7 @@ SPREAD1 = [[ -300.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 0: b
            [  300.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 1: bow_right
            [  160.00,   0.00, -300.00,   0.00,  -1.00,   1.00],  # Thruster 2: middle_left
            [ -160.00,   0.00, -300.00,   0.00,  -1.00,  -1.00],  # Thruster 3: middle_right
-           [ -280.00,  67.00,    0.00,   0.43,   0.00,  -0.00],  # Thruster 4: stern_left
+           [ -280.00,  67.00,    0.00,   0.43,   0.00,   0.00],  # Thruster 4: stern_left
            [  280.00,  67.00,    0.00,  -0.43,   0.00,   0.00]]  # Thruster 5: stern_right
 
 #          i   min   max  coff rdir
@@ -25,6 +25,8 @@ CONF = [[  0,  250, 8191, 0.33,  1],
         [  3,  250, 8191, 0.33,  1],
         [  4,  300, 8191, 0.33, -1],
         [  5,  300, 8191, 0.33,  1]]
+
+PRIORITY = [m.PITCH, m.ROLL, m.YAW, m.DEPTH, m.X, m.Y]
 
 
 class EngineConfiguration:
@@ -212,11 +214,14 @@ def matrixing(speed):
     return (np.array(SPREAD1) @ np.array(speed)).tolist()
 
 
+def matrixing_prior(speed):
+    pass
+
+
 def main():
     setproctitle.setproctitle(' '.join(sys.argv)) 
 
     net = network.Net()
-    power = message.Control()
 
     node = dronecan.make_node("can0", node_id=100, bitrate=500000)
 
@@ -235,12 +240,12 @@ def main():
     while net.receive():
 
         if net.id == "Control":
-            power.power = net.msg.power
-            send_raw_command(node, engines, power.power)
+            power = net.msg.power
+            send_raw_command(node, engines, power)
 
         if net.id == "Coord":
-            power.power = matrixing(net.msg.speed)
-            send_raw_command(node, engines, power.power)
+            power = matrixing(net.msg.speed)
+            send_raw_command(node, engines, power)
 
     node.close()
 
