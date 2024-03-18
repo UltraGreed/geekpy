@@ -189,10 +189,16 @@ class FilteredObjects(Message):
 
 # Image link from saved object
 class ImageLink(Message):
-    def __init__(self, obj='', path={"left": "", "right": "", "depth": ""}, file="", counter=0):
+    def __init__(
+        self,
+        obj='',
+        path_left="",
+        path_right="",
+        path_dist="",
+        counter=0
+    ):
         self.obj = obj
-        self.path = path
-        self.file = file
+        self.path = {"left": path_left, "right": path_right, "depth": path_dist}
         self.counter = counter
 
 
