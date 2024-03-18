@@ -244,7 +244,7 @@ def main():
             send_raw_command(node, engines, power)
 
         if net.id == "Coord":
-            power = matrixing(net.msg.speed)
+            power = matrixing(net.msg.spd)
             send_raw_command(node, engines, power)
 
     node.close()

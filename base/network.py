@@ -57,7 +57,7 @@ class Net:
     # Initialize network communication
     def __init__(
         self,
-        timer=-1,
+        timer=-1.0,
         timer_delay=0.5,
         get_port=31000,
         set_ports=None,

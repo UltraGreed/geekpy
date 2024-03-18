@@ -63,17 +63,17 @@ while net.receive():
     if net.id == 'Timer':
         if time.time() - tack_time > tack.time:  # If Tack command too old
             tack = message.Tack()  # then fill tack default values.
-        coord.speed = [0.0] * AXIS
+        coord.spd = [0.0] * AXIS
         for i in range(AXIS):  # In all axis:
             if mat.is_num(tack.stab[i]):  # - update stabilization values,
                 if i == X or i == Y:
-                    coord.speed[X], coord.speed[Y] = pd_xy(tack.stab, coord.pos, coord.vel[i])
+                    coord.spd[X], coord.spd[Y] = pd_xy(tack.stab, coord.pos, coord.vel[i])
                 elif i == YAW:
-                    coord.speed[YAW] = pd_yaw(tack.stab[i] - coord.pos[i], coord.vel[i])
+                    coord.spd[YAW] = pd_yaw(tack.stab[i] - coord.pos[i], coord.vel[i])
                 else:
-                    coord.speed[i] = pd_axel(tack.stab[i] - coord.pos[i], coord.vel[i], i)
+                    coord.spd[i] = pd_axel(tack.stab[i] - coord.pos[i], coord.vel[i], i)
             if mat.is_num(tack.speed[i]):  # - and append speed values
-                coord.speed[i] += tack.speed[i]  # (if 'stab' and/or 'speed' mode).
+                coord.spd[i] += tack.speed[i]  # (if 'stab' and/or 'speed' mode).
         net.send(coord)  # Send message to consumers.
 
     if net.id == 'Sensor':  # If sensor data has come

@@ -76,10 +76,10 @@ class Coord(Message):
                        vel_x=0.0, vel_y=0.0, vel_depth=0.0, vel_yaw=0.0, vel_pitch=0.0, vel_roll=0.0,
                        acc_x=0.0, acc_y=0.0, acc_depth=0.0, acc_yaw=0.0, acc_pitch=0.0, acc_roll=0.0,
                        spd_x=0.0, spd_y=0.0, spd_depth=0.0, spd_yaw=0.0, spd_pitch=0.0, spd_roll=0.0):
-        self.pos   = [pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll]  # Vehicle position
-        self.vel   = [vel_x, vel_y, vel_depth, vel_yaw, vel_pitch, vel_roll]  # Vehicle velocity
-        self.acc   = [acc_x, acc_y, acc_depth, acc_yaw, acc_pitch, acc_roll]  # Vehicle acceleration
-        self.speed = [spd_x, spd_y, spd_depth, spd_yaw, spd_pitch, spd_roll]  # Vehicle speed
+        self.pos = [pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll]  # Vehicle position
+        self.vel = [vel_x, vel_y, vel_depth, vel_yaw, vel_pitch, vel_roll]  # Vehicle velocity
+        self.acc = [acc_x, acc_y, acc_depth, acc_yaw, acc_pitch, acc_roll]  # Vehicle acceleration
+        self.spd = [spd_x, spd_y, spd_depth, spd_yaw, spd_pitch, spd_roll]  # Vehicle target speed
 
 
 ############################
