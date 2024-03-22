@@ -45,7 +45,7 @@ while net.receive():
         if net.msg.obj not in OBJECTS:
             continue
 
-        link = PATH_PREFIX + net.msg.path
+        link = PATH_PREFIX + net.msg.path['left']
         label_widget = label_widgets[net.msg.obj]
 
         try:
