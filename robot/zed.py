@@ -37,12 +37,18 @@ class SaveMode(IntFlag):
 
 
 class Action(argparse.Action):
+    """
+    TODO: fix unsupported typing
+    values: str | list[str],
+    option_string: str | None = None,
+    """
+
     def __call__(
         self,
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values: str | list[str],
-        option_string: str | None = None,
+        values,
+        option_string = None,
     ) -> None:
         flag_val = SaveMode(0)
         name2val = {i._name_.lower(): i for i in SaveMode}
@@ -125,8 +131,8 @@ logging.basicConfig(
 setproctitle.setproctitle(f"{args.camera_orientation}_{parser.prog}")
 
 
-# TODO:
-def lin_approx(data: np.ndarray, times: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+# TODO: fix typing -> tuple[np.ndarray, np.ndarray]
+def lin_approx(data: np.ndarray, times: np.ndarray):
     s_x = np.sum(times)
     s_x2 = np.sum(np.power(times, 2))
 
@@ -263,8 +269,9 @@ def img_cap(
             net.send(
                 ImageLink(
                     obj=camera_orientation,
-                    path=photos,
-                    file=file,
+                    path_left=photos['left'],
+                    path_right=photos['right'],
+                    path_dist=photos['depth'],
                     counter=photo_counter,
                 )
             )
