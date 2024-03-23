@@ -159,6 +159,7 @@ class MainWindow(QMainWindow):
                 m.KeyOn(),
                 m.KeyOff(),
                 m.OdometryRaw(),
+                m.TestMessage(),
                ]
 
     def __init__(self):

@@ -7,6 +7,7 @@ import tkinter
 import imageio.v3 as iio
 from PIL import ImageTk, Image
 
+sys.path.append('./')
 from base import network
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
@@ -22,7 +23,7 @@ n_rows = math.ceil(len(OBJECTS) / n_cols)
 root = tkinter.Tk()
 root.title('Imaginarium')
 
-start_image = 'image_absent.png'
+start_image = 'pult/image_absent.png'
 
 image_widgets = dict()
 label_widgets = dict()
