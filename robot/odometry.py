@@ -42,5 +42,5 @@ while net.receive():
 
     elif net.id == 'Coord':     # If robot cordinates obtained
         yaw = net.msg.pos[YAW]  # then save robot yaw.
-        speed      = net.msg.speed  # then save speed vector
+        speed      = net.msg.spd  # then save speed vector
         speed_time = time.time()    # and current time.

@@ -59,6 +59,8 @@ def spiral_movement(center, r_min, r_max, step, d_min, d_max, turn_max_speed, mi
 
             phi_coef = min(abs(bearing_cum) / (turn_max_speed * 360), 1)
 
+            # TODO: continue increasing of D coef after capped velocity
+            # TODO: (in other words separate D and V cap values)
             # Calculate such yaw, which would smoothly lead set auv on spiral
             if distance < radius:
                 yaw_offset = 90 * (2 - distance / radius)

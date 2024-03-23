@@ -4,5 +4,5 @@
 
   cd pult
 
-  python imaginarium.py Front FrontTarget & 
+  python imaginarium.py Front Bottom & 
 )
