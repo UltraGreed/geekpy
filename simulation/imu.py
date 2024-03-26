@@ -33,5 +33,5 @@ while net.receive():
         net.send(sensor)                                                # Send Sensor message.
 
     elif net.id == 'Coord':            # If Motion message has come then
-        yaw_speed = net.msg.speed[YAW]  # save yaw speed
+        yaw_speed = net.msg.spd[YAW]  # save yaw speed
         yaw_time  = time.time()         # and timestamp.
