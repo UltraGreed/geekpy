@@ -5,13 +5,23 @@ import json
 X, Y, DEPTH, YAW, PITCH, ROLL, AXIS, DIAMETER = 0, 1, 2, 3, 4, 5, 6, 7
 
 
-# Parent class for all messages
-class Message:
-    @classmethod
-    @property
-    def id(cls):
-        return cls.__name__
+class MetaMessage(type):
+    """
+     You probably won't understand how this works, neither will I, so leave it as is.
+     ...
+     OK, basically we need metaclass for two reasons:
+       1. to call message.id without braces ()
+       2. to be able to get id from class itself (make id static)
 
+     we could just use @classmethod with @property, but this chaining was deprecated in python 3.11
+    """
+    def __init__(cls, *args, **kwargs):
+        super(MetaMessage, cls).__init__(*args, **kwargs)
+        cls.id = cls.__name__
+
+
+# Parent class for all messages
+class Message(metaclass=MetaMessage):
     def __str__(self):
         return json.dumps(self.__dict__)
 
@@ -180,7 +190,7 @@ class FilteredObjects(Message):
                 "CellB":  [-21.25, 4.625,  1.9,   0.0,   0.0,  0.0, "#0000AA99",   0.15],
                 "QR3":    [-21.25,  6.25,  0.0,   0.0,   0.0,  0.0, "#00000033"],
                 "Frame":  [ -18.0,   6.5,  1.9,   0.0,   0.0,  0.0, "#CC00CC99"],
-                "Spiral": [-10.0,      5,  1.9,   0.0,   0.0,  0.0, "#CC00CC99"],
+                "Spiral": [ -10.0,     5,  1.9,   0.0,   0.0,  0.0, "#CC00CC99"],
             }
         self.objs = objs
 
@@ -191,7 +201,7 @@ class FilteredObjects(Message):
 
 # Image link from saved object
 class ImageLink(Message):
-    def __init__(self, obj: str = '', path: dict[str, str] = {}, counter=0):
+    def __init__(self, obj: str, path: dict[str, str], counter=0):
         self.obj = obj
         self.path = path
         self.counter = counter
@@ -201,7 +211,7 @@ class ImageLink(Message):
 class ImageLinkCameraStereo(ImageLink):
     def __init__(
             self,
-            obj='',
+            obj: str,
             path_left="",
             path_right="",
             path_depth="",
@@ -270,7 +280,7 @@ class SoundDelay(Message):
 # Switch on GPIO key
 class KeyOn(Message):
     def __init__(self, key: str, time=3.0):
-        self.key  = key   # Turn on 'Left' or 'Right' ball key.
+        self.key = key   # Turn on 'Left' or 'Right' ball key.
 
         self.time = time  # Time of hold the key, -1 = infinit.
 
