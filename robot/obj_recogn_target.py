@@ -3,7 +3,6 @@ import time
 import setproctitle
 
 from base import network, message
-from base.message import X, Y, DEPTH, DIAMETER
 
 from object_recognition.model_class import RGBModel, HSVModel, get_model_path
 from object_recognition.image_utils import load_image_rgb, save_image_rgb
@@ -14,13 +13,14 @@ from object_recognition.config import *
 # CONFIG PARAMETERS #
 MODEL_PATH_PREFIX = '../object_recognition/'
 
+# Value which would be used in received path dictionary
+PATH_PARAMETER = 'left'
+
 DEBUG = True
 ####################
 
 
 def main(camera_name, model_type, model_name):
-    robot_pos = [0 for _ in range(6)]
-
     if COLOR_SCHEME == 'HSV':
         model = HSVModel(MODEL_PATH_PREFIX + get_model_path(model_type, model_name))
     elif COLOR_SCHEME == "RGB":
@@ -30,10 +30,10 @@ def main(camera_name, model_type, model_name):
 
     net = network.Net()
     while net.receive():
-        if net.id == "ImageLink":
+        if net.id == "ImageLinkCameraStereo":
             if net.msg.obj == camera_name:
                 time1 = time.time()
-                image = load_image_rgb(net.msg.path)
+                image = load_image_rgb(net.msg.path[PATH_PARAMETER])
 
                 is_obj_found = model.check_object(image)
 
@@ -57,22 +57,20 @@ def main(camera_name, model_type, model_name):
                 # Saving black and white image with detected object for debugging
                 if DEBUG:
                     save_path = net.msg.path.replace('.png', '_gray.png')
-                    file_path = net.msg.file.replace('.png', '_gray.png')
 
                     image_grayscale = model.get_grayscale()
 
                     save_image_rgb(save_path, image_grayscale)
 
-                    net.send(message.ImageLink(
-                        path=save_path,
+                    net.send(message.ImageLinkRecognition(
                         obj=camera_name + 'Target',
-                        file=file_path,
+                        path=save_path,
                         counter=None
                     ))
 
                 time2 = time.time()
                 if time2 - time1 > 0.25:
-                    print(f"Image recognition slow: {time2 - time1}")
+                    print(f"Image recognition slower than 0.25s: {time2 - time1}")
 
 
 if __name__ == '__main__':

@@ -36,7 +36,7 @@ def rx_thread(stop):
 
     while net_gd.receive() and not stop.is_set():
         if type(net_gd.msg) in RX_MSGS:
-            print(net_gd.msg);
+            print(net_gd.msg)
             net_py.send(net_gd.msg)
 
 
