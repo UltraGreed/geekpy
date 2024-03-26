@@ -119,7 +119,7 @@ class InitRobot(Message):
 
 
 class InitObject(Message):
-    def __init__(self, obj='', x=None, y=None, up=None, yaw=None):
+    def __init__(self, obj: str, x=None, y=None, up=None, yaw=None):
         self.obj = obj
         self.pos = [x, y, up, yaw]
 
@@ -135,27 +135,27 @@ class ResetObjects(Message):
 
 # Detection On
 class DetectionOn(Message):
-    def __init__(self, obj='', timeout=10.0):
+    def __init__(self, obj: str, timeout=10.0):
         self.obj = obj
         self.timeout = timeout
 
 
 # Detection Off
 class DetectionOff(Message):
-    def __init__(self, obj='', timeout=10.0):
+    def __init__(self, obj: str, timeout=10.0):
         self.obj = obj
         self.timeout = timeout
 
 
 # Detected object sended to scene
 class DetectedObject(Message):
-    def __init__(self, obj='', x=None, y=None, depth=None):
+    def __init__(self, obj: str, x=None, y=None, depth=None):
         self.obj = obj
         self.pos = [x, y, depth]
 
 
 class Target(Message):
-    def __init__(self, offset_yaw=0, is_detected=False, counter = 0):
+    def __init__(self, offset_yaw=0, is_detected=False, counter=0):
         self.offset_yaw = offset_yaw
         self.is_detected = is_detected
         self.counter = counter
@@ -192,7 +192,7 @@ class FilteredObjects(Message):
 class ImageLink(Message):
     def __init__(
         self,
-        obj='',
+        obj: str,
         path_left="",
         path_right="",
         path_dist="",
@@ -205,13 +205,13 @@ class ImageLink(Message):
 
 # Start saving photo images
 class PhotoOn(Message):
-    def __init__(self, camera='', folder=''):
+    def __init__(self, camera: str, folder: str):
         self.camera = camera  # 'Bottom' or 'Front' camera
         self.folder = folder  # Folder name for saved images
 
 # Stop saving photo images
 class PhotoOff(Message):
-    def __init__(self, camera=''):
+    def __init__(self, camera: str):
         self.camera = camera  # 'Bottom' or 'Front' camera
 
 
@@ -222,7 +222,7 @@ class PhotoOff(Message):
 # Wave delay of received signals
 class SoundDelay(Message):
     def __init__(self, freq=-1.0, left=-0.1, right=-0.1, back=-0.1, front=-0.1, 
-                 freq_left = -0.1, freq_right = -0.1, freq_back = -0.1, freq_front = -0.1):
+                 freq_left=-0.1, freq_right=-0.1, freq_back=-0.1, freq_front=-0.1):
         self.freq = freq  # Signal frequency, Hz.
         self.dist = [left, right, back, front]  # Distance delay, m.
         self.freqs = [freq_left, freq_right, freq_back, freq_front]
@@ -234,14 +234,14 @@ class SoundDelay(Message):
 
 # Switch on GPIO key
 class KeyOn(Message):
-    def __init__(self, key='', time=3.0):
+    def __init__(self, key: str, time=3.0):
         self.key  = key   # Turn on 'Left' or 'Right' ball key.
         self.time = time  # Time of hold the key, -1 = infinit.
 
 
 # Switch off GPIO key
 class KeyOff(Message):
-    def __init__(self, key=''):
+    def __init__(self, key: str):
         self.key = key  # Turn off key of 'Grabber', 'BallLeft' or 'BallRight'
 
 
@@ -252,10 +252,10 @@ class KeyOff(Message):
 # Raw odometry data message
 class OdometryRaw(Message):
     def __init__(self, vel_west=0.0, vel_north=0.0, acc_x=0.0, acc_y=0.0):
-        self.vel_west=vel_west
-        self.vel_north=vel_north
-        self.acc_x=acc_x
-        self.acc_y=acc_y
+        self.vel_west = vel_west
+        self.vel_north = vel_north
+        self.acc_x = acc_x
+        self.acc_y = acc_y
 
 
 #####################
