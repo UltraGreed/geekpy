@@ -1,3 +1,4 @@
+import inspect
 import sys
 import time
 
@@ -10,11 +11,10 @@ from PyQt6.QtWidgets import (QApplication, QCheckBox, QDoubleSpinBox,
 sys.path.append('./')
 from base import message as m
 from base import network
-from base.timer import Timer
 
 
 class Command(QWidget):
-    def __init__(self, message: m.Message):
+    def __init__(self, message: type[m.Message]):
         super().__init__()
 
         self.message = message
@@ -29,8 +29,7 @@ class Command(QWidget):
         self.timer_value = 0.0
         self.send_active = False
 
-        arguments = message.__init__.__code__.co_varnames[1:]
-        values = message.__init__.__defaults__
+        arguments = inspect.signature(message).parameters.values()
 
         main_layout = QHBoxLayout()
         main_layout.addSpacing(10)
@@ -43,12 +42,12 @@ class Command(QWidget):
         item_hbox.addSpacing(10)
 
         self.line_edits = []
-        for i in range(len(arguments)):
+        for argument in arguments:
             layout = QHBoxLayout()
-            label = QLabel(arguments[i])
+            label = QLabel(str(argument.name))
             label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
-            line_edit = QLineEdit(str(values[i]))
+            line_edit = QLineEdit(str(argument.default) if argument.default is not argument.empty else '')
             line_edit.setMinimumWidth(100)
 
             self.line_edits.append(line_edit)
@@ -113,8 +112,7 @@ class Command(QWidget):
             value = self.parse(self.line_edits[i].text())
             arguments.append(value)
 
-        self.message.__init__(*arguments)
-        return self.message
+        return self.message(*arguments)
 
     def sendMessage(self):
         self.net.send(self.send_message)
@@ -140,26 +138,26 @@ class Command(QWidget):
 
 class MainWindow(QMainWindow):
     messages = [
-                m.Sensor(), 
-                m.SensorRU(), 
-                m.Coord(), 
-                m.Tack(),
-                m.Control(), 
-                m.InitRobot(), 
-                m.InitObject(), 
-                m.ResetObjects(), 
-                m.DetectionOn(), 
-                m.DetectionOff(), 
-                m.DetectedObject(), 
-                m.FilteredObjects(), 
-                m.ImageLink(),
-                m.PhotoOn(),
-                m.PhotoOff(),
-                m.SoundDelay(),
-                m.KeyOn(),
-                m.KeyOff(),
-                m.OdometryRaw(),
-                m.TestMessage(),
+                m.Sensor,
+                m.SensorRU,
+                m.Coord,
+                m.Tack,
+                m.Control,
+                m.InitRobot,
+                m.InitObject,
+                m.ResetObjects,
+                m.DetectionOn,
+                m.DetectionOff,
+                m.DetectedObject,
+                m.FilteredObjects,
+                m.ImageLink,
+                m.PhotoOn,
+                m.PhotoOff,
+                m.SoundDelay,
+                m.KeyOn,
+                m.KeyOff,
+                m.OdometryRaw,
+                m.TestMessage,
                ]
 
     def __init__(self):
