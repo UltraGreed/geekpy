@@ -7,9 +7,10 @@ X, Y, DEPTH, YAW, PITCH, ROLL, AXIS, DIAMETER = 0, 1, 2, 3, 4, 5, 6, 7
 
 # Parent class for all messages
 class Message:
+    @classmethod
     @property
-    def id(self):
-        return self.__class__.__name__
+    def id(cls):
+        return cls.__name__
 
     def __str__(self):
         return json.dumps(self.__dict__)
