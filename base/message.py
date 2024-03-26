@@ -46,8 +46,8 @@ class TestDelayReply(Message):
 # Input navigation sensor data
 class Sensor(Message):
     def __init__(self, pos_x=None, pos_y=None, pos_depth=None, pos_yaw=None, pos_pitch=None, pos_roll=None,
-                       vel_x=None, vel_y=None, vel_depth=None, vel_yaw=None, vel_pitch=None, vel_roll=None,
-                       acc_x=None, acc_y=None, acc_depth=None, acc_yaw=None, acc_pitch=None, acc_roll=None):
+                 vel_x=None, vel_y=None, vel_depth=None, vel_yaw=None, vel_pitch=None, vel_roll=None,
+                 acc_x=None, acc_y=None, acc_depth=None, acc_yaw=None, acc_pitch=None, acc_roll=None):
         self.pos = [pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll]  # Vehicle position
         self.vel = [vel_x, vel_y, vel_depth, vel_yaw, vel_pitch, vel_roll]  # Vehicle velocity
         self.acc = [acc_x, acc_y, acc_depth, acc_yaw, acc_pitch, acc_roll]  # Vehicle acceleration
@@ -74,9 +74,9 @@ class SensorZ(Message):
 # Used navigation data
 class Coord(Message):
     def __init__(self, pos_x=0.0, pos_y=0.0, pos_depth=0.0, pos_yaw=0.0, pos_pitch=0.0, pos_roll=0.0,
-                       vel_x=0.0, vel_y=0.0, vel_depth=0.0, vel_yaw=0.0, vel_pitch=0.0, vel_roll=0.0,
-                       acc_x=0.0, acc_y=0.0, acc_depth=0.0, acc_yaw=0.0, acc_pitch=0.0, acc_roll=0.0,
-                       spd_x=0.0, spd_y=0.0, spd_depth=0.0, spd_yaw=0.0, spd_pitch=0.0, spd_roll=0.0):
+                 vel_x=0.0, vel_y=0.0, vel_depth=0.0, vel_yaw=0.0, vel_pitch=0.0, vel_roll=0.0,
+                 acc_x=0.0, acc_y=0.0, acc_depth=0.0, acc_yaw=0.0, acc_pitch=0.0, acc_roll=0.0,
+                 spd_x=0.0, spd_y=0.0, spd_depth=0.0, spd_yaw=0.0, spd_pitch=0.0, spd_roll=0.0):
         self.pos = [pos_x, pos_y, pos_depth, pos_yaw, pos_pitch, pos_roll]  # Vehicle position
         self.vel = [vel_x, vel_y, vel_depth, vel_yaw, vel_pitch, vel_roll]  # Vehicle velocity
         self.acc = [acc_x, acc_y, acc_depth, acc_yaw, acc_pitch, acc_roll]  # Vehicle acceleration
@@ -159,27 +159,28 @@ class Target(Message):
         self.offset_yaw = offset_yaw
         self.is_detected = is_detected
         self.counter = counter
-        
+
+
 # Filtered objects sended from scene
 class FilteredObjects(Message):
     def __init__(self, objs=None):
         if objs is None:
             objs = {     #### X,    Y, DEPTH,   YAW, PITCH, ROLL,    COLOR     DIAMETER
-                "GateL": [ -2.25, 2.625,  0.0,   0.0,   0.0,  0.0, "#00000033"],
-                "GateR": [-0.125, 2.625,  0.0,   0.0,   0.0,  0.0, "#00000033"],
-                "QR1":   [ -8.25, 4.375,  0.0,   0.0,   0.0,  0.0, "#00000033"], 
-                "BallR": [-11.75,  1.25,  0.5,   0.0,   0.0,  0.0, "#EE000099",   0.2],
-                "BallG": [-13.25, 1.625,  0.5,   0.0,   0.0,  0.0, "#00EE0099",   0.2],
-                "BallY": [ -13.5,  2.75,  0.5,   0.0,   0.0,  0.0, "#EEEE0099",   0.2],
-                "QR2":   [-17.25, 1.375,  0.0,   0.0,   0.0,  0.0, "#00000033"], 
-                "Pltfrm":[-21.25, 1.375,  0.0,   0.0,   0.0,  0.0, "#00000033"],
-                "Cells": [-21.25,   2.5,  1.9,   0.0,   0.0,  0.0, "#00CCCC99"],
-                "CellR": [-21.25,   4.0,  1.9,   0.0,   0.0,  0.0, "#AA000099"],
-                "CellY": [-21.25, 4.375,  1.9,   0.0,   0.0,  0.0, "#AAAA0099"],
-                "CellB": [-21.25, 4.625,  1.9,   0.0,   0.0,  0.0, "#0000AA99",   0.15],
-                "QR3":   [-21.25,  6.25,  0.0,   0.0,   0.0,  0.0, "#00000033"], 
-                "Frame": [ -18.0,   6.5,  1.9,   0.0,   0.0,  0.0, "#CC00CC99"],
-                "Spiral": [-10.0, 5, 1.9, 0.0, 0.0, 0.0, "#CC00CC99"],
+                "GateL":  [ -2.25, 2.625,  0.0,   0.0,   0.0,  0.0, "#00000033"],
+                "GateR":  [-0.125, 2.625,  0.0,   0.0,   0.0,  0.0, "#00000033"],
+                "QR1":    [ -8.25, 4.375,  0.0,   0.0,   0.0,  0.0, "#00000033"],
+                "BallR":  [-11.75,  1.25,  0.5,   0.0,   0.0,  0.0, "#EE000099",   0.2],
+                "BallG":  [-13.25, 1.625,  0.5,   0.0,   0.0,  0.0, "#00EE0099",   0.2],
+                "BallY":  [ -13.5,  2.75,  0.5,   0.0,   0.0,  0.0, "#EEEE0099",   0.2],
+                "QR2":    [-17.25, 1.375,  0.0,   0.0,   0.0,  0.0, "#00000033"],
+                "Pltfrm": [-21.25, 1.375,  0.0,   0.0,   0.0,  0.0, "#00000033"],
+                "Cells":  [-21.25,   2.5,  1.9,   0.0,   0.0,  0.0, "#00CCCC99"],
+                "CellR":  [-21.25,   4.0,  1.9,   0.0,   0.0,  0.0, "#AA000099"],
+                "CellY":  [-21.25, 4.375,  1.9,   0.0,   0.0,  0.0, "#AAAA0099"],
+                "CellB":  [-21.25, 4.625,  1.9,   0.0,   0.0,  0.0, "#0000AA99",   0.15],
+                "QR3":    [-21.25,  6.25,  0.0,   0.0,   0.0,  0.0, "#00000033"],
+                "Frame":  [ -18.0,   6.5,  1.9,   0.0,   0.0,  0.0, "#CC00CC99"],
+                "Spiral": [-10.0,      5,  1.9,   0.0,   0.0,  0.0, "#CC00CC99"],
             }
         self.objs = objs
 
@@ -190,17 +191,49 @@ class FilteredObjects(Message):
 
 # Image link from saved object
 class ImageLink(Message):
-    def __init__(
-        self,
-        obj: str,
-        path_left="",
-        path_right="",
-        path_dist="",
-        counter=0
-    ):
+    def __init__(self, obj: str = '', path: dict[str, str] = {}, counter=0):
         self.obj = obj
-        self.path = {"left": path_left, "right": path_right, "depth": path_dist}
+        self.path = path
         self.counter = counter
+
+
+# Image link from stereo camera with depth buffer
+class ImageLinkCameraStereo(ImageLink):
+    def __init__(
+            self,
+            obj='',
+            path_left="",
+            path_right="",
+            path_depth="",
+            counter=0
+    ):
+        path = {}
+        if path_left:
+            path['left'] = path_left
+        if path_right:
+            path['right'] = path_right
+        if path_depth:
+            path['depth'] = path_depth
+
+        super().__init__(
+            obj,
+            path,
+            counter
+        )
+
+
+class ImageLinkRecognition(ImageLink):
+    def __init__(
+            self,
+            obj: str,
+            path: str,
+            counter=0
+    ):
+        super().__init__(
+            obj,
+            {"mask": path},
+            counter
+        )
 
 
 # Start saving photo images
@@ -208,6 +241,7 @@ class PhotoOn(Message):
     def __init__(self, camera: str, folder: str):
         self.camera = camera  # 'Bottom' or 'Front' camera
         self.folder = folder  # Folder name for saved images
+
 
 # Stop saving photo images
 class PhotoOff(Message):
@@ -221,7 +255,8 @@ class PhotoOff(Message):
 
 # Wave delay of received signals
 class SoundDelay(Message):
-    def __init__(self, freq=-1.0, left=-0.1, right=-0.1, back=-0.1, front=-0.1, 
+    def __init__(self, freq=-1.0, left=-0.1, right=-0.1, back=-0.1, front=-0.1,
+
                  freq_left=-0.1, freq_right=-0.1, freq_back=-0.1, freq_front=-0.1):
         self.freq = freq  # Signal frequency, Hz.
         self.dist = [left, right, back, front]  # Distance delay, m.
@@ -236,6 +271,7 @@ class SoundDelay(Message):
 class KeyOn(Message):
     def __init__(self, key: str, time=3.0):
         self.key  = key   # Turn on 'Left' or 'Right' ball key.
+
         self.time = time  # Time of hold the key, -1 = infinit.
 
 

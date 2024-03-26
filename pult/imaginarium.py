@@ -44,7 +44,7 @@ for i, obj in enumerate(OBJECTS):
 net = network.Net(timer=0.25)
 while net.receive():
     # New image has come.
-    if net.id == "ImageLink":
+    if net.id.startswith("ImageLink"):
         no_sub_obj = False  # Break after first provided image shown
         for sub_obj, path in net.msg.path.items():
             # If no sub_obj was selected, show first one

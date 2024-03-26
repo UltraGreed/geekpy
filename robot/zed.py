@@ -17,7 +17,7 @@ sys.path.append("./")
 import argparse
 import logging
 
-from base.message import ImageLink, Sensor, SensorZ
+from base.message import ImageLinkCameraStereo, Sensor, SensorZ
 from base.network import Net
 from PIL import Image
 
@@ -267,11 +267,11 @@ def img_cap(
                 photos["depth"] = path
 
             net.send(
-                ImageLink(
+                ImageLinkCameraStereo(
                     obj=camera_orientation,
                     path_left=photos['left'],
                     path_right=photos['right'],
-                    path_dist=photos['depth'],
+                    path_depth=photos['depth'],
                     counter=photo_counter,
                 )
             )
