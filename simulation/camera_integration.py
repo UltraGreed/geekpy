@@ -17,7 +17,7 @@ stop_event = threading.Event()
 
 # should be different or there will be recursion
 TX_MSGS = [m.Coord, m.PhotoOn, m.PhotoOff, m.TestMessage]
-RX_MSGS = [m.ImageLink]
+RX_MSGS = [m.ImageLinkCameraStereo]
 
 
 def tx_thread(stop):
