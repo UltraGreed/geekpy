@@ -29,81 +29,6 @@ CONF = [[  0,  250, 8191, 0.33,  1],
 PRIORITY = [m.PITCH, m.ROLL, m.YAW, m.DEPTH, m.X, m.Y]
 
 
-class EngineConfiguration:
-
-    _index: int = 0
-    _min: int = 0
-    _max: int = 8191
-    _cutoff: float = 0.33
-    _rotation_dir: int = 1
-
-    def __init__(
-        self,
-        index: int = 0,
-        min: int = 0,
-        max: int = 8191,
-        cutoff: float = 0.33,
-        rotation_dir: int = 1,
-    ):
-        if index >= 0 and index < 16:
-            self._index = index
-        else:
-            raise ValueError
-
-        if min >= 0 and min < max:
-            self._min = min
-        else:
-            raise ValueError
-
-        if max <= 8191 and max > min:
-            self._max = max
-        else:
-            raise ValueError
-
-        if cutoff >= 0 and cutoff <= 1:
-            self._cutoff = cutoff
-        else:
-            raise ValueError
-
-        if rotation_dir == 1 or rotation_dir == -1:
-            self._rotation_dir = rotation_dir
-        else:
-            raise ValueError
-
-    @property
-    def index(self) -> int:
-        return self._index
-
-    @property
-    def min(self) -> int:
-        return self._min
-
-    @property
-    def max(self) -> int:
-        return self._max
-
-    @property
-    def cutoff(self) -> float:
-        return self._cutoff
-
-    @property
-    def rotation_dir(self) -> float:
-        return self._rotation_dir
-
-    def get_raw_command(self, percents: float) -> int:
-        input: int = int(abs(percents) / 100 * self.max)
-
-        if input > 8191:
-            input = 8191
-
-        if input < self.min * self.cutoff:
-            return 0
-
-        input *= int(math.copysign(1, percents)) * self._rotation_dir
-
-        return input
-
-
 def sing(x: int) -> int:
     if x > 0:
         return 1
@@ -113,7 +38,7 @@ def sing(x: int) -> int:
     return 0
 
 
-class EngineConfigurationAlarm:
+class EngineConfiguration:
 
     _index: int = 0
     _min: int = 0
@@ -225,11 +150,7 @@ def main():
 
     node = dronecan.make_node("can0", node_id=100, bitrate=500000)
 
-    use_rev_fix = False
-
     engine_conf = EngineConfiguration
-    if use_rev_fix:
-        engine_conf = EngineConfigurationAlarm
 
     engines = []
     for i in CONF:
