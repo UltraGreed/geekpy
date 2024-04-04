@@ -226,7 +226,7 @@ class RGBModel(InferenceModel):
 class HSVModel(InferenceModel):
     def __init__(self, model_path, **kwargs):
         def get_image_weight(image):
-            hsv_data = rgb_to_hsv(image).astype('uint32')
+            hsv_data = rgb_to_hsv(image)
 
             hsv_data[:, :, 0] //= H_COMPRESSION
             hsv_data[:, :, 1] //= S_COMPRESSION
@@ -234,7 +234,7 @@ class HSVModel(InferenceModel):
 
             index_matrix = hsv_data[:, :, 0] * S_AMOUNT * V_AMOUNT + hsv_data[:, :, 1] * V_AMOUNT + hsv_data[:, :, 2]
 
-            return model[index_matrix]
+            return model[index_matrix.astype('uint32')]
 
         model = np.load(model_path)
 

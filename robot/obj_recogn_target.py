@@ -56,7 +56,7 @@ def main(camera_name, model_type, model_name):
 
                 # Saving black and white image with detected object for debugging
                 if DEBUG:
-                    save_path = net.msg.path.replace('.png', '_gray.png')
+                    save_path = net.msg.path[PATH_PARAMETER].replace('.png', '_gray.png')
 
                     image_grayscale = model.get_grayscale()
 

@@ -38,8 +38,8 @@ def save_image_hsv(path, img_array):
 
 
 def rgba_to_hsv(img_array):
-    return cv2.cvtColor(img_array[:, :, :3], cv2.COLOR_RGB2HSV)
+    return cv2.cvtColor(img_array[:, :, :3].astype('uint8'), cv2.COLOR_RGB2HSV).astype('float64')
 
 
 def rgb_to_hsv(img_array):
-    return cv2.cvtColor(img_array, cv2.COLOR_RGB2HSV)
+    return cv2.cvtColor(img_array.astype('uint8'), cv2.COLOR_RGB2HSV).astype('float64')
