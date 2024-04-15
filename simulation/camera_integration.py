@@ -26,7 +26,7 @@ def tx_thread(stop):
 
     while net_py.receive() and not stop.is_set():
         if type(net_py.msg) in TX_MSGS:
-            print(net_py.msg)
+            # print(net_py.msg)
             net_gd.send(net_py.msg)
 
 
@@ -36,7 +36,7 @@ def rx_thread(stop):
 
     while net_gd.receive() and not stop.is_set():
         if type(net_gd.msg) in RX_MSGS:
-            print(net_gd.msg)
+            # print(net_gd.msg)
             net_py.send(net_gd.msg)
 
 
