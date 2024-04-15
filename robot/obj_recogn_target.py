@@ -58,7 +58,7 @@ def main(camera_name, model_type, model_name):
                 if DEBUG:
                     save_path = net.msg.path[PATH_PARAMETER].replace('.png', '_gray.png')
 
-                    image_grayscale = model.get_grayscale()
+                    image_grayscale = model.get_debug()
 
                     save_image_rgb(save_path, image_grayscale)
 

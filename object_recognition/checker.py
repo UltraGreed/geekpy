@@ -60,7 +60,7 @@ def find_obj_image(image_path, is_obj):
     gray_file = image_file.replace('.jpg', '_gray.png')
     gray_path = save_prefix + gray_file
 
-    image_gray = model.get_grayscale()
+    image_gray = model.get_debug()
 
     save_image_rgb(gray_path, image_gray)
 
