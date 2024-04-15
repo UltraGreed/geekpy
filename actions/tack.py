@@ -1,4 +1,3 @@
-import math
 import time
 
 from base import mat, message, network
@@ -8,8 +7,8 @@ from base.message import YAW, X, Y
 TIMER = 0.25
 
 
-## Robot ahead moving function with given yaw
-def tack(origin='Current', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None):
+# Robot ahead moving function with given yaw
+def tack(mode='Relative', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None):
     start_time = time.time()
 
     if not mat.is_num(dist) and not mat.is_num(dt):
@@ -20,22 +19,22 @@ def tack(origin='Current', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=No
     pos   = network.wait_message('Coord').pos
 
     # Read target yaw.
-    if origin == 'Navigation':                # Navigation yaw
-        original_yaw = yaw                      # = yaw from param.
-    elif origin == 'Current':                 # Current yaw
-        original_yaw = yaw + pos[YAW]           # = yaw + current robot yaw.
-    else:                                     # If origin object is necessary
+    if mode == 'Absolute':           # Use given yaw as absolute target yaw
+        target_yaw = yaw
+    elif mode == 'Relative':         # Use given yaw as delta to current yaw
+        target_yaw = yaw + pos[YAW]
+    else:                            # Set direction to object as target yaw
         if has_target:
             raise "Tack shouldn't have both target and object at the same time"
-        obj   = network.wait_message('FilteredObjects').objs[origin]
-        original_yaw = mat.direction(pos, obj)  # and save target yaw.
+        obj   = network.wait_message('FilteredObjects').objs[mode]
+        target_yaw = mat.direction(pos, obj)  # and save target yaw.
 
-    target_yaw = original_yaw
+    target_yaw_old = target_yaw
 
     # Infinite loop until reach destination.
     net = network.Net(timer=TIMER)  # Wait for timer or message.
     while net.receive():            # Wait for timer ticks and messages.
-        if net.id == 'Timer':                           # If timer tick occures then:
+        if net.id == 'Timer':                           # If timer tick occurs then:
             d = mat.dist2d(start, pos)                  # Calc distance
             net.send(message.Tack(time=1.0,             # Control time.speed_x=0.0,  # Send 'Tack'
                                   speed_y=speed,        # message to
@@ -55,4 +54,4 @@ def tack(origin='Current', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=No
             if net.msg.is_detected:
                 target_yaw = pos[YAW] + net.msg.offset_yaw
             else:
-                target_yaw = original_yaw  # TODO: choose either reset to initial or keep old value
+                target_yaw = target_yaw_old  # TODO: choose either reset to initial or keep old value
