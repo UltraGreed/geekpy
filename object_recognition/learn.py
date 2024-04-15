@@ -47,7 +47,7 @@ def inc_data_hsv(model, hsv_columns):
 
     # Calculating resulting HSVs with offsets
     index_matrix = np.tile(delta_columns.flatten(), (hsv_columns.shape[0], 1)) + np.tile(hsv_columns, delta_columns.shape[0])
-    index_matrix = np.reshape(index_matrix, (-1, 3))
+    index_matrix = np.reshape(index_matrix, (-1, 3)).astype('int64')
 
     # HSV filtering
     # Modulo of H
