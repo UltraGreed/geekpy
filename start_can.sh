@@ -15,3 +15,5 @@ echo out > /sys/class/gpio/gpio392/direction
 echo out > /sys/class/gpio/gpio394/direction
 echo out > /sys/class/gpio/gpio395/direction
 echo out > /sys/class/gpio/gpio396/direction
+
+sh -c "echo 800000 > /sys/bus/i2c/devices/i2c-0/bus_clk_rate"
