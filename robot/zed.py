@@ -371,6 +371,7 @@ def main(
 
     logging.info("Configure runtime parameters")
     runtime_params = sl.RuntimeParameters()
+    runtime_params.enable_depth = bool(save_mode & SaveMode.Depth)
     # runtime_params.sensing_mode = sl.SENSING_MODE.FILL
 
     threads = []
