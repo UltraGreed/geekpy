@@ -357,7 +357,7 @@ def main(
     init_params.depth_mode = (
         sl.DEPTH_MODE.ULTRA if save_mode & SaveMode.Depth else sl.DEPTH_MODE.NONE
     )
-    init_params.camera_fps = 30
+    init_params.camera_fps = int(1 / photo_frequency)
     init_params.camera_image_flip = sl.FLIP_MODE.OFF
 
     logging.info("Open the camera")
