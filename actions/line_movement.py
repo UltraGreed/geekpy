@@ -8,7 +8,7 @@ from base.message import YAW
 TIMER = 0.25
 
 
-def line_movement(speed, lag_coef=5e-6, max_dist=None, timeout=None, depth=None):
+def line_movement(speed, lag_coef=0.2, max_dist=None, timeout=None, depth=None):
     start_time = time.time()
 
     if not max_dist and not timeout:
@@ -45,6 +45,8 @@ def line_movement(speed, lag_coef=5e-6, max_dist=None, timeout=None, depth=None)
         elif net.id == 'Line':
             if net.msg.is_detected:
                 a, b = net.msg.coefs
+                b_norm = b * 2 / net.msg.image_shape[1]
+                b_norm = min(abs(b_norm), 1) * b_norm / abs(b_norm)
                 yaw_error = math.degrees(math.atan(a))
                 target_yaw = current_pos[YAW] - yaw_error
-                speed_x = float(b ** 2 * lag_coef * b / abs(b))
+                speed_x = float(b_norm) * lag_coef

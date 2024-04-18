@@ -17,7 +17,7 @@ import numpy as np
 MODEL_PATH_PREFIX = '../object_recognition/'
 
 # Value which would be used in received path dictionary
-PATH_PARAMETER = 'left'
+PATH_PARAMETER = 'right'
 
 DEBUG = True
 
@@ -93,12 +93,13 @@ def main(camera_name, model_type, model_name):
 
                     net.send(message.Line(
                         coefs=(a, b - shape[1] // 2),
+                        image_shape=image.shape,
                         is_detected=True,
                         counter=0
                     ))
 
                 else:
-                    net.send(message.Line(is_detected=False))
+                    net.send(message.Line(is_detected=False, image_shape=image.shape))
 
                 time2 = time.time()
                 if time2 - time1 > 0.25:
