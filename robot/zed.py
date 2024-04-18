@@ -349,7 +349,7 @@ def main(
     init_params = sl.InitParameters()
     if serial:
         init_params.set_from_serial_number(serial)
-    init_params.camera_resolution = sl.RESOLUTION.HD720
+    init_params.camera_resolution = sl.RESOLUTION.VGA
     init_params.coordinate_system = sl.COORDINATE_SYSTEM.RIGHT_HANDED_Z_UP
     init_params.coordinate_units = sl.UNIT.METER
     # init_params.depth_minimum_distance = 0  # Units equals coordinate_units
