@@ -10,12 +10,14 @@ from object_recognition.image_utils import load_image_rgb, save_image_rgb
 from object_recognition.object_position import get_obj_pos_front, get_obj_pos_bottom
 from object_recognition.config import *
 
+import numpy as np
+
 #####################
 # CONFIG PARAMETERS #
 MODEL_PATH_PREFIX = '../object_recognition/'
 
 # Value which would be used in received path dictionary
-PATH_PARAMETER = 'left'
+PATH_PARAMETER = 'right'
 
 DEBUG = True
 ####################
@@ -37,6 +39,8 @@ def main(camera_name, model_type, model_name, obj_name):
             if net.msg.obj == camera_name:
                 time1 = time.time()
                 image = load_image_rgb(net.msg.path[PATH_PARAMETER])
+                if camera_name == 'Bottom':
+                    image = np.rot90(image, 3)
 
                 is_obj_found = model.check_object(image)
 
@@ -70,7 +74,7 @@ def main(camera_name, model_type, model_name, obj_name):
 
                 # Saving black and white image with detected object for debugging
                 if DEBUG:
-                    save_path = net.msg.path.replace('.png', '_gray.png')
+                    save_path = net.msg.path[PATH_PARAMETER].replace('.png', '_gray.png')
 
                     image_grayscale = model.get_debug()
 
@@ -78,7 +82,7 @@ def main(camera_name, model_type, model_name, obj_name):
 
                     net.send(message.ImageLinkRecognition(
                         obj=camera_name + obj_name,
-                        path_mask=save_path,
+                        path=save_path,
                         counter=None
                     ))
 
