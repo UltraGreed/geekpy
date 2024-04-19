@@ -9,6 +9,8 @@
   # Acoustic objects detection:
   python3 bearing.py  29500 30500 Cells &
   python3 bearing.py  37000 38000 Frame &
+  # Recognition:
+  python line_recogn.py Bottom sub LineSim &
 
   cd ../simulation
   python3 imu.py &
@@ -23,6 +25,6 @@
   # SoundDelay simulation:
   python3 acoustic.py -9.5 10.5 2.0      0.01 30000 9.95  50.0 &
   python3 acoustic.py  0.0 11.0 2.0      0.01 37500 9.95  50.0 &
-  # Recognition:
-  python line_recogn.py Bottom sub LineSim
+
+  python camera_integration.py &
 )

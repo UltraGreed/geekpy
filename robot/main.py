@@ -30,7 +30,7 @@ def pd_xy(stab, pos, vel):
                               pos[YAW])  # to robot coord system.
     dist = math.sqrt(dx ** 2 + dy ** 2)  # Claculate distance to stab-point.
     if (dist < MIN_STAB_DIST):  # If distanace lees then minimal
-        return  # then nothing to stab.
+        return 0, 0             # then nothing to stab.
     min_x = MIN[X] * abs(dx) / dist  # Calculate
     min_y = MIN[Y] * abs(dy) / dist  # min and max
     max_x = MAX[X] * abs(dx) / dist  # restrictions

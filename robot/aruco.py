@@ -1,6 +1,6 @@
 import os
 import sys
-from typing import Literal
+# from typing import Literal
 
 import cv2
 import cv2.aruco as aruco
@@ -23,8 +23,8 @@ setproctitle.setproctitle(sys.argv[0])
 
 def aruco_bboxes(
     img: np.ndarray,
-    markerSize: Literal[4, 5, 6, 7] = 4,
-    totalMarkers: Literal[50, 100, 250, 1000] = 50,
+    markerSize = 4,
+    totalMarkers = 50,
     to_gray: bool = True,
 ) -> np.ndarray:
     if to_gray:
