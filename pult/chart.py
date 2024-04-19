@@ -52,7 +52,7 @@ N_PLT_COLORS = 8
 start_time = time.time()
 
 root = tkinter.Tk()
-root.title('Debugger')  # заголовок
+root.title('Chart')  # заголовок
 root.geometry('1265x740')
 
 listbox_shown: list[ListboxEntry] = list()

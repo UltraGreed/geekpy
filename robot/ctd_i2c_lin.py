@@ -6,9 +6,12 @@ import sys
 from base import message, network
 from base import ms5837
 from base.message import PITCH
-from base.mat import sind
+from base.mat import sind, calc_lin_approx
 
 import time
+
+
+setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
 ####################################
 # CONFIG                           #
@@ -36,21 +39,6 @@ def get_pitch_thread():
             lock.release()  # Release the lock
 
 
-def calc_lin_approx(data):
-    sum_x = sum([sample[0] for sample in data])
-    sum_x2 = sum([sample[0] ** 2 for sample in data])
-    sum_y = sum([sample[1] for sample in data])
-    sum_xy = sum([sample[0] * sample[1] for sample in data])
-    n = SAMPLES_N
-
-    # Calculate coefficients
-    a = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x ** 2)
-
-    b = (sum_y - a * sum_x) / n
-
-    return a, b
-
-
 # Thread for depth meter reading
 def send_depth_thread():
     global pos_pitch
@@ -67,7 +55,7 @@ def send_depth_thread():
         print("Sensor read failed!")
         exit(1)
 
-    depth_data = set()
+    depth_data = [set(), set()]
 
     last_time = 0
     approx_vel = 0
@@ -81,7 +69,8 @@ def send_depth_thread():
 
             depth = sensor.depth() * COEFFICIENT + OFFSET - pitch_offset
 
-            depth_data.add((time.time(), depth))
+            depth_data[0].add(time.time())
+            depth_data[1].add(depth)
 
             # Calculate linear approximation and send corresponding message
             if len(depth_data) == SAMPLES_N:
@@ -103,8 +92,6 @@ def send_depth_thread():
             print('Read error')
             exit(1)
 
-
-setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
 pos_pitch = 0
 lock = threading.Lock()

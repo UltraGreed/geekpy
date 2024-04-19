@@ -15,11 +15,11 @@ setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for proce
 
 
 # Path prefix to show image.
-PATH_PREFIX = "http://192.168.88.101"
+PATH_PREFIX = sys.argv[1]
 # Objects can be provided in two ways:
 #   as "Object.Sub_object" e.g. "Front.left"
 #   or as "Object" e.g. "Front"
-OBJECTS = [tuple(obj.split('.')) if '.' in obj else obj for obj in sys.argv[1:]]
+OBJECTS = [tuple(obj.split('.')) if '.' in obj else obj for obj in sys.argv[2:]]
 
 n_cols = math.ceil(math.sqrt(len(OBJECTS)))
 n_rows = math.ceil(len(OBJECTS) / n_cols)
@@ -61,7 +61,7 @@ while net.receive():
             label_widget = label_widgets[obj]
 
             try:
-                image_widgets[obj] = ImageTk.PhotoImage(Image.fromarray(iio.imread(link)).resize((512, 512)))
+                image_widgets[obj] = ImageTk.PhotoImage(Image.fromarray(iio.imread(link)))
             except TimeoutError:
                 print("hz cheto upalo v imaginariume")
                 continue

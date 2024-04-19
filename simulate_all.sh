@@ -23,4 +23,6 @@
   # SoundDelay simulation:
   python3 acoustic.py -9.5 10.5 2.0      0.01 30000 9.95  50.0 &
   python3 acoustic.py  0.0 11.0 2.0      0.01 37500 9.95  50.0 &
+  # Recognition:
+  python line_recogn.py Bottom sub LineSim
 )

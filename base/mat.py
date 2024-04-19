@@ -84,3 +84,23 @@ def dist3d(a, b):
 # Direction from point a to point b
 def direction(a, b):
     return to180(math.degrees(math.atan2(b[X] - a[X], b[Y] - a[Y])))
+
+
+def calc_lin_approx(data):
+    """
+    Returns coefficients for linear function with the lowest possible MSE
+    :param data: tuple of two arrays: xs and ys
+    :return: tuple of coefficients
+    """
+    sum_x = sum(data[0])
+    sum_x2 = sum([x ** 2 for x in data[0]])
+    sum_y = sum(data[1])
+    sum_xy = sum([data[0][i] * data[1][i] for i in range(len(data[0]))])
+    n = len(data[0])
+
+    # Calculate coefficients
+    a = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x ** 2)
+
+    b = (sum_y - a * sum_x) / n
+
+    return a, b

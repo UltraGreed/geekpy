@@ -8,7 +8,6 @@ from pathlib import Path
 from typing import Callable
 
 import numpy as np
-
 import pyzed.sl as sl
 import setproctitle
 
@@ -16,13 +15,13 @@ sys.path.append("./")
 
 import argparse
 import logging
+from typing import Tuple, Union, List
 
 from base.message import ImageLinkCameraStereo, Sensor, SensorZ
 from base.network import Net
 from PIL import Image
 
 ## CONSTANTS
-SAVE_PATH = "/media/ssd/photo"
 ROLL_OFFSET = 3.3
 
 
@@ -37,18 +36,12 @@ class SaveMode(IntFlag):
 
 
 class Action(argparse.Action):
-    """
-    TODO: fix unsupported typing
-    values: str | list[str],
-    option_string: str | None = None,
-    """
-
     def __call__(
         self,
         parser: argparse.ArgumentParser,
         namespace: argparse.Namespace,
-        values,
-        option_string = None,
+        values: Union[str, List[str]],
+        option_string: Union[str, None] = None,
     ) -> None:
         flag_val = SaveMode(0)
         name2val = {i._name_.lower(): i for i in SaveMode}
@@ -72,9 +65,7 @@ parser = argparse.ArgumentParser(
     description="Provide the camera photo and position",
 )
 
-parser.add_argument(
-    "--serial", required=True, type=int, help="The camera serial number"
-)
+parser.add_argument("--serial", type=int, default=0, help="The camera serial number")
 parser.add_argument(
     "--camera-orientation",
     required=True,
@@ -109,6 +100,9 @@ parser.add_argument(
     help=f"Images saving mode ({SaveMode.get_str()})",
 )
 parser.add_argument(
+    "--save-path", type=str, default="/media/ssd/photo", help="Image save base path"
+)
+parser.add_argument(
     "--log-level",
     type=str.upper,
     choices=list(logging._levelToName.values()),
@@ -131,8 +125,7 @@ logging.basicConfig(
 setproctitle.setproctitle(f"{args.camera_orientation}_{parser.prog}")
 
 
-# TODO: fix typing -> tuple[np.ndarray, np.ndarray]
-def lin_approx(data: np.ndarray, times: np.ndarray):
+def lin_approx(data: np.ndarray, times: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     s_x = np.sum(times)
     s_x2 = np.sum(np.power(times, 2))
 
@@ -197,7 +190,7 @@ def img_cap(
     net = Net(frequency)
 
     save_path = (
-        SAVE_PATH
+        args.save_path
         + "/"
         + camera_orientation
         + "/"
@@ -219,7 +212,7 @@ def img_cap(
 
             is_img_capture = True
             save_path = (
-                SAVE_PATH
+                args.save_path
                 + "/"
                 + camera_orientation
                 + "/"
@@ -238,7 +231,7 @@ def img_cap(
         if net.id == "Timer" and is_img_capture:
             zed_status = zed.grab(runtime_params)
             if zed_status != sl.ERROR_CODE.SUCCESS:
-                logging.warning(repr(zed_status))
+                logging.warning(f"IMG - {repr(zed_status)}")
                 continue
 
             photo_counter += 1
@@ -269,9 +262,9 @@ def img_cap(
             net.send(
                 ImageLinkCameraStereo(
                     obj=camera_orientation,
-                    path_left=photos['left'],
-                    path_right=photos['right'],
-                    path_depth=photos['depth'],
+                    path_left=photos["left"],
+                    path_right=photos["right"],
+                    path_depth=photos["depth"],
                     counter=photo_counter,
                 )
             )
@@ -292,7 +285,7 @@ def sensor_cap(
     while True:
         zed_status = zed.grab(runtime_params)
         if zed_status != sl.ERROR_CODE.SUCCESS:
-            logging.warning(repr(zed_status))
+            logging.warning(f"SENSOR - {repr(zed_status)}")
             continue
 
         count = 0
@@ -354,25 +347,31 @@ def main(
 ) -> None:
     logging.info("Configure init parameters")
     init_params = sl.InitParameters()
-    init_params.set_from_serial_number(serial)
-    init_params.camera_resolution = sl.RESOLUTION.HD720
+    if serial:
+        init_params.set_from_serial_number(serial)
+    init_params.camera_resolution = sl.RESOLUTION.VGA
     init_params.coordinate_system = sl.COORDINATE_SYSTEM.RIGHT_HANDED_Z_UP
     init_params.coordinate_units = sl.UNIT.METER
     # init_params.depth_minimum_distance = 0  # Units equals coordinate_units
     init_params.depth_maximum_distance = 5  # Units equals coordinate_units
-    init_params.depth_mode = sl.DEPTH_MODE.ULTRA
-    init_params.camera_fps = 30
+    init_params.depth_mode = (
+        sl.DEPTH_MODE.ULTRA if save_mode & SaveMode.Depth else sl.DEPTH_MODE.NONE
+    )
+    init_params.camera_fps = int(1 / photo_frequency)
     init_params.camera_image_flip = sl.FLIP_MODE.OFF
 
     logging.info("Open the camera")
     zed = sl.Camera()
     zed_status = zed.open(init_params)
     while zed_status != sl.ERROR_CODE.SUCCESS:
-        logging.warning(repr(zed_status))
+        logging.warning(f"MAIN - {repr(zed_status)}")
         zed_status = zed.open(init_params)
+
+    logging.info(f"Opened camera: {zed.get_camera_information().serial_number}")
 
     logging.info("Configure runtime parameters")
     runtime_params = sl.RuntimeParameters()
+    runtime_params.enable_depth = bool(save_mode & SaveMode.Depth)
     # runtime_params.sensing_mode = sl.SENSING_MODE.FILL
 
     threads = []

@@ -135,9 +135,9 @@ class InferenceModel:
         if self.image_sum == 0:
             return self.image.shape[0] // 2, self.image.shape[1] // 2
         if self._object_center is None:
-            mean_x = np.dot(np.arange(0, self.image.shape[0]), np.sum(self.image_weight, axis=1)) / self.image_sum
-            mean_y = np.dot(np.arange(0, self.image.shape[1]), np.sum(self.image_weight, axis=0)) / self.image_sum
-            self._object_center = np.asarray([mean_x, mean_y])
+            mean_y = np.dot(np.arange(0, self.image.shape[0]), np.sum(self.image_weight, axis=1)) / self.image_sum
+            mean_x = np.dot(np.arange(0, self.image.shape[1]), np.sum(self.image_weight, axis=0)) / self.image_sum
+            self._object_center = np.asarray([mean_y, mean_x])
 
         return self._object_center
 
@@ -145,11 +145,13 @@ class InferenceModel:
     def object_dispersion_sq(self):
         if self._object_dispersion_sq is None:
             dispersion_x = np.sum(
-                np.square(np.tile(np.arange(0, 256)[:, np.newaxis] - self.object_center[0], (1, 256))) * self.image_weight
+                np.square(np.tile(np.arange(0, self.image.shape[0])[:, np.newaxis] - self.object_center[0],
+                                  (1, self.image.shape[1]))) * self.image_weight
             ) / (self.image_sum if self.image_sum else 1)
 
             dispersion_y = np.sum(
-                np.square(np.tile(np.arange(0, 256) - self.object_center[1], (256, 1))) * self.image_weight
+                np.square(np.tile(np.arange(0, self.image.shape[1]) - self.object_center[1],
+                                  (self.image.shape[0], 1))) * self.image_weight
             ) / (self.image_sum if self.image_sum else 1)
 
             self._object_dispersion_sq = np.asarray([dispersion_x, dispersion_y])
@@ -171,7 +173,7 @@ class InferenceModel:
         return self.image_sum >= self.threshold_object
 
     # Function creating a black and white array image of raw object
-    def get_grayscale_raw(self):
+    def get_debug_raw(self):
         r_layer, g_layer = [
             np.where(np.asarray(self.image_weight_raw) == 0, 0, self.image_weight_raw * 255) for _ in range(2)
         ]
@@ -180,7 +182,7 @@ class InferenceModel:
         return np.dstack(tuple(np.asarray(layer, dtype='uint8') for layer in (r_layer, g_layer, b_layer)))
 
     # Function creating a black and white array image of object
-    def get_grayscale(self):
+    def get_debug(self):
         r_layer = self.image_weight * 255
 
         g_layer = np.where(
@@ -226,7 +228,7 @@ class RGBModel(InferenceModel):
 class HSVModel(InferenceModel):
     def __init__(self, model_path, **kwargs):
         def get_image_weight(image):
-            hsv_data = rgb_to_hsv(image).astype('uint32')
+            hsv_data = rgb_to_hsv(image)
 
             hsv_data[:, :, 0] //= H_COMPRESSION
             hsv_data[:, :, 1] //= S_COMPRESSION
@@ -234,7 +236,7 @@ class HSVModel(InferenceModel):
 
             index_matrix = hsv_data[:, :, 0] * S_AMOUNT * V_AMOUNT + hsv_data[:, :, 1] * V_AMOUNT + hsv_data[:, :, 2]
 
-            return model[index_matrix]
+            return model[index_matrix.astype('uint32')]
 
         model = np.load(model_path)
 

@@ -5,5 +5,6 @@ venv369/
 .idea/
 object_recognition/models
 object_recognition/images
+object_recognition/*.png
 debug
 nn_train/nn_train.py

@@ -15,6 +15,7 @@ class MetaMessage(type):
 
      we could just use @classmethod with @property, but this chaining was deprecated in python 3.11
     """
+
     def __init__(cls, *args, **kwargs):
         super(MetaMessage, cls).__init__(*args, **kwargs)
         cls.id = cls.__name__
@@ -110,12 +111,12 @@ class Tack(Message):
 
 # Control vector of each truster power, % (from spreader to electronic speed controller)
 class Control(Message):  # Thruster control power, %        #####
-    def __init__(self, bow_left=0.0, bow_right=0.0,        #BL BR#
-                    middle_left=0.0, middle_right=0.0,    #       #
-                     stern_left=0.0, stern_right=0.0):   # ML   MR #
-        self.power = [bow_left, bow_right,              #   ROBOT   #
-                   middle_left, middle_right,            # SL   SR #
-                    stern_left, stern_right]              #########
+    def __init__(self, bow_left=0.0, bow_right=0.0,  # BL BR#
+                 middle_left=0.0, middle_right=0.0,  # #
+                 stern_left=0.0, stern_right=0.0):  # ML   MR #
+        self.power = [bow_left, bow_right,  # ROBOT   #
+                      middle_left, middle_right,  # SL   SR #
+                      stern_left, stern_right]  #########
 
 
 #####################################
@@ -159,14 +160,22 @@ class DetectionOff(Message):
 
 # Detected object sended to scene
 class DetectedObject(Message):
-    def __init__(self, obj: str, x=None, y=None, depth=None):
+    def __init__(self, obj: str, x=None, y=None, depth=None, yaw=None, is_seen=False):
         self.obj = obj
-        self.pos = [x, y, depth]
+        self.pos = [x, y, depth, yaw]
+        self.is_seen = is_seen
 
 
 class Target(Message):
-    def __init__(self, offset_yaw=0, is_detected=False, counter=0):
+    def __init__(self, is_detected: bool, offset_yaw: float = 0, counter: int = 0):
         self.offset_yaw = offset_yaw
+        self.is_detected = is_detected
+        self.counter = counter
+
+
+class Line(Message):
+    def __init__(self, is_detected: bool, coefs: tuple = (0, 0), counter: int = 0):
+        self.coefs = coefs
         self.is_detected = is_detected
         self.counter = counter
 
@@ -175,22 +184,22 @@ class Target(Message):
 class FilteredObjects(Message):
     def __init__(self, objs=None):
         if objs is None:
-            objs = {     #### X,    Y, DEPTH,   YAW, PITCH, ROLL,    COLOR     DIAMETER
-                "GateL":  [ -2.25, 2.625,  0.0,   0.0,   0.0,  0.0, "#00000033"],
-                "GateR":  [-0.125, 2.625,  0.0,   0.0,   0.0,  0.0, "#00000033"],
-                "QR1":    [ -8.25, 4.375,  0.0,   0.0,   0.0,  0.0, "#00000033"],
-                "BallR":  [-11.75,  1.25,  0.5,   0.0,   0.0,  0.0, "#EE000099",   0.2],
-                "BallG":  [-13.25, 1.625,  0.5,   0.0,   0.0,  0.0, "#00EE0099",   0.2],
-                "BallY":  [ -13.5,  2.75,  0.5,   0.0,   0.0,  0.0, "#EEEE0099",   0.2],
-                "QR2":    [-17.25, 1.375,  0.0,   0.0,   0.0,  0.0, "#00000033"],
-                "Pltfrm": [-21.25, 1.375,  0.0,   0.0,   0.0,  0.0, "#00000033"],
-                "Cells":  [-21.25,   2.5,  1.9,   0.0,   0.0,  0.0, "#00CCCC99"],
-                "CellR":  [-21.25,   4.0,  1.9,   0.0,   0.0,  0.0, "#AA000099"],
-                "CellY":  [-21.25, 4.375,  1.9,   0.0,   0.0,  0.0, "#AAAA0099"],
-                "CellB":  [-21.25, 4.625,  1.9,   0.0,   0.0,  0.0, "#0000AA99",   0.15],
-                "QR3":    [-21.25,  6.25,  0.0,   0.0,   0.0,  0.0, "#00000033"],
-                "Frame":  [ -18.0,   6.5,  1.9,   0.0,   0.0,  0.0, "#CC00CC99"],
-                "Spiral": [ -10.0,     5,  1.9,   0.0,   0.0,  0.0, "#CC00CC99"],
+            objs = {  #### X,    Y, DEPTH,   YAW, PITCH, ROLL,    COLOR     DIAMETER
+                "GateL": [-2.25, 2.625, 0.0, 0.0, 0.0, 0.0, "#00000033"],
+                "GateR": [-0.125, 2.625, 0.0, 0.0, 0.0, 0.0, "#00000033"],
+                "QR1": [-8.25, 4.375, 0.0, 0.0, 0.0, 0.0, "#00000033"],
+                "BallR": [-11.75, 1.25, 0.5, 0.0, 0.0, 0.0, "#EE000099", 0.2],
+                "BallG": [-13.25, 1.625, 0.5, 0.0, 0.0, 0.0, "#00EE0099", 0.2],
+                "BallY": [-13.5, 2.75, 0.5, 0.0, 0.0, 0.0, "#EEEE0099", 0.2],
+                "QR2": [-17.25, 1.375, 0.0, 0.0, 0.0, 0.0, "#00000033"],
+                "Pltfrm": [-21.25, 1.375, 0.0, 0.0, 0.0, 0.0, "#00000033"],
+                "Cells": [-21.25, 2.5, 1.9, 0.0, 0.0, 0.0, "#00CCCC99"],
+                "CellR": [-21.25, 4.0, 1.9, 0.0, 0.0, 0.0, "#AA000099"],
+                "CellY": [-21.25, 4.375, 1.9, 0.0, 0.0, 0.0, "#AAAA0099"],
+                "CellB": [-21.25, 4.625, 1.9, 0.0, 0.0, 0.0, "#0000AA99", 0.15],
+                "QR3": [-21.25, 6.25, 0.0, 0.0, 0.0, 0.0, "#00000033"],
+                "Frame": [-18.0, 6.5, 1.9, 0.0, 0.0, 0.0, "#CC00CC99"],
+                "Spiral": [-10.0, 5, 1.9, 0.0, 0.0, 0.0, "#CC00CC99"],
             }
         self.objs = objs
 
@@ -280,7 +289,7 @@ class SoundDelay(Message):
 # Switch on GPIO key
 class KeyOn(Message):
     def __init__(self, key: str, time=3.0):
-        self.key = key   # Turn on 'Left' or 'Right' ball key.
+        self.key = key  # Turn on 'Left' or 'Right' ball key.
 
         self.time = time  # Time of hold the key, -1 = infinit.
 

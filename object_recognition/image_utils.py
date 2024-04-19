@@ -4,13 +4,22 @@ import numpy as np
 
 def load_image(path: str, color_convert: int):
     img = cv2.imread(path, flags=-1)
-    img = cv2.cvtColor(img, color_convert)
+    if color_convert != -1:
+        img = cv2.cvtColor(img, color_convert)
     return np.asarray(img, dtype='float64')
 
 
 def save_image(path: str, img_array: np.ndarray, color_convert: int):
     img = cv2.cvtColor(np.asarray(img_array, dtype='uint8'), color_convert)
     cv2.imwrite(path, img)
+
+
+def load_image_gray(path):
+    return load_image(path, color_convert=-1)
+
+
+def save_image_gray(path: str, img_array: np.ndarray):
+    save_image(path, img_array, cv2.COLOR_GRAY2BGR)
 
 
 def load_image_rgba(path):
@@ -38,8 +47,8 @@ def save_image_hsv(path, img_array):
 
 
 def rgba_to_hsv(img_array):
-    return cv2.cvtColor(img_array[:, :, :3], cv2.COLOR_RGB2HSV)
+    return cv2.cvtColor(img_array[:, :, :3].astype('uint8'), cv2.COLOR_RGB2HSV).astype('float64')
 
 
 def rgb_to_hsv(img_array):
-    return cv2.cvtColor(img_array, cv2.COLOR_RGB2HSV)
+    return cv2.cvtColor(img_array.astype('uint8'), cv2.COLOR_RGB2HSV).astype('float64')
