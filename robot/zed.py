@@ -68,7 +68,10 @@ def init_parser() -> argparse.ArgumentParser:
     )
 
     parser.add_argument(
-        "--serial", type=int, default=0, help="The camera serial number"
+        "--serial",
+        type=int,
+        default=0,
+        help="The camera serial number",
     )
     parser.add_argument(
         "--camera-orientation",
@@ -77,7 +80,9 @@ def init_parser() -> argparse.ArgumentParser:
         help="The camera orientation",
     )
     parser.add_argument(
-        "--img-capture", action="store_true", help="Enable image capture"
+        "--img-capture",
+        action="store_true",
+        help="Enable image capture",
     )
     parser.add_argument(
         "--disable-orientation",
@@ -111,7 +116,10 @@ def init_parser() -> argparse.ArgumentParser:
         help=f"Images saving mode ({SaveMode.get_str()})",
     )
     parser.add_argument(
-        "--save-path", type=str, default="/media/ssd/photo", help="Image save base path"
+        "--save-path",
+        type=str,
+        default="/media/ssd/photo",
+        help="Image save base path",
     )
     parser.add_argument(
         "--log-level",
@@ -195,16 +203,17 @@ def saver(img: sl.Mat, path: str, rotate: bool = False) -> None:
 
 def img_cap(
     *,
-    zed,
-    camera_orientation: str,
-    runtime_params,
-    frequency: float = 1 / 5,
-    is_img_capture: bool = False,
-    save_mode: SaveMode = SaveMode.Left,
+    zed: sl.Camera,
+    runtime_params: sl.RuntimeParameters,
 ) -> None:
+    frequency: float = 1 / args.photo_frequency
+    cam_orientation: str = args.camera_orientation
+    is_img_capture: bool = args.is_img_capture
+    save_mode: SaveMode = args.save_mode
+
     net = Net(frequency)
 
-    save_path = f"{args.save_path}/{camera_orientation}/" + datetime.today().strftime(
+    save_path = f"{args.save_path}/{cam_orientation}/" + datetime.today().strftime(
         "%Y-%m-%d_%H-%M-%S"
     )
     if is_img_capture:
@@ -216,7 +225,7 @@ def img_cap(
 
     while net.receive():
         if net.id == PhotoOn.id:
-            if net.msg is None or net.msg.camera != camera_orientation:
+            if net.msg is None or net.msg.camera != cam_orientation:
                 continue
 
             logging.info("Image capture enable")
@@ -224,12 +233,12 @@ def img_cap(
             is_img_capture = True
             if net.msg.folder:
                 photo_counter = 0
-                save_path = f"{args.save_path}/{camera_orientation}/{net.msg.folder}"
+                save_path = f"{args.save_path}/{cam_orientation}/{net.msg.folder}"
 
             Path(save_path).mkdir(parents=True, exist_ok=True)
 
         if net.id == PhotoOff.id:
-            if net.msg is None or net.msg.camera != camera_orientation:
+            if net.msg is None or net.msg.camera != cam_orientation:
                 continue
 
             logging.info("Image capture disable")
@@ -243,44 +252,41 @@ def img_cap(
 
             photo_counter += 1
             file = f"{photo_counter:05d}.png"
-            photos = {"left": "", "right": "", "depth": ""}
+            photos = {"path_left": "", "path_right": "", "path_depth": ""}  # CHECK: ??
 
             if save_mode & SaveMode.Left:
                 zed.retrieve_image(img, sl.VIEW.LEFT)
                 path = f"{save_path}/left_{file}"
                 saver(img, path, flip_img)
 
-                photos["left"] = path
+                photos["path_left"] = path
 
             if save_mode & SaveMode.Right:
                 zed.retrieve_image(img, sl.VIEW.RIGHT)
                 path = f"{save_path}/right_{file}"
                 saver(img, path, flip_img)
 
-                photos["right"] = path
+                photos["path_right"] = path
 
             if save_mode & SaveMode.Depth:
                 zed.retrieve_image(img, sl.VIEW.DEPTH)
                 path = f"{save_path}/depth_{file}"
                 saver(img, path, flip_img)
 
-                photos["depth"] = path
+                photos["path_depth"] = path
 
             net.send(
                 ImageLinkCameraStereo(
-                    obj=camera_orientation,
-                    path_left=photos["left"],
-                    path_right=photos["right"],
-                    path_depth=photos["depth"],
-                    counter=photo_counter,
+                    obj=cam_orientation, counter=photo_counter, **photos
                 )
             )
 
 
-def sensor_cap(
-    *, zed, runtime_params, buffer: int = 5, frequency: float = 1 / 20
-) -> None:
+def sensor_cap(*, zed: sl.Camera, runtime_params: sl.RuntimeParameters) -> None:
     net = Net()
+
+    buffer: int = args.sensor_buffer
+    frequency: float = 1 / args.sensor_frequency
 
     ts_handler = TimestampHandler()
     sensors_data = sl.SensorsData()
@@ -337,30 +343,29 @@ def sensor_cap(
         time.sleep(frequency)
 
 
-def main(
-    *,
-    name: str,
-    serial: int,
-    disable_orientation: bool = False,
-    is_img_capture: bool = False,
-    sensor_buffer: int = 5,
-    sensor_frequency: float = 1 / 20,
-    photo_frequency: float = 1 / 5,
-    save_mode: SaveMode = SaveMode.Left,
-) -> None:
+def main() -> None:
+    logging.info(f"Camera orientation: {args.camera_orientation}")
+    logging.info(f"Camera serial number: {args.serial}")
+    logging.info(f"Orientation capture: {not args.disable_orientation}")
+    logging.info(f"Image capture: {args.img_capture}")
+    logging.info(f"Sensor data buffer: {args.sensor_buffer}")
+    logging.info(f"Sensor sending frequency: {args.sensor_frequency} Hz")
+    logging.info(f"Photo capture frequency: {args.photo_frequency} Hz")
+    logging.info(f"Image capture mode: {args.save_mode}")
+
     logging.info("Configure init parameters")
     init_params = sl.InitParameters()
-    if serial:
-        init_params.set_from_serial_number(serial)
+    if args.serial:
+        init_params.set_from_serial_number(args.serial)
     init_params.camera_resolution = sl.RESOLUTION.VGA
     init_params.coordinate_system = sl.COORDINATE_SYSTEM.RIGHT_HANDED_Z_UP
     init_params.coordinate_units = sl.UNIT.METER
     # init_params.depth_minimum_distance = 0  # Units equals coordinate_units
     init_params.depth_maximum_distance = 5  # Units equals coordinate_units
     init_params.depth_mode = (
-        sl.DEPTH_MODE.ULTRA if save_mode & SaveMode.Depth else sl.DEPTH_MODE.NONE
+        sl.DEPTH_MODE.ULTRA if args.save_mode & SaveMode.Depth else sl.DEPTH_MODE.NONE
     )
-    init_params.camera_fps = int(1 / photo_frequency)
+    init_params.camera_fps = int(1 / args.photo_frequency)
     init_params.camera_image_flip = sl.FLIP_MODE.OFF
 
     logging.info("Open the camera")
@@ -374,8 +379,7 @@ def main(
 
     logging.info("Configure runtime parameters")
     runtime_params = sl.RuntimeParameters()
-    runtime_params.enable_depth = bool(save_mode & SaveMode.Depth)
-    # runtime_params.sensing_mode = sl.SENSING_MODE.FILL
+    runtime_params.enable_depth = bool(args.save_mode & SaveMode.Depth)
 
     threads = []
 
@@ -387,16 +391,12 @@ def main(
             kwargs=dict(
                 zed=zed,
                 runtime_params=runtime_params,
-                is_img_capture=is_img_capture,
-                frequency=photo_frequency,
-                save_mode=save_mode,
-                camera_orientation=name,
             ),
         )
     )
 
     # sensors
-    if not disable_orientation:
+    if not args.disable_orientation:
         logging.info("Init orientation capture thread")
         threads.append(
             threading.Thread(
@@ -404,8 +404,6 @@ def main(
                 kwargs=dict(
                     zed=zed,
                     runtime_params=runtime_params,
-                    frequency=sensor_frequency,
-                    buffer=sensor_buffer,
                 ),
             )
         )
@@ -420,22 +418,4 @@ def main(
 
 
 if __name__ == "__main__":
-    logging.info(f"Camera orientation: {args.camera_orientation}")
-    logging.info(f"Camera serial number: {args.serial}")
-    logging.info(f"Orientation capture: {not args.disable_orientation}")
-    logging.info(f"Image capture: {args.img_capture}")
-    logging.info(f"Sensor data buffer: {args.sensor_buffer}")
-    logging.info(f"Sensor sending frequency: {args.sensor_frequency} Hz")
-    logging.info(f"Photo capture frequency: {args.photo_frequency} Hz")
-    logging.info(f"Image capture mode: {args.save_mode}")
-
-    main(
-        name=args.camera_orientation,
-        serial=args.serial,
-        disable_orientation=args.disable_orientation,
-        is_img_capture=args.img_capture,
-        sensor_buffer=args.sensor_buffer,
-        sensor_frequency=1 / args.sensor_frequency,
-        photo_frequency=1 / args.photo_frequency,
-        save_mode=args.save_mode,
-    )
+    main()
