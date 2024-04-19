@@ -11,12 +11,12 @@ from base import message as m, network
 
 # Linear (1) & quadric (2) thrusters' spread by axis
 #######            X,      Y,   DEPTH,    YAW,  PITCH,   ROLL
-SPREAD1 = [[ -300.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 0: bow_left
-           [  300.00,   0.00, -250.00,   0.00,   1.00,   0.00],  # Thruster 1: bow_right
-           [  160.00,   0.00, -300.00,   0.00,  -1.00,   1.00],  # Thruster 2: middle_left
-           [ -160.00,   0.00, -300.00,   0.00,  -1.00,  -1.00],  # Thruster 3: middle_right
-           [ -280.00,  50.00,    0.00,   0.43,   0.00,   0.00],  # Thruster 4: stern_left
-           [  280.00,  50.00,    0.00,  -0.43,   0.00,   0.00]]  # Thruster 5: stern_right
+SPREAD1 = [[ -150.00,   0.00, -125.00,   0.00,   0.50,   0.00],  # Thruster 0: bow_left
+           [  150.00,   0.00, -125.00,   0.00,   0.50,   0.00],  # Thruster 1: bow_right
+           [  080.00,   0.00, -150.00,   0.00,  -0.50,   0.50],  # Thruster 2: middle_left
+           [ -080.00,   0.00, -150.00,   0.00,  -0.50,  -0.50],  # Thruster 3: middle_right
+           [ -140.00,  50.00,    0.00,   0.43,   0.00,   0.00],  # Thruster 4: stern_left
+           [  140.00,  50.00,    0.00,  -0.43,   0.00,   0.00]]  # Thruster 5: stern_right
 
 #          i   min   max  coff rdir
 CONF = [[  0,  250, 8191, 0.33,  1],
