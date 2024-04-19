@@ -1,13 +1,13 @@
+import math
 import sys
 import time
 import setproctitle
 
 from base import network, message
-from base.mat import calc_lin_approx
+from base.mat import calc_lin_approx, line_closest_point
 
 from object_recognition.model_class import RGBModel, HSVModel, get_model_path
 from object_recognition.image_utils import load_image_rgb, save_image_rgb
-from object_recognition.object_position import get_yaw_from_pixel
 from object_recognition.config import *
 
 import numpy as np
@@ -33,6 +33,10 @@ def main(camera_name, model_type, model_name):
     else:
         raise Exception
 
+    if camera_name != 'Bottom':
+        raise "Wrong camera name"
+
+    counter = 0
     net = network.Net()
     while net.receive():
         if net.id == "ImageLinkCameraStereo":
@@ -59,7 +63,7 @@ def main(camera_name, model_type, model_name):
                 if mean_x_vector.size > 1:
                     a, b = calc_lin_approx((filtered_indexes, mean_x_vector))
                 else:
-                    a, b = 1, 0
+                    a, b = 0, shape[1] / 2
 
                 if DEBUG:
                     save_path = net.msg.path[PATH_PARAMETER].replace('.png', '_line.png')
@@ -88,13 +92,18 @@ def main(camera_name, model_type, model_name):
                     ))
 
                 if is_obj_found:
-                    if camera_name != 'Bottom':
-                        raise "Wrong camera name"
+                    x, y = line_closest_point(
+                        (a, b),
+                        (shape[0] / 2, shape[1] / 2)
+                    )
+
+                    yaw_error = math.degrees(math.atan(a))
 
                     net.send(message.Line(
-                        coefs=(float(a), float(b)),
-                        image_shape=image.shape,
                         is_detected=True,
+                        image_shape=image.shape,
+                        point=(y, x),
+                        yaw_error=yaw_error,
                         counter=0
                     ))
 
