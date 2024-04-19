@@ -104,3 +104,28 @@ def calc_lin_approx(data):
     b = (sum_y - a * sum_x) / n
 
     return a, b
+
+
+def line_closest_point(coefs: tuple, point: tuple):
+    """
+    Returns point from line closest to the given point
+    :param coefs: line coefs in either (Ax + By + C = 0) or (y = kx + b) format
+    :param point: coordinates of point
+    :return:
+    """
+    if len(coefs) == 2:
+        k, b = coefs
+        a, b, c = k, -1, b
+    elif len(coefs) == 3:
+        a, b, c = coefs
+    else:
+        raise ValueError("Wrong number of coefficients")
+
+    x0, y0 = point
+
+    x = (b * (b * x0 - a * y0) - a * c) / (a ** 2 + b ** 2)
+    y = (a * (-b * x0 + a * y0) - b * c) / (a ** 2 + b ** 2)
+
+    return x, y
+
+

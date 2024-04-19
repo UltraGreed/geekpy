@@ -4,7 +4,7 @@
 	export PYTHONPATH=$(pwd)
 
 	cd robot
-	# python3 scene.py &
+  python3 scene.py &
 
 	python physoptic.py &
 	python main.py &
@@ -21,7 +21,7 @@
 	python gpio.py &
 
 	#                              pos_tracking stream
-	python3 zed.py --camera-orientation Bottom --serial 24827734 --img-capture &
+	python3 zed.py --camera-orientation Bottom --serial 24827734 --img-capture --save-mode Right &
 	sleep 5
 	python3 zed.py --camera-orientation Front --serial 16909428 --disable-orientation --img-capture &
 
@@ -30,5 +30,5 @@
 	# python3 obj_recogn.py Bottom        sub      CellY           CellY &
 
 	#                   camera_name  model_type  model_name
-	python3 obj_recogn_target.py Front sub Target &
+	python3 line_recogn.py Bottom sub LineDirt &
 )

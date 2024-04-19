@@ -15,4 +15,3 @@ echo out > /sys/class/gpio/gpio392/direction
 echo out > /sys/class/gpio/gpio394/direction
 echo out > /sys/class/gpio/gpio395/direction
 echo out > /sys/class/gpio/gpio396/direction
-

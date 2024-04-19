@@ -18,7 +18,7 @@ setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for proce
 PATH_PREFIX = sys.argv[1]
 # Objects can be provided in two ways:
 #   as "Object.Sub_object" e.g. "Front.left"
-#   or as "Object" e.g. "Front"
+#   or as "Object" e.g. "Front" (meaning first available sub-object will be shown)
 OBJECTS = [tuple(obj.split('.')) if '.' in obj else obj for obj in sys.argv[2:]]
 
 n_cols = math.ceil(math.sqrt(len(OBJECTS)))
@@ -63,8 +63,11 @@ while net.receive():
             try:
                 image_widgets[obj] = ImageTk.PhotoImage(Image.fromarray(iio.imread(link)))
             except TimeoutError:
-                print("hz cheto upalo v imaginariume")
+                print("hz cheto upalo v imaginariume (timeout)")
                 continue
+            except (SyntaxError, OSError, ValueError) as e:
+                print(f"Imaginarium got broken png file: {e}")
+                image_widgets[obj] = ImageTk.PhotoImage(Image.fromarray(iio.imread(start_image)))
 
             label_widget.config(image=image_widgets[obj])
 

@@ -174,9 +174,11 @@ class Target(Message):
 
 
 class Line(Message):
-    def __init__(self, is_detected: bool, coefs: tuple = (0, 0), counter: int = 0):
-        self.coefs = coefs
+    def __init__(self, is_detected: bool, image_shape: tuple, point: tuple = (0, 0), yaw_error: float = 0, counter: int = 0):
         self.is_detected = is_detected
+        self.image_shape = image_shape
+        self.point = point
+        self.yaw_error = yaw_error
         self.counter = counter
 
 

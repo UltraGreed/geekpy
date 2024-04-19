@@ -7,6 +7,7 @@ from base import message, network
 from base import ms5837
 from base.message import PITCH
 from base.mat import sind, calc_lin_approx
+from base.time import time_precise
 
 import time
 
@@ -55,7 +56,7 @@ def send_depth_thread():
         print("Sensor read failed!")
         exit(1)
 
-    depth_data = [set(), set()]
+    depth_data = [list(), list()]
 
     last_time = 0
     approx_vel = 0
@@ -69,16 +70,18 @@ def send_depth_thread():
 
             depth = sensor.depth() * COEFFICIENT + OFFSET - pitch_offset
 
-            depth_data[0].add(time.time())
-            depth_data[1].add(depth)
+            depth_data[0].append(time_precise())
+            depth_data[1].append(depth)
 
             # Calculate linear approximation and send corresponding message
-            if len(depth_data) == SAMPLES_N:
+            if len(depth_data[0]) == SAMPLES_N:
                 a, b = calc_lin_approx(depth_data)
-                depth_data.clear()
+
+                depth_data[0].clear()
+                depth_data[1].clear()
 
                 # Calculate metrics from approximation
-                approx_depth = a * time.time() + b
+                approx_depth = a * time_precise() + b
 
                 last_vel = approx_vel
                 approx_vel = a
@@ -89,7 +92,7 @@ def send_depth_thread():
 
                 net.send(message.Sensor(pos_depth=approx_depth, vel_depth=approx_vel, acc_depth=approx_acc))
         else:
-            print('Read error')
+            print('I2C ctd Read error')
             exit(1)
 
 
