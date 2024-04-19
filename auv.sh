@@ -11,8 +11,8 @@
 	python odometry.py &
 	python kotleta.py &
 
-	#  python ctd_i2c.py &
-	python ctd_uart.py &
+	python ctd_i2c_exp.py &
+	# python ctd_uart.py &
 
 	# python acoustic.py &
 	# python bearing.py 29500 30500 Cells &
