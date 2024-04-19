@@ -1,11 +1,10 @@
-import os
 import sys
+import cv2
 import threading
 import time
 from datetime import datetime
 from enum import IntFlag
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 import pyzed.sl as sl
@@ -17,12 +16,17 @@ import argparse
 import logging
 from typing import Tuple, Union, List
 
-from base.message import ImageLinkCameraStereo, Sensor, SensorZ
+from base.message import ImageLinkCameraStereo, PhotoOff, PhotoOn, Sensor, SensorZ
 from base.network import Net
-from PIL import Image
 
 ## CONSTANTS
 ROLL_OFFSET = 3.3
+
+
+## END CONSTANTS
+
+
+## PARSER
 
 
 class SaveMode(IntFlag):
@@ -57,59 +61,70 @@ class Action(argparse.Action):
         setattr(namespace, self.dest, SaveMode(flag_val))
 
 
-## END CONSTANTS
+def init_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        # prog="Zed camera",
+        description="Provide the camera photo and position",
+    )
 
-## PARSER
-parser = argparse.ArgumentParser(
-    # prog="Zed camera",
-    description="Provide the camera photo and position",
-)
+    parser.add_argument(
+        "--serial", type=int, default=0, help="The camera serial number"
+    )
+    parser.add_argument(
+        "--camera-orientation",
+        required=True,
+        choices=["Front", "Bottom"],
+        help="The camera orientation",
+    )
+    parser.add_argument(
+        "--img-capture", action="store_true", help="Enable image capture"
+    )
+    parser.add_argument(
+        "--disable-orientation",
+        action="store_true",
+        help="Disable orientation publishing",
+    )
+    parser.add_argument(
+        "--sensor-buffer",
+        type=int,
+        default=5,
+        help="The amount of data to be approximated",
+    )
+    parser.add_argument(
+        "--sensor-frequency",
+        type=int,
+        default=20,
+        help="The frequency of receiving data from the sensor in Hz",
+    )
+    parser.add_argument(
+        "--photo-frequency",
+        type=int,
+        default=5,
+        help="The frequency of image acquisition in Hz",
+    )
+    parser.add_argument(
+        "--save-mode",
+        type=str,
+        nargs="+",
+        action=Action,
+        default=SaveMode.Left,
+        help=f"Images saving mode ({SaveMode.get_str()})",
+    )
+    parser.add_argument(
+        "--save-path", type=str, default="/media/ssd/photo", help="Image save base path"
+    )
+    parser.add_argument(
+        "--log-level",
+        type=str.upper,
+        choices=list(logging._levelToName.values()),
+        default=logging._levelToName[logging.WARNING],
+        help="Logging level",
+    )
 
-parser.add_argument("--serial", type=int, default=0, help="The camera serial number")
-parser.add_argument(
-    "--camera-orientation",
-    required=True,
-    choices=["Front", "Bottom"],
-    help="The camera orientation",
-)
-parser.add_argument("--img-capture", action="store_true", help="Enable image capture")
-parser.add_argument(
-    "--disable-orientation", action="store_true", help="Disable orientation publishing"
-)
-parser.add_argument(
-    "--sensor-buffer", type=int, default=5, help="The amount of data to be approximated"
-)
-parser.add_argument(
-    "--sensor-frequency",
-    type=int,
-    default=20,
-    help="The frequency of receiving data from the sensor in Hz",
-)
-parser.add_argument(
-    "--photo-frequency",
-    type=int,
-    default=5,
-    help="The frequency of image acquisition in Hz",
-)
-parser.add_argument(
-    "--save-mode",
-    type=str,
-    nargs="+",
-    action=Action,
-    default=SaveMode.Left,
-    help=f"Images saving mode ({SaveMode.get_str()})",
-)
-parser.add_argument(
-    "--save-path", type=str, default="/media/ssd/photo", help="Image save base path"
-)
-parser.add_argument(
-    "--log-level",
-    type=str.upper,
-    choices=list(logging._levelToName.values()),
-    default=logging._levelToName[logging.WARNING],
-    help="Logging level",
-)
+    return parser
 
+
+parser = init_parser()  # REDO:
 args = parser.parse_args()
 ## END PARSER
 
@@ -139,6 +154,9 @@ def lin_approx(data: np.ndarray, times: np.ndarray) -> Tuple[np.ndarray, np.ndar
 
 
 class TimestampHandler:
+    __slots__ = {"ts"}
+    ts: sl.Timestamp
+
     def __init__(self) -> None:
         self.ts = sl.Timestamp()
 
@@ -166,15 +184,13 @@ def quat2eul(qx, qy, qz, qw) -> np.ndarray:
     return np.rad2deg((yaw, roll, pitch))
 
 
-def get_saver(rotate: bool, compress_level: int) -> Callable[[sl.Mat, str], None]:
-    def saver(img: sl.Mat, path: str) -> None:
-        b, g, r, _ = Image.fromarray(img.get_data()).split()
-        png = Image.merge("RGB", (r, g, b))
-        if rotate:
-            png.rotate(-90)
-        png.save(fp=path, compress_level=compress_level)
-
-    return saver
+def saver(img: sl.Mat, path: str, rotate: bool = False) -> None:
+    img = (
+        cv2.rotate(img.get_data(), cv2.ROTATE_90_COUNTERCLOCKWISE)
+        if rotate
+        else img.get_data()
+    )
+    cv2.imwrite(path, img)
 
 
 def img_cap(
@@ -185,43 +201,34 @@ def img_cap(
     frequency: float = 1 / 5,
     is_img_capture: bool = False,
     save_mode: SaveMode = SaveMode.Left,
-    compress_level: int = 3,
 ) -> None:
     net = Net(frequency)
 
-    save_path = (
-        args.save_path
-        + "/"
-        + camera_orientation
-        + "/"
-        + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
+    save_path = f"{args.save_path}/{camera_orientation}/" + datetime.today().strftime(
+        "%Y-%m-%d_%H-%M-%S"
     )
-    if is_img_capture and not os.path.exists(save_path):
+    if is_img_capture:
         Path(save_path).mkdir(parents=True, exist_ok=True)
-    saver = get_saver(camera_orientation == "Bottom", compress_level)
 
     img = sl.Mat()
+    flip_img = args.camera_orientation == "Bottom"
     photo_counter = 0
 
     while net.receive():
-        if net.id == "PhotoOn":
+        if net.id == PhotoOn.id:
             if net.msg is None or net.msg.camera != camera_orientation:
                 continue
 
             logging.info("Image capture enable")
 
             is_img_capture = True
-            save_path = (
-                args.save_path
-                + "/"
-                + camera_orientation
-                + "/"
-                + datetime.today().strftime("%Y-%m-%d_%H-%M-%S")
-            )
-            if not os.path.exists(save_path):
-                Path(save_path).mkdir(parents=True, exist_ok=True)
+            if net.msg.folder:
+                photo_counter = 0
+                save_path = f"{args.save_path}/{camera_orientation}/{net.msg.folder}"
 
-        if net.id == "PhotoOff":
+            Path(save_path).mkdir(parents=True, exist_ok=True)
+
+        if net.id == PhotoOff.id:
             if net.msg is None or net.msg.camera != camera_orientation:
                 continue
 
@@ -241,21 +248,21 @@ def img_cap(
             if save_mode & SaveMode.Left:
                 zed.retrieve_image(img, sl.VIEW.LEFT)
                 path = f"{save_path}/left_{file}"
-                saver(img, path)
+                saver(img, path, flip_img)
 
                 photos["left"] = path
 
             if save_mode & SaveMode.Right:
                 zed.retrieve_image(img, sl.VIEW.RIGHT)
                 path = f"{save_path}/right_{file}"
-                saver(img, path)
+                saver(img, path, flip_img)
 
                 photos["right"] = path
 
             if save_mode & SaveMode.Depth:
                 zed.retrieve_image(img, sl.VIEW.DEPTH)
                 path = f"{save_path}/depth_{file}"
-                saver(img, path)
+                saver(img, path, flip_img)
 
                 photos["depth"] = path
 
@@ -310,10 +317,6 @@ def sensor_cap(
         x, y, z = (a * delay + b).tolist()
         a, b = lin_approx(vel, times)
         vx, vy, vz = (a * delay + b).tolist()
-
-        # logging.debug(
-        #     f"X: {x:5f}, Y: {y:5f}, Z: {z:5f}, VX: {vx:5f}, VY: {vy:5f}, VZ: {vz:5f}"
-        # )
 
         net.send(
             Sensor(
@@ -407,7 +410,7 @@ def main(
             )
         )
 
-    [t.start() for t in threads]
+    _ = [t.start() for t in threads]
 
     for t in threads:
         t.join()
