@@ -121,8 +121,8 @@ while net.receive():
     else:
         try:
             msg_dict = json.loads(str(net.msg))
-        except json.JSONDecodeError:
-            print(str(net.msg))
+        except json.JSONDecodeError as e:
+            print(f"chart err: {e}")
         for key, value in msg_dict.items():
             if value is None:
                 continue
