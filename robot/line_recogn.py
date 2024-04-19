@@ -92,7 +92,7 @@ def main(camera_name, model_type, model_name):
                         raise "Wrong camera name"
 
                     net.send(message.Line(
-                        coefs=(a, b - shape[1] // 2),
+                        coefs=(float(a), float(b)),
                         image_shape=image.shape,
                         is_detected=True,
                         counter=0
