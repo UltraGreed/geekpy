@@ -1,6 +1,8 @@
 import sys
 import threading
 
+import setproctitle
+
 sys.path.append("./")
 from base import message as m
 from base import network
@@ -53,4 +55,5 @@ def main():
 
 
 if __name__ == "__main__":
+    setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
     main()
