@@ -160,10 +160,9 @@ class DetectionOff(Message):
 
 # Detected object sended to scene
 class DetectedObject(Message):
-    def __init__(self, obj: str, x=None, y=None, depth=None, yaw=None, is_seen=False):
+    def __init__(self, obj: str, x=None, y=None, depth=None, yaw=None):
         self.obj = obj
         self.pos = [x, y, depth, yaw]
-        self.is_seen = is_seen
 
 
 class Target(Message):
