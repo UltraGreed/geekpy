@@ -3,7 +3,10 @@ import math
 from base import mat
 from base.message import X, Y, DEPTH
 
-CAMERA_FOV = 70
+BOTTOM_CAMERA_VFOV = 51.8
+BOTTOM_CAMERA_HFOV = 72.4
+
+CAMERA_FOV = 228
 
 
 # Function converting pixel coordinates to map coordinates
@@ -12,12 +15,12 @@ def get_rel_from_pixel(image_shape, obj_coords, camera_dist):
     pixel_relative_y = obj_coords[0] - image_shape[0] // 2
 
     # TODO: Split camera FOVs
-    relative_x = pixel_relative_x / image_shape[1] * 2 * math.tan(math.radians(CAMERA_FOV) / 2) * camera_dist
-    relative_y = pixel_relative_y / image_shape[0] * 2 * math.tan(math.radians(CAMERA_FOV) / 2) * camera_dist
+    relative_x = pixel_relative_x / image_shape[1] * 2 * math.tan(math.radians(BOTTOM_CAMERA_VFOV) / 2) * camera_dist
+    relative_y = pixel_relative_y / image_shape[0] * 2 * math.tan(math.radians(BOTTOM_CAMERA_HFOV) / 2) * camera_dist
 
     return relative_x, relative_y
 
-
+#                                                           y, x
 def get_obj_pos_bottom(robot_pos, obj_depth, image_shape, obj_center):
     camera_dist = obj_depth - robot_pos[DEPTH]
 
@@ -27,6 +30,7 @@ def get_obj_pos_bottom(robot_pos, obj_depth, image_shape, obj_center):
         robot_pos,
         (relative_x, relative_y, obj_depth - robot_pos[DEPTH])
     )
+
     return map_x, map_y, map_depth
 
 
