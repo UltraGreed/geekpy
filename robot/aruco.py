@@ -1,11 +1,13 @@
 import os
 import sys
+
 # from typing import Literal
 
 import cv2
 import cv2.aruco as aruco
 import numpy as np
 import setproctitle
+from pathlib import Path
 
 sys.path.append("./")
 
@@ -18,13 +20,17 @@ from base.message import (
     ImageLinkRecognition,
 )
 
+from object_recognition.object_position import get_obj_pos_bottom
+
 setproctitle.setproctitle(sys.argv[0])
+
+CAMERA = "right"
 
 
 def aruco_bboxes(
     img: np.ndarray,
-    markerSize = 4,
-    totalMarkers = 50,
+    markerSize=4,
+    totalMarkers=50,
     to_gray: bool = True,
 ) -> np.ndarray:
     if to_gray:
@@ -43,6 +49,10 @@ def aruco_bboxes(
 
     # Returns xyhw for all detected aruco codes, otherwise an array with shape = (0, )
     return np.array([box[0] for box in bboxes], dtype=int)
+
+
+def get_center(bbox: np.ndarray) -> np.ndarray:
+    return np.flip((bbox[0] + bbox[-2]) // 2)
 
 
 def draw_center(img: np.ndarray, bbox: np.ndarray, radius: int = 50) -> np.ndarray:
@@ -74,30 +84,39 @@ def main():
     while net.receive():
         if net.id == ImageLinkCameraStereo.id:
             msg: ImageLinkCameraStereo = net.msg
-            for path in msg.path.values():
-                img = cv2.imread(path)
-                bboxes = aruco_bboxes(img, totalMarkers=250)
 
-                if not len(bboxes):
-                    continue
+            path = msg.path[CAMERA]
 
-                mask = np.zeros_like(img)
-                direction = 0.0
-                for bbox in bboxes:
-                    mask = draw_center(mask, bbox, radius=50)
+            img = cv2.imread(path)
+            bboxes = aruco_bboxes(img, totalMarkers=250)
 
-                    aruco_direct = bbox[0] - bbox[-1]
-                    aruco_direct = aruco_direct / np.linalg.norm(aruco_direct)
-                    direction = calc_direction(aruco_direct)
+            if not len(bboxes):
+                continue
 
-                mask_path = f"{os.path.dirname(path)}/aruco_mask_{counter}.png"
-                cv2.imwrite(mask_path, mask)
-                net.send(ImageLinkRecognition("Aruco", path=mask_path, counter=counter))
-                counter += 1
+            mask = np.zeros_like(img)
+            direction = 90.0
 
-                net.send(
-                    DetectedObject("Aruco", yaw=robot[YAW] + direction, is_seen=True)
+            for bbox in bboxes:
+                mask = draw_center(mask, bbox, radius=50)
+
+                aruco_direct = bbox[0] - bbox[-1]
+                aruco_direct = aruco_direct / np.linalg.norm(aruco_direct)
+                direction += calc_direction(aruco_direct)
+
+            mask_path = f"{os.path.dirname(path)}/{Path(path).stem}_mask_aruco.png"
+            cv2.imwrite(mask_path, mask)
+            net.send(ImageLinkRecognition("Aruco", path=mask_path, counter=counter))
+            counter += 1
+
+            center = get_center(bboxes[0])
+
+            x, y, _ = get_obj_pos_bottom(robot, 0.5, img.shape, center)
+
+            net.send(
+                DetectedObject(
+                    "Aruco", x=float(-x), y=float(-y), yaw=float(robot[YAW] + direction)
                 )
+            )
 
         elif net.id == Coord.id:
             robot = net.msg.pos
