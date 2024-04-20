@@ -8,12 +8,12 @@ CAMERA_FOV = 70
 
 # Function converting pixel coordinates to map coordinates
 def get_rel_from_pixel(image_shape, obj_coords, camera_dist):
-    pixel_relative_x = image_shape[X] / 2 - obj_coords[X]
-    pixel_relative_y = obj_coords[Y] - image_shape[Y] / 2
+    pixel_relative_x = obj_coords[1] - image_shape[1] // 2
+    pixel_relative_y = obj_coords[0] - image_shape[0] // 2
 
     # TODO: Split camera FOVs
-    relative_x = pixel_relative_y / image_shape[Y] * 2 * math.tan(CAMERA_FOV / 2 / math.pi * 180) * camera_dist
-    relative_y = pixel_relative_x / image_shape[X] * 2 * math.tan(CAMERA_FOV / 2 / math.pi * 180) * camera_dist
+    relative_x = pixel_relative_x / image_shape[1] * 2 * math.tan(math.radians(CAMERA_FOV) / 2) * camera_dist
+    relative_y = pixel_relative_y / image_shape[0] * 2 * math.tan(math.radians(CAMERA_FOV) / 2) * camera_dist
 
     return relative_x, relative_y
 
