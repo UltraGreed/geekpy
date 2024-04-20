@@ -1,5 +1,6 @@
 import sys
 import threading
+import setproctitle
 
 import setproctitle
 
@@ -20,6 +21,8 @@ stop_event = threading.Event()
 # should be different or there will be recursion
 TX_MSGS = [m.Coord, m.PhotoOn, m.PhotoOff, m.TestMessage]
 RX_MSGS = [m.ImageLinkCameraStereo]
+
+setproctitle.setproctitle(sys.argv[0])
 
 
 def tx_thread(stop):
