@@ -26,8 +26,8 @@ from object_recognition.object_position import get_obj_pos_bottom
 
 setproctitle.setproctitle(sys.argv[0])
 
-CAMERA = "right"
-OBJECT_NAME = "Aruco"
+CAMERA = tuple(sys.argv[1].split('.'))
+OBJECT_NAME = sys.argv[2]
 
 
 def aruco_bboxes(
@@ -86,10 +86,10 @@ def main():
     depth: float = network.wait_message(FilteredObjects.id).objs[OBJECT_NAME][DEPTH]
 
     while net.receive():
-        if net.id == ImageLinkCameraStereo.id:
+        if net.id == ImageLinkCameraStereo.id and net.msg.obj == CAMERA[0]:
             msg: ImageLinkCameraStereo = net.msg
 
-            path = msg.path[CAMERA]
+            path = msg.path[CAMERA[1]]
 
             img = cv2.imread(path)
             bboxes = aruco_bboxes(img, totalMarkers=250)
@@ -107,12 +107,6 @@ def main():
                 aruco_direct = aruco_direct / np.linalg.norm(aruco_direct)
                 direction += calc_direction(aruco_direct)
 
-            # if direction > 0.0:
-            #     print("da", direction, robot[YAW])
-            #     direction = robot[YAW] - direction
-            # else:
-            #     direction = robot[YAW] + direction
-
             mask_path = f"{os.path.dirname(path)}/{Path(path).stem}_mask_aruco.png"
             cv2.imwrite(mask_path, mask)
             net.send(ImageLinkRecognition(OBJECT_NAME, path=mask_path, counter=counter))
@@ -123,7 +117,7 @@ def main():
             x, y, _ = get_obj_pos_bottom(robot, depth, img.shape, center)
 
             net.send(
-                DetectedObject("Aruco", x=float(x), y=float(y), yaw=float(robot[YAW] + direction))
+                DetectedObject(OBJECT_NAME, x=float(x), y=float(y), yaw=float(robot[YAW] + direction))
             )
 
         elif net.id == Coord.id:
