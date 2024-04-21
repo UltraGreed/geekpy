@@ -94,7 +94,7 @@ def main():
                 continue
 
             mask = np.zeros_like(img)
-            direction = 90.0
+            direction = 0.0
 
             for bbox in bboxes:
                 mask = draw_center(mask, bbox, radius=50)
@@ -110,11 +110,12 @@ def main():
 
             center = get_center(bboxes[0])
 
-            x, y, _ = get_obj_pos_bottom(robot, 0.5, img.shape, center)
+            x, y, _ = get_obj_pos_bottom(robot, 1.0, img.shape, center)
+            print(robot[YAW] + direction)
 
             net.send(
                 DetectedObject(
-                    "Aruco", x=float(-x), y=float(-y), yaw=float(robot[YAW] + direction)
+                    "Aruco", x=float(-x), y=float(-y), yaw=float(direction)
                 )
             )
 
