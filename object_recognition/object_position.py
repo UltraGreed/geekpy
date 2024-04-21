@@ -6,7 +6,7 @@ from base.message import X, Y, DEPTH
 BOTTOM_CAMERA_VFOV = 51.8
 BOTTOM_CAMERA_HFOV = 72.4
 
-CAMERA_FOV = 228
+CAMERA_FOV = 70
 
 
 # Function converting pixel coordinates to map coordinates
@@ -20,7 +20,7 @@ def get_rel_from_pixel(image_shape, obj_coords, camera_dist):
 
     return relative_x, relative_y
 
-#                                                           y, x
+
 def get_obj_pos_bottom(robot_pos, obj_depth, image_shape, obj_center):
     camera_dist = obj_depth - robot_pos[DEPTH]
 
@@ -35,6 +35,7 @@ def get_obj_pos_bottom(robot_pos, obj_depth, image_shape, obj_center):
 
 
 def get_obj_pos_front(robot_pos, obj_real, obj_pixel, image_shape, obj_center):
+    raise NotImplementedError
     # TODO: Split camera FOVs
     camera_dist_x = image_shape[X] / obj_pixel[X] / math.tan(CAMERA_FOV / 2 / math.pi * 180) * obj_real / 2
     camera_dist_y = image_shape[Y] / obj_pixel[Y] / math.tan(CAMERA_FOV / 2 / math.pi * 180) * obj_real / 2
@@ -54,6 +55,7 @@ def get_obj_pos_front(robot_pos, obj_real, obj_pixel, image_shape, obj_center):
 
 # Function converting pixel coordinates to map coordinates
 def get_yaw_from_pixel(image_shape, obj_coords):
+    raise NotImplementedError
     pixel_relative_y = obj_coords[Y] - image_shape[Y] / 2
 
     offset_yaw = pixel_relative_y / image_shape[Y] * CAMERA_FOV
