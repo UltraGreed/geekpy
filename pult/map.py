@@ -11,7 +11,7 @@ OBJ_COUNT = 600
 
 # Static markers coordinates.
 MARKERS = {
-    "Pool": ([0.0,   0.0, -22.0, -22.0],
+    "Pool": ([0.0,   0.0, 22.0, 22.0],
              [0.0, 7.125,   0.0, 7.125])
 }
 
