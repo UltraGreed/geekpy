@@ -1,36 +1,33 @@
 import time
 
-from base import mat, message, network
+from base import message, network
 from base.message import YAW
-
-from object_recognition.object_position import get_obj_pos_bottom
 
 # Timer period to send 'Tack' message to regulator.
 TIMER = 0.25
-LINE_DEPTH = 1.16
+
+# Coefficients for lag line following
+P = 0.2
+D = 0
 
 
-def line_movement(speed, lag_coef=0.2, max_dist=None, timeout=None, depth=None):
+def line_movement(speed, aruco_delay=0, timeout=None, depth=None):
     start_time = time.time()
 
-    if not max_dist and not timeout:
-        raise 'Dist or dt should be provided'
-
-    current_pos = network.wait_message('Coord').pos
-    previous_pos = current_pos
+    current_coord = network.wait_message('Coord')
+    current_pos = current_coord.pos
+    current_vel = current_coord.vel
     target_yaw = current_pos[YAW]
-    stab_x = 0
+    speed_x = 0
 
     net = network.Net(timer=TIMER)
     while net.receive():
         if net.id == 'Timer':
-            dist = mat.dist2d(previous_pos, current_pos)
             net.send(message.Tack(
                 time=1.0,
                 speed_y=speed,
+                speed_x=speed_x,
                 stab_depth=depth,
-                stab_x=stab_x,
-                stab_y=current_pos[1],
                 stab_yaw=target_yaw,
                 stab_pitch=0.0,
                 stab_roll=0.0
@@ -39,20 +36,23 @@ def line_movement(speed, lag_coef=0.2, max_dist=None, timeout=None, depth=None):
             if timeout is not None and time.time() - start_time > timeout:
                 return
 
-            if max_dist is not None and dist > max_dist:
-                return
-
-        elif net.id == 'Coord':  # If coordinates has come
-            current_pos = net.msg.pos  # then save robot position.
+        elif net.id == 'Coord':
+            # Update robot position and velocity
+            current_pos = net.msg.pos
+            current_vel = net.msg.vel
 
         elif net.id == 'Line':
             if net.msg.is_detected:
-                x, y = net.msg.point
-                yaw_error = net.msg.yaw_error
-                image_shape = net.msg.image_shape
+                # x, y in image coordinate system
+                y, x = net.msg.point
 
-                stab_x, *_ = get_obj_pos_bottom(current_pos, LINE_DEPTH, image_shape, (int(y), int(x)))
+                target_yaw = current_pos[YAW] - net.msg.yaw_error
 
-                target_yaw = current_pos[YAW] - yaw_error
-                # dx_norm = y / (image_shape[1] / 2) - 1
-                # speed_x = dx_norm * lag_coef
+                dx_norm = x / (net.msg.image_shape[1] / 2) - 1
+                speed_x = dx_norm * P - current_vel[0] * D
+
+        elif net.id == 'DetectedObject':
+            if net.msg.obj != 'Aruco' or time.time() - start_time < aruco_delay:
+                continue
+
+            return
