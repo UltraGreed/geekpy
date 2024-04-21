@@ -5,7 +5,7 @@ from object_recognition.config import *
 from object_recognition.image_utils import rgb_to_hsv
 
 
-def get_model_path(model_id, obj_name=OBJ_NAME, color_scheme=COLOR_SCHEME):
+def get_model_path(model_id='sub', obj_name=OBJ_NAME, color_scheme=COLOR_SCHEME):
     return MODEL_DIRECTORY + f'{model_id}_{obj_name}_{color_scheme.upper()}.npy'
 
 
