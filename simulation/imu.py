@@ -1,6 +1,6 @@
 #!python3 imu.py
 import sys, time, setproctitle
-from base import network, message
+from base import network, message, mat
 from base.message import YAW
 
 TIMEOUT = 0.50  # Force timeout.
@@ -30,6 +30,7 @@ while net.receive():
         sensor.acc[YAW]  = dt * (yaw_speed - sensor.vel[YAW]) / MOMENT  # Calculate acceleration,
         sensor.vel[YAW] += dt * sensor.acc[YAW]                         # velocity and
         sensor.pos[YAW] += dt * sensor.vel[YAW]                         # position.
+        sensor.pos[YAW] = mat.to180(sensor.pos[YAW])
         net.send(sensor)                                                # Send Sensor message.
 
     elif net.id == 'Coord':            # If Motion message has come then
