@@ -3,7 +3,7 @@ import setproctitle
 
 sys.path.append('./')
 
-from actions.aruco_stab import aruco_stab
+from actions.stab_new import stab
 from actions import detection
 
 from base import network
@@ -22,6 +22,6 @@ net.send(InitRobot(yaw=0, depth=0))
 
 detection.on(obj="Aruco")
 
-aruco_stab(front=0.0, right=0.0, dt=120.0, depth=0.5)
+stab(origin="Aruco", front=0.0, right=0.0, yaw="Object", dt=120.0, depth=0.5)
 
 print(' '.join(sys.argv), "end!")
