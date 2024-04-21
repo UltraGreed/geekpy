@@ -208,7 +208,7 @@ def img_cap(
 ) -> None:
     frequency: float = 1 / args.photo_frequency
     cam_orientation: str = args.camera_orientation
-    is_img_capture: bool = args.is_img_capture
+    is_img_capture: bool = args.img_capture
     save_mode: SaveMode = args.save_mode
 
     net = Net(frequency)
