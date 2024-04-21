@@ -194,7 +194,7 @@ def quat2eul(qx, qy, qz, qw) -> np.ndarray:
 
 def saver(img: sl.Mat, path: str, rotate: bool = False) -> None:
     img = (
-        cv2.rotate(img.get_data(), cv2.ROTATE_90_COUNTERCLOCKWISE)
+        cv2.rotate(img.get_data(), cv2.ROTATE_90_CLOCKWISE)
         if rotate
         else img.get_data()
     )
