@@ -4,5 +4,5 @@
 
   cd pult
 
-  python imaginarium.py "192.168.88.101" Bottom BottomLine &
+  python imaginarium.py "http://192.168.88.101" Bottom Aruco BottomLine &
 )

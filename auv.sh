@@ -11,7 +11,7 @@
 	python odometry.py &
 	python kotleta.py &
 
-	python ctd_i2c_exp.py &
+	python ctd_i2c_lin.py &
 	# python ctd_uart.py &
 
 	# python acoustic.py &
@@ -25,10 +25,12 @@
 	sleep 5
 	python3 zed.py --camera-orientation Front --serial 16909428 --disable-orientation --img-capture &
 
-	#                   camera_name  model_type  model_name   object_name
-	#   python3 obj_recogn.py Bottom        sub      CellR           CellR &
-	# python3 obj_recogn.py Bottom        sub      CellY           CellY &
+	#                      camera_name    model_name   object_name
+	#   python3 obj_recogn.py Bottom        CellR         CellR &
+	#   python3 obj_recogn.py Bottom        CellY         CellY &
 
-	#                   camera_name  model_type  model_name
-	python3 line_recogn.py Bottom sub LineDirt &
+	#                   camera_name model_name
+	python3 line_recogn.py Bottom LineDirt right 1.16 0.5 &
+
+	python aruco.py Bottom.right Aruco &
 )

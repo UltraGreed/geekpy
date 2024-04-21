@@ -1,8 +1,6 @@
 import os
 import sys
 
-# from typing import Literal
-
 import cv2
 import cv2.aruco as aruco
 import numpy as np
