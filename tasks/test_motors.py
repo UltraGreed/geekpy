@@ -8,7 +8,8 @@ from base import network, message
 TIMER = 1 / 12
 
 net = network.Net()
-msg = message.Tack(speed_y=0.5)
+net.send(message.InitRobot(yaw=0, depth=0))
+msg = message.Tack(stab_depth=0.5,speed_x=0.2)
 
 timeout = 5.0
 

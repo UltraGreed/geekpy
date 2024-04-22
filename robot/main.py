@@ -8,9 +8,9 @@ import sys
 from base import mat, network, message
 from base.message import X, Y, DEPTH, YAW, PITCH, ROLL, AXIS
 
-######### X #### Y # DEPTH ## YAW ### PITCH # ROLL
-P =   [ 0.50,  2.00,  0.50,   2.00,   1.50,   1.00]  # Proportional coefficients of regulator.
-D =   [ 0.00,  0.00,  0.50,   2.00,   1.50,   1.00]  # Differential coefficients of regulator.
+#      # X #### Y # DEPTH ## YAW ### PITCH # ROLL
+P =   [ 0.50,  2.00,  0.50,   3.00,   1.50,   1.00]  # Proportional coefficients of regulator.
+D =   [ 0.00,  0.00,  0.50,   3.00,   1.50,   1.00]  # Differential coefficients of regulator.
 MAX = [ 0.15,  0.15,  0.30,  45.00,  45.00,  45.00]  # Maximal possible velocity in stabilization mode.
 MIN = [-0.15, -0.15, -0.30, -45.00, -45.00, -45.00]  # Minimal possible velocity in stabilization mode.
 TIMER: float = 1 / 12  # 'Coord' message publication timer.

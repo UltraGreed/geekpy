@@ -8,7 +8,7 @@ OBJ_NAME = "LineDirt"
 # Part of maximum image weight sum needed to recognize object
 THRESHOLD_OBJECT = 0.0001
 # Part of maximum image weight sum to remove from image
-THRESHOLD_CLEAN = 0.00025
+THRESHOLD_CLEAN = 0.00015
 # MODEL-WIDE PARAMETERS #
 # Maximum possible value in model
 MAX_PIXEL_WEIGHT = 1
