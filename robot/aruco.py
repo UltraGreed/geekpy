@@ -7,8 +7,6 @@ import numpy as np
 import setproctitle
 from pathlib import Path
 
-sys.path.append("./")
-
 from base import network
 from base.message import (
     YAW,
@@ -22,10 +20,8 @@ from base.message import (
 
 from object_recognition.object_position import get_obj_pos_bottom
 
-setproctitle.setproctitle(sys.argv[0])
 
-CAMERA = tuple(sys.argv[1].split('.'))
-OBJECT_NAME = sys.argv[2]
+DEBUG = True
 
 
 def aruco_bboxes(
@@ -76,47 +72,74 @@ def calc_direction(direction_aruco: np.ndarray) -> float:
     )
 
 
-def main():
+def main(camera_name: tuple, object_name: str):
     net = network.Net(1 / 10)
     counter = 0
 
     robot: list[float] = network.wait_message(Coord.id).pos
-    depth: float = network.wait_message(FilteredObjects.id).objs[OBJECT_NAME][DEPTH]
+    depth: float = network.wait_message(FilteredObjects.id).objs[object_name][DEPTH]
 
     while net.receive():
-        if net.id == ImageLinkCameraStereo.id and net.msg.obj == CAMERA[0]:
+        if net.id == ImageLinkCameraStereo.id and net.msg.obj == camera_name[0]:
             msg: ImageLinkCameraStereo = net.msg
 
-            path = msg.path[CAMERA[1]]
+            path = msg.path[camera_name[1]]
 
             img = cv2.imread(path)
             bboxes = aruco_bboxes(img, totalMarkers=250)
 
-            if not len(bboxes):
-                continue
+            if bboxes.size > 0:
+                direction = 0.0
 
-            mask = np.zeros_like(img)
-            direction = 0.0
+                for bbox in bboxes:
+                    aruco_direct = bbox[0] - bbox[-1]
+                    aruco_direct = aruco_direct / np.linalg.norm(aruco_direct)
+                    direction += calc_direction(aruco_direct)
 
-            for bbox in bboxes:
-                mask = draw_center(mask, bbox, radius=50)
+                center = get_center(bboxes[0])
 
-                aruco_direct = bbox[0] - bbox[-1]
-                aruco_direct = aruco_direct / np.linalg.norm(aruco_direct)
-                direction += calc_direction(aruco_direct)
+                x, y, _ = get_obj_pos_bottom(robot, depth, img.shape, center)
 
-            mask_path = f"{os.path.dirname(path)}/{Path(path).stem}_mask_aruco.png"
-            cv2.imwrite(mask_path, mask)
-            net.send(ImageLinkRecognition(OBJECT_NAME, path=mask_path, counter=counter))
-            counter += 1
+                net.send(
+                    DetectedObject(object_name, x=float(x), y=float(y), yaw=float(robot[YAW] + direction))
+                )
 
-            center = get_center(bboxes[0])
+            if DEBUG:
+                mask = np.zeros_like(img)
+                if bboxes.size > 0:
+                    for bbox in bboxes:
+                        # Direction
+                        cv2.line(
+                            mask,
+                            bbox[0],
+                            (bbox[0] + direction * 20).astype(int),
+                            color=(0, 0, 255),
+                            thickness=2,
+                        )
+                        mask = draw_center(mask, bbox, radius=50)
+                else:
+                    # Draw cross if not recognized
+                    cv2.line(
+                        mask,
+                        (0, 0),
+                        (img.shape[1] - 1, img.shape[0] - 1),
+                        color=(0, 0, 255),
+                        thickness=2,
+                    )
+                    cv2.line(
+                        mask,
+                        (0, img.shape[0] - 1),
+                        (img.shape[1] - 1, 0),
+                        color=(0, 0, 255),
+                        thickness=2,
+                    )
 
-            x, y, _ = get_obj_pos_bottom(robot, depth, img.shape, center)
+                mask_path = f"{os.path.dirname(path)}/{Path(path).stem}_mask_aruco.png"
+                cv2.imwrite(mask_path, mask)
 
-            net.send(
-                DetectedObject(OBJECT_NAME, x=float(x), y=float(y), yaw=float(robot[YAW] + direction))
-            )
+                net.send(ImageLinkRecognition(object_name, path=mask_path, counter=counter))
+
+                counter += 1
 
         elif net.id == Coord.id:
             robot = net.msg.pos
@@ -165,5 +188,10 @@ def real_time():
 
 
 if __name__ == "__main__":
-    main()
-    # real_time()
+    sys.path.append("./")
+    setproctitle.setproctitle(sys.argv[0])
+
+    main(
+        camera_name=tuple(sys.argv[1].split('.')),
+        object_name=sys.argv[2]
+    )
