@@ -1,3 +1,4 @@
+import json
 import sys
 import cv2
 import threading
@@ -5,6 +6,7 @@ import time
 from datetime import datetime
 from enum import IntFlag
 from pathlib import Path
+from PIL import Image
 
 import numpy as np
 import pyzed.sl as sl
@@ -16,7 +18,14 @@ import argparse
 import logging
 from typing import Tuple, Union, List
 
-from base.message import ImageLinkCameraStereo, PhotoOff, PhotoOn, Sensor, SensorZ
+from base.message import (
+    Coord,
+    ImageLinkCameraStereo,
+    PhotoOff,
+    PhotoOn,
+    Sensor,
+    SensorZ,
+)
 from base.network import Net
 
 ## CONSTANTS
@@ -192,13 +201,15 @@ def quat2eul(qx, qy, qz, qw) -> np.ndarray:
     return np.rad2deg((yaw, roll, pitch))
 
 
-def saver(img: sl.Mat, path: str, rotate: bool = False) -> None:
+def saver(img: sl.Mat, path: str, rotate: bool, exif_data: dict) -> None:
     img = (
         cv2.rotate(img.get_data(), cv2.ROTATE_90_COUNTERCLOCKWISE)
         if rotate
         else img.get_data()
     )
-    cv2.imwrite(path, img)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    Image.fromarray(img).save(path, exif=json.dumps(exif_data).encode())
+    # cv2.imwrite(path, img)
 
 
 def img_cap(
@@ -223,6 +234,8 @@ def img_cap(
     flip_img = args.camera_orientation == "Bottom"
     photo_counter = 0
 
+    exif_data = {"x": 0.0, "y": 0.0, "depth": 0.0, "yaw": 0.0, "time": 0}
+
     while net.receive():
         if net.id == PhotoOn.id:
             if net.msg is None or net.msg.camera != cam_orientation:
@@ -244,6 +257,15 @@ def img_cap(
             logging.info("Image capture disable")
             is_img_capture = False
 
+        # WARN: ...
+        if net.id == Coord.id:
+            exif_data["x"] = net.msg.pos[0]
+            exif_data["y"] = net.msg.pos[1]
+            exif_data["depth"] = net.msg.pos[2]
+            exif_data["yaw"] = net.msg.pos[3]
+            exif_data["time"] = datetime.now()
+        # END WARN:
+
         if net.id == "Timer" and is_img_capture:
             zed_status = zed.grab(runtime_params)
             if zed_status != sl.ERROR_CODE.SUCCESS:
@@ -252,26 +274,26 @@ def img_cap(
 
             photo_counter += 1
             file = f"{photo_counter:05d}.png"
-            photos = {"path_left": "", "path_right": "", "path_depth": ""}  # CHECK: ??
+            photos = {"path_left": "", "path_right": "", "path_depth": ""}
 
             if save_mode & SaveMode.Left:
                 zed.retrieve_image(img, sl.VIEW.LEFT)
                 path = f"{save_path}/left_{file}"
-                saver(img, path, flip_img)
+                saver(img, path, flip_img, exif_data)
 
                 photos["path_left"] = path
 
             if save_mode & SaveMode.Right:
                 zed.retrieve_image(img, sl.VIEW.RIGHT)
                 path = f"{save_path}/right_{file}"
-                saver(img, path, flip_img)
+                saver(img, path, flip_img, exif_data)
 
                 photos["path_right"] = path
 
             if save_mode & SaveMode.Depth:
                 zed.retrieve_image(img, sl.VIEW.DEPTH)
                 path = f"{save_path}/depth_{file}"
-                saver(img, path, flip_img)
+                saver(img, path, flip_img, exif_data)
 
                 photos["path_depth"] = path
 
@@ -293,6 +315,7 @@ def sensor_cap(*, zed: sl.Camera, runtime_params: sl.RuntimeParameters) -> None:
 
     eul = np.zeros((buffer, 3))  # deg
     vel = np.zeros((buffer, 3))  # deg/sec
+    acc = np.zeros((buffer, 3))  # m/sec^2
     times = np.zeros(buffer)
 
     while True:
@@ -313,6 +336,7 @@ def sensor_cap(*, zed: sl.Camera, runtime_params: sl.RuntimeParameters) -> None:
             eul[count] = quat2eul(*zed_imu.get_pose().get_orientation().get())
             eul[count, 1] = min(max(-eul[count, 1] - 90, -90), 90)
             vel[count] = zed_imu.get_angular_velocity()
+            acc[count] = zed_imu.get_linear_acceleration()
             times[count] = ts_handler.ts.get_nanoseconds() - times[(count - 1) % buffer]
 
             count += 1
@@ -323,6 +347,8 @@ def sensor_cap(*, zed: sl.Camera, runtime_params: sl.RuntimeParameters) -> None:
         x, y, z = (a * delay + b).tolist()
         a, b = lin_approx(vel, times)
         vx, vy, vz = (a * delay + b).tolist()
+        a, b = lin_approx(acc, times)
+        ax, ay, az = (a * delay + b).tolist()
 
         net.send(
             Sensor(
@@ -330,6 +356,9 @@ def sensor_cap(*, zed: sl.Camera, runtime_params: sl.RuntimeParameters) -> None:
                 pos_roll=y - ROLL_OFFSET,
                 vel_pitch=vz,
                 vel_roll=-vx,
+                acc_x=ax,
+                acc_y=ay,
+                acc_depth=az,
             )
         )
 
