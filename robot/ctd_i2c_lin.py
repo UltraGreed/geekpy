@@ -23,7 +23,7 @@ LEVER_ARM = 0.3
 SAMPLES_N = 5
 
 #     FINAL SENSOR ADJUSTMENTS     #
-OFFSET = 0
+OFFSET = -0.27
 COEFFICIENT = 1
 ####################################
 

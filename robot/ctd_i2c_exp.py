@@ -18,7 +18,7 @@ BETA_COEF = 1 - ALPHA_COEF
 # LEVER ARM FOR PITCH COMPENSATION #
 LEVER_ARM = 0.3
 
-OFFSET = 0
+OFFSET = -0.27
 COEFFICIENT = 1
 ####################################
 

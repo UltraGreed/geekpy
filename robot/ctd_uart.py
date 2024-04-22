@@ -19,6 +19,8 @@ LEVER_ARM = 0.3
 # SERIAL PORT CONFIGURATION
 PORT_NAME = '/dev/ttyTHS1'
 BAUDRATE = 115200
+#
+OFFSET = -0.1
 
 
 class DataLostException(Exception):
@@ -112,7 +114,7 @@ def send_depth_thread():
                 lock.release()  # Release the lock
 
                 # Calculate exponential average depth
-                average_depth = average_depth * BETA_COEF + (unit.depth + pitch_offset) * ALPHA_COEF
+                average_depth = average_depth * BETA_COEF + (unit.depth + pitch_offset - OFFSET) * ALPHA_COEF
 
                 vel_depth = (average_depth - last_depth) / (time.time() - last_time)
 
