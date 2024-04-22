@@ -263,7 +263,7 @@ def img_cap(
             exif_data["y"] = net.msg.pos[1]
             exif_data["depth"] = net.msg.pos[2]
             exif_data["yaw"] = net.msg.pos[3]
-            exif_data["time"] = datetime.now()
+            exif_data["time"] = str(datetime.now())
         # END WARN:
 
         if net.id == "Timer" and is_img_capture:
