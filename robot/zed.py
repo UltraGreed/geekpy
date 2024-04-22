@@ -207,9 +207,9 @@ def saver(img: sl.Mat, path: str, rotate: bool, exif_data: dict) -> None:
         if rotate
         else img.get_data()
     )
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    Image.fromarray(img).save(path, exif=json.dumps(exif_data).encode())
-    # cv2.imwrite(path, img)
+    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    # Image.fromarray(img).save(path, exif=json.dumps(exif_data).encode())
+    cv2.imwrite(path, img)
 
 
 def img_cap(
