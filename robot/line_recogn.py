@@ -7,7 +7,7 @@ from base import network, message
 from base.mat import calc_lin_approx, line_closest_point
 
 from object_recognition.model_class import RGBModel, HSVModel, get_model_path
-from object_recognition.image_utils import load_image_rgb, save_image_rgb
+from object_recognition.image_utils import load_image_rgb, save_image_rgb, crop
 from object_recognition.config import *
 
 import numpy as np
@@ -17,7 +17,7 @@ import numpy as np
 MODEL_PATH_PREFIX = '../object_recognition/'
 
 # Value which would be used in received path dictionary
-PATH_PARAMETER = 'right'
+CAMERA_FOV = 51
 
 DEBUG = True
 
@@ -25,28 +25,58 @@ DEBUG = True
 ####################
 
 
-def main(camera_name, model_type, model_name):
+# Calculate how big should be image to contain given space in real world
+def meters_to_pixels(meters, distance, fov, image_side):
+    return image_side * meters / distance / (2 * math.tan(fov / 2))
+
+
+def main(camera_name, model_name, camera_eye, line_depth, visible_range):
+    """
+    :param camera_name:
+    :param model_name:
+    :param camera_eye: left, right or depth
+    :param line_depth:
+    :param visible_range: side of visible area of the floor
+    :return:
+    """
     if COLOR_SCHEME == 'HSV':
-        model = HSVModel(MODEL_PATH_PREFIX + get_model_path(model_type, model_name))
+        model = HSVModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
     elif COLOR_SCHEME == "RGB":
-        model = RGBModel(MODEL_PATH_PREFIX + get_model_path(model_type, model_name))
+        model = RGBModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
     else:
         raise Exception
 
     if camera_name != 'Bottom':
         raise "Wrong camera name"
 
-    counter = 0
+    current_depth = 0
+
     net = network.Net()
     while net.receive():
         if net.id == "ImageLinkCameraStereo":
             if net.msg.obj == camera_name:
                 time1 = time.time()
-                image = np.rot90(load_image_rgb(net.msg.path[PATH_PARAMETER]), 3)
-                is_obj_found = model.check_object(image)
 
+                image = load_image_rgb(net.msg.path[camera_eye])
+
+                smaller_side = min(image.shape[:2])
+                image = crop(image, (smaller_side, smaller_side))
+
+                new_size = int(meters_to_pixels(
+                    visible_range,
+                    line_depth - current_depth,
+                    CAMERA_FOV,
+                    image.shape[0]
+                ))
+                image = crop(image, (new_size, new_size))
+
+                try:
+                    is_obj_found = model.check_object(image)
+                except Exception as e:
+                    print(f'Распознавалка упала с ошибкой {e}')
+
+                shape = image.shape
                 image_mask = model.image_weight
-                shape = image_mask.shape
 
                 # Creating auxiliary array to filter zero sums
                 auxiliary_sum = np.stack((
@@ -66,7 +96,7 @@ def main(camera_name, model_type, model_name):
                     a, b = 0, shape[1] / 2
 
                 if DEBUG:
-                    save_path = net.msg.path[PATH_PARAMETER].replace('.png', '_line.png')
+                    save_path = net.msg.path[camera_eye].replace('.png', '_line.png')
 
                     image_debug = model.get_debug()
 
@@ -92,6 +122,7 @@ def main(camera_name, model_type, model_name):
                     ))
 
                 if is_obj_found:
+                    # x, y in line coordinate system
                     x, y = line_closest_point(
                         (a, b),
                         (shape[0] / 2, shape[1] / 2)
@@ -102,7 +133,7 @@ def main(camera_name, model_type, model_name):
                     net.send(message.Line(
                         is_detected=True,
                         image_shape=image.shape,
-                        point=(y, x),
+                        point=(x, y),
                         yaw_error=yaw_error,
                         counter=0
                     ))
@@ -114,8 +145,17 @@ def main(camera_name, model_type, model_name):
                 if time2 - time1 > 0.25:
                     print(f"Image recognition slower than 0.25s: {time2 - time1}")
 
+        elif net.id == 'Coord':
+            current_depth = net.msg.pos[2]
+
 
 if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
-    main(camera_name=sys.argv[1], model_type=sys.argv[2], model_name=sys.argv[3])
+    main(
+        camera_name=sys.argv[1],
+        model_name=sys.argv[2],
+        camera_eye=sys.argv[3],
+        line_depth=float(sys.argv[4]),
+        visible_range=float(sys.argv[5])
+    )

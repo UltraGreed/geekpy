@@ -1,8 +1,6 @@
 import os
 import sys
 
-# from typing import Literal
-
 import cv2
 import cv2.aruco as aruco
 import numpy as np
@@ -14,8 +12,10 @@ sys.path.append("./")
 from base import network
 from base.message import (
     YAW,
+    DEPTH,
     Coord,
     DetectedObject,
+    FilteredObjects,
     ImageLinkCameraStereo,
     ImageLinkRecognition,
 )
@@ -24,7 +24,8 @@ from object_recognition.object_position import get_obj_pos_bottom
 
 setproctitle.setproctitle(sys.argv[0])
 
-CAMERA = "right"
+CAMERA = tuple(sys.argv[1].split('.'))
+OBJECT_NAME = sys.argv[2]
 
 
 def aruco_bboxes(
@@ -80,12 +81,13 @@ def main():
     counter = 0
 
     robot: list[float] = network.wait_message(Coord.id).pos
+    depth: float = network.wait_message(FilteredObjects.id).objs[OBJECT_NAME][DEPTH]
 
     while net.receive():
-        if net.id == ImageLinkCameraStereo.id:
+        if net.id == ImageLinkCameraStereo.id and net.msg.obj == CAMERA[0]:
             msg: ImageLinkCameraStereo = net.msg
 
-            path = msg.path[CAMERA]
+            path = msg.path[CAMERA[1]]
 
             img = cv2.imread(path)
             bboxes = aruco_bboxes(img, totalMarkers=250)
@@ -105,18 +107,15 @@ def main():
 
             mask_path = f"{os.path.dirname(path)}/{Path(path).stem}_mask_aruco.png"
             cv2.imwrite(mask_path, mask)
-            net.send(ImageLinkRecognition("Aruco", path=mask_path, counter=counter))
+            net.send(ImageLinkRecognition(OBJECT_NAME, path=mask_path, counter=counter))
             counter += 1
 
             center = get_center(bboxes[0])
 
-            x, y, _ = get_obj_pos_bottom(robot, 1.0, img.shape, center)
-            print(robot[YAW] + direction)
+            x, y, _ = get_obj_pos_bottom(robot, depth, img.shape, center)
 
             net.send(
-                DetectedObject(
-                    "Aruco", x=float(-x), y=float(-y), yaw=float(direction)
-                )
+                DetectedObject(OBJECT_NAME, x=float(x), y=float(y), yaw=float(robot[YAW] + direction))
             )
 
         elif net.id == Coord.id:

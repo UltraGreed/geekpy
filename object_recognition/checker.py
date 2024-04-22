@@ -76,9 +76,9 @@ for directory in (
     clear_dir(directory)
 
 if COLOR_SCHEME == 'RGB':
-    model = RGBModel(get_model_path('sub'))
+    model = RGBModel(get_model_path())
 elif COLOR_SCHEME == 'HSV':
-    model = HSVModel(get_model_path('sub'))
+    model = HSVModel(get_model_path())
 
 for image_file in sorted(os.listdir(LOAD_PREFIX_TRUE)):
     find_obj_image(LOAD_PREFIX_TRUE + image_file, True)

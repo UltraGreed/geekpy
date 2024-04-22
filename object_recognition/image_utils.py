@@ -52,3 +52,14 @@ def rgba_to_hsv(img_array):
 
 def rgb_to_hsv(img_array):
     return cv2.cvtColor(img_array.astype('uint8'), cv2.COLOR_RGB2HSV).astype('float64')
+
+
+def crop(img_array, new_shape):
+    if new_shape[0] < img_array.shape[0]:
+        crop_index = (img_array.shape[0] - new_shape[0]) // 2
+        img_array = img_array[crop_index:-crop_index]
+    if new_shape[1] < img_array.shape[1]:
+        crop_index = (img_array.shape[1] - new_shape[1]) // 2
+        img_array = img_array[:, crop_index:-crop_index]
+
+    return img_array

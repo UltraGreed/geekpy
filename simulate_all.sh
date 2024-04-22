@@ -12,7 +12,8 @@
   # python3 bearing.py  37000 38000 Frame &
   
   # Recognition:
-  python line_recogn.py Bottom sub LineSim &
+  python line_recogn.py Bottom LineSim left 1 0.5 &
+  python aruco.py &
 
   cd ../simulation
   python3 imu.py &

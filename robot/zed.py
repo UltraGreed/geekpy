@@ -203,7 +203,7 @@ def quat2eul(qx, qy, qz, qw) -> np.ndarray:
 
 def saver(img: sl.Mat, path: str, rotate: bool, exif_data: dict) -> None:
     img = (
-        cv2.rotate(img.get_data(), cv2.ROTATE_90_COUNTERCLOCKWISE)
+        cv2.rotate(img.get_data(), cv2.ROTATE_90_CLOCKWISE)
         if rotate
         else img.get_data()
     )
@@ -219,7 +219,7 @@ def img_cap(
 ) -> None:
     frequency: float = 1 / args.photo_frequency
     cam_orientation: str = args.camera_orientation
-    is_img_capture: bool = args.is_img_capture
+    is_img_capture: bool = args.img_capture
     save_mode: SaveMode = args.save_mode
 
     net = Net(frequency)

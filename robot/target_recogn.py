@@ -13,18 +13,15 @@ from object_recognition.config import *
 # CONFIG PARAMETERS #
 MODEL_PATH_PREFIX = '../object_recognition/'
 
-# Value which would be used in received path dictionary
-PATH_PARAMETER = 'left'
-
 DEBUG = True
 ####################
 
 
-def main(camera_name, model_type, model_name):
+def main(camera_name, model_name, camera_eye):
     if COLOR_SCHEME == 'HSV':
-        model = HSVModel(MODEL_PATH_PREFIX + get_model_path(model_type, model_name))
+        model = HSVModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
     elif COLOR_SCHEME == "RGB":
-        model = RGBModel(MODEL_PATH_PREFIX + get_model_path(model_type, model_name))
+        model = RGBModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
     else:
         raise Exception
 
@@ -33,7 +30,7 @@ def main(camera_name, model_type, model_name):
         if net.id == "ImageLinkCameraStereo":
             if net.msg.obj == camera_name:
                 time1 = time.time()
-                image = load_image_rgb(net.msg.path[PATH_PARAMETER])
+                image = load_image_rgb(net.msg.path[camera_eye])
 
                 is_obj_found = model.check_object(image)
 
@@ -56,7 +53,7 @@ def main(camera_name, model_type, model_name):
 
                 # Saving black and white image with detected object for debugging
                 if DEBUG:
-                    save_path = net.msg.path[PATH_PARAMETER].replace('.png', '_gray.png')
+                    save_path = net.msg.path[camera_eye].replace('.png', '_gray.png')
 
                     image_grayscale = model.get_debug()
 
@@ -76,4 +73,4 @@ def main(camera_name, model_type, model_name):
 if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
-    main(camera_name=sys.argv[1], model_type=sys.argv[2], model_name=sys.argv[3])
+    main(camera_name=sys.argv[1], model_name=sys.argv[2], camera_eye=sys.argv[3])
