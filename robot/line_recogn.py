@@ -73,7 +73,9 @@ def main(camera_name, model_name, camera_eye, line_depth, visible_range):
                 try:
                     is_obj_found = model.check_object(image)
                 except Exception as e:
+                    print(image)
                     print(f'Распознавалка упала с ошибкой {e}')
+                    continue
 
                 shape = image.shape
                 image_mask = model.image_weight
@@ -128,12 +130,14 @@ def main(camera_name, model_name, camera_eye, line_depth, visible_range):
                         (shape[0] / 2, shape[1] / 2)
                     )
 
+                    lag_error = y * visible_range / 2
+
                     yaw_error = math.degrees(math.atan(a))
 
                     net.send(message.Line(
                         is_detected=True,
                         image_shape=image.shape,
-                        point=(x, y),
+                        lag_error=lag_error,
                         yaw_error=yaw_error,
                         counter=0
                     ))

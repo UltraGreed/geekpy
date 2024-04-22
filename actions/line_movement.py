@@ -7,8 +7,9 @@ from base.message import YAW
 TIMER = 0.25
 
 # Coefficients for lag line following
-P = 0.2
+P = 0.8
 D = 0
+MAX_X_SPEED = 0.2
 
 
 def line_movement(speed, aruco_delay=0, timeout=None, depth=None):
@@ -43,13 +44,9 @@ def line_movement(speed, aruco_delay=0, timeout=None, depth=None):
 
         elif net.id == 'Line':
             if net.msg.is_detected:
-                # x, y in image coordinate system
-                y, x = net.msg.point
-
                 target_yaw = current_pos[YAW] - net.msg.yaw_error
 
-                dx_norm = x / (net.msg.image_shape[1] / 2) - 1
-                speed_x = dx_norm * P - current_vel[0] * D
+                speed_x = min(net.msg.lag_error * P - current_vel[0] * D, MAX_X_SPEED)
 
         elif net.id == 'DetectedObject':
             if net.msg.obj != 'Aruco' or time.time() - start_time < aruco_delay:
