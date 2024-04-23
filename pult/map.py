@@ -76,9 +76,9 @@ while net.receive():
     elif net.id == 'Coord':
         # Read coordinartes.
         pos     = net.msg.pos
-        pos_x   = pos[X  ] if mat.is_num(pos[X  ]) else 0.0
-        pos_y   = pos[Y  ] if mat.is_num(pos[Y  ]) else 0.0
-        pos_yaw = pos[YAW] if mat.is_num(pos[YAW]) else 0.0
+        pos_x   = pos[X]
+        pos_y   = pos[Y]
+        pos_yaw = pos[YAW]
         # Update robot position.
         for i in range(len(ROBOT)):
             dx, dy = mat.rotate2map(ROBOT[i][X], ROBOT[i][Y], pos_yaw)
