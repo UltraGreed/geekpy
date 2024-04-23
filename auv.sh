@@ -22,8 +22,8 @@
 
 	#                              pos_tracking stream
 	python3 zed.py --camera-orientation Bottom --serial 24827734 --img-capture --save-mode Right &
-	sleep 5
-	python3 zed.py --camera-orientation Front --serial 16909428 --disable-orientation --img-capture &
+#	sleep 5
+#	python3 zed.py --camera-orientation Front --serial 16909428 --disable-orientation --img-capture &
 
 	#                      camera_name    model_name   object_name
 	#   python3 obj_recogn.py Bottom        CellR         CellR &
