@@ -46,7 +46,8 @@ def line_movement(speed, aruco_delay=0, timeout=None, depth=None):
             if net.msg.is_detected:
                 target_yaw = current_pos[YAW] - net.msg.yaw_error
 
-                speed_x = min(net.msg.lag_error * P - current_vel[0] * D, MAX_X_SPEED)
+                speed_x = min(abs(net.msg.lag_error * P - current_vel[0] * D), MAX_X_SPEED)
+                speed_x *= -1 if net.msg.lag_error < 0 else 1
 
         elif net.id == 'DetectedObject':
             if net.msg.obj != 'Aruco' or time.time() - start_time < aruco_delay:

@@ -130,7 +130,7 @@ def main(camera_name, model_name, camera_eye, line_depth, visible_range):
                         (shape[0] / 2, shape[1] / 2)
                     )
 
-                    lag_error = y * visible_range / 2
+                    lag_error = (y / shape[1] - 0.5) * visible_range
 
                     yaw_error = math.degrees(math.atan(a))
 
