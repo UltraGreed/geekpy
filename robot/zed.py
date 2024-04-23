@@ -201,14 +201,12 @@ def quat2eul(qx, qy, qz, qw) -> np.ndarray:
     return np.rad2deg((yaw, roll, pitch))
 
 
-def saver(img: sl.Mat, path: str, rotate: bool, exif_data: dict) -> None:
+def saver(img: sl.Mat, path: str, rotate: bool) -> None:
     img = (
         cv2.rotate(img.get_data(), cv2.ROTATE_90_CLOCKWISE)
         if rotate
         else img.get_data()
     )
-    # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    # Image.fromarray(img).save(path, exif=json.dumps(exif_data).encode())
     cv2.imwrite(path, img)
 
 
@@ -229,12 +227,14 @@ def img_cap(
     )
     if is_img_capture:
         Path(save_path).mkdir(parents=True, exist_ok=True)
+        data_file = open(f"{save_path}/coord_data.txt", mode='w')
+        data_file.write('[\n')
 
     img = sl.Mat()
     flip_img = args.camera_orientation == "Bottom"
     photo_counter = 0
 
-    exif_data = {"x": 0.0, "y": 0.0, "depth": 0.0, "yaw": 0.0, "time": 0}
+    coord_data = {"x": 0.0, "y": 0.0, "depth": 0.0, "yaw": 0.0, "time": 0}
 
     while net.receive():
         if net.id == PhotoOn.id:
@@ -249,6 +249,7 @@ def img_cap(
                 save_path = f"{args.save_path}/{cam_orientation}/{net.msg.folder}"
 
             Path(save_path).mkdir(parents=True, exist_ok=True)
+            data_file = open(f"{save_path}/coord_data.txt", mode='w')
 
         if net.id == PhotoOff.id:
             if net.msg is None or net.msg.camera != cam_orientation:
@@ -259,11 +260,11 @@ def img_cap(
 
         # WARN: ...
         if net.id == Coord.id:
-            exif_data["x"] = net.msg.pos[0]
-            exif_data["y"] = net.msg.pos[1]
-            exif_data["depth"] = net.msg.pos[2]
-            exif_data["yaw"] = net.msg.pos[3]
-            exif_data["time"] = str(datetime.now())
+            coord_data["x"] = net.msg.pos[0]
+            coord_data["y"] = net.msg.pos[1]
+            coord_data["depth"] = net.msg.pos[2]
+            coord_data["yaw"] = net.msg.pos[3]
+            coord_data["time"] = str(datetime.now())
         # END WARN:
 
         if net.id == "Timer" and is_img_capture:
@@ -279,23 +280,26 @@ def img_cap(
             if save_mode & SaveMode.Left:
                 zed.retrieve_image(img, sl.VIEW.LEFT)
                 path = f"{save_path}/left_{file}"
-                saver(img, path, flip_img, exif_data)
+                saver(img, path, flip_img)
 
                 photos["path_left"] = path
 
             if save_mode & SaveMode.Right:
                 zed.retrieve_image(img, sl.VIEW.RIGHT)
                 path = f"{save_path}/right_{file}"
-                saver(img, path, flip_img, exif_data)
+                saver(img, path, flip_img, coord_data)
 
                 photos["path_right"] = path
 
             if save_mode & SaveMode.Depth:
                 zed.retrieve_image(img, sl.VIEW.DEPTH)
                 path = f"{save_path}/depth_{file}"
-                saver(img, path, flip_img, exif_data)
+                saver(img, path, flip_img)
 
                 photos["path_depth"] = path
+
+            coord_data["file_name"] = file
+            data_file.write(f'{coord_data},\n')
 
             net.send(
                 ImageLinkCameraStereo(
