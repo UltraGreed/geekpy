@@ -67,9 +67,7 @@ def draw_center(img: np.ndarray, bbox: np.ndarray, radius: int = 50) -> np.ndarr
 
 
 def calc_direction(direction_aruco: np.ndarray) -> float:
-    return (180 - np.rad2deg(np.arccos(direction_aruco[1]))) * np.sign(
-        direction_aruco[0]
-    )
+    return (180 - np.rad2deg(np.arccos(direction_aruco[1]))) * np.sign(direction_aruco[0])
 
 
 def main(camera_name: tuple, object_name: str):
@@ -111,8 +109,8 @@ def main(camera_name: tuple, object_name: str):
                         # Direction
                         cv2.line(
                             mask,
-                            bbox[0],
-                            (bbox[0] + direction * 20).astype(int),
+                            np.flip(center),
+                            (np.flip(center) + aruco_direct * 30).astype(int),
                             color=(0, 0, 255),
                             thickness=2,
                         )
