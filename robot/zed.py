@@ -287,7 +287,7 @@ def img_cap(
             if save_mode & SaveMode.Right:
                 zed.retrieve_image(img, sl.VIEW.RIGHT)
                 path = f"{save_path}/right_{file}"
-                saver(img, path, flip_img, coord_data)
+                saver(img, path, flip_img)
 
                 photos["path_right"] = path
 

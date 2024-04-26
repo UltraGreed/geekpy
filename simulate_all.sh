@@ -13,7 +13,7 @@
   
   # Recognition:
   python line_recogn.py Bottom LineSim left 1 0.5 &
-  python aruco.py &
+  python aruco.py Bottom.right Aruco &
 
   cd ../simulation
   python3 imu.py &

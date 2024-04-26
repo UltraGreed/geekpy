@@ -30,7 +30,7 @@
 	#   python3 obj_recogn.py Bottom        CellY         CellY &
 
 	#                   camera_name model_name
-	python3 line_recogn.py Bottom LineDirt right 1.16 0.75 &
+	python3 line_recogn.py Bottom LineOrange right 0.8 0.75 &
 
 	python aruco.py Bottom.right Aruco &
 )

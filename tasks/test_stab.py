@@ -22,7 +22,7 @@ net.send(InitRobot(yaw=0, depth=0, x=0, y=0))
 
 detection.on(obj="Aruco", timeout=30)
 
-stab(origin="Aruco", yaw="Object", dt=300, depth=0.8)
+stab(origin="Aruco", yaw="Object", dt=300, depth=0.3)
 # stab(origin="Aruco", yaw="Object", dt=10, depth=0.5)
 # stab(origin="Aruco", yaw="Object", dt=8, depth=1.2)
 
