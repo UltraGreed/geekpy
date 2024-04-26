@@ -16,10 +16,10 @@ photosave.start("Bottom", 'line_task')
 
 detection.on(obj="Aruco", timeout=30)
 
-line_movement(speed=0.2, aruco_delay=3, depth=0.0, timeout=90)
+line_movement(speed=0.3, aruco_delay=60, depth=0.35, timeout=180)
 
-stab(origin="Aruco", yaw=None, dt=6, depth=0.3)
-stab(origin="Aruco", yaw="Object", dt=6, depth=0.3)
-stab(origin="Aruco", yaw="Object", dt=15, depth=1.3)
+stab(origin="Aruco", yaw=None, dt=6, depth=0.35)
+stab(origin="Aruco", yaw="Object", dt=6, depth=0.35)
+stab(origin="Aruco", yaw="Object", dt=20, depth=1.3)
 
 photosave.stop("Bottom")

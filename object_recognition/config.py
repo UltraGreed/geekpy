@@ -8,7 +8,7 @@ OBJ_NAME = "LineOrange"
 # Part of maximum image weight sum needed to recognize object
 THRESHOLD_OBJECT = 0.0001
 # Part of maximum image weight sum to remove from image
-THRESHOLD_CLEAN = 0.00015
+THRESHOLD_CLEAN = 0.005
 # MODEL-WIDE PARAMETERS #
 # Maximum possible value in model
 MAX_PIXEL_WEIGHT = 1
@@ -18,7 +18,7 @@ RGB_COMPRESSION = 256 // RGB_AMOUNT
 # Dimensions of HSV color space
 H_AMOUNT = 90
 S_AMOUNT = 16
-V_AMOUNT = 8
+V_AMOUNT = 16
 H_COMPRESSION = 180 // H_AMOUNT
 S_COMPRESSION = 256 // S_AMOUNT
 V_COMPRESSION = 256 // V_AMOUNT
@@ -27,8 +27,8 @@ V_COMPRESSION = 256 // V_AMOUNT
 PIXEL_AREA = 2
 # NORMALIZATION PARAMETERS #
 # Thresholds for model normalization
-UPPER_BORDER_OBJECT = 0.3
-UPPER_BORDER_NON_OBJECT = 0.3
+UPPER_BORDER_OBJECT = 0.5
+UPPER_BORDER_NON_OBJECT = 0.2
 # Model value which will equal to zero chance
 # Ranges from -1 to 1
 LOWER_MODEL_BORDER = 0
