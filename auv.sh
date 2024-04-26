@@ -11,8 +11,8 @@
 	python odometry.py &
 	python kotleta.py &
 
-	python ctd_i2c_lin.py &
-	# python ctd_uart.py &
+	# python ctd_i2c_lin.py &
+	python ctd_uart.py &
 
 	# python acoustic.py &
 	# python bearing.py 29500 30500 Cells &
@@ -30,7 +30,7 @@
 	#   python3 obj_recogn.py Bottom        CellY         CellY &
 
 	#                   camera_name model_name
-	python3 line_recogn.py Bottom LineOrange right 0.8 0.75 &
+	python3 line_recogn.py Bottom LineOrange right 1.2 0.75 &
 
 	python aruco.py Bottom.right Aruco &
 )
