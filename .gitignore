@@ -6,5 +6,6 @@ venv369/
 object_recognition/models
 object_recognition/images
 object_recognition/*.png
+mosaic/output/*
 debug
 nn_train/nn_train.py
