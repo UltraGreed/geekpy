@@ -258,6 +258,11 @@ def img_cap(
             logging.info("Image capture disable")
             is_img_capture = False
 
+            data_file.seek(-1, 2)
+            data_file.truncate()
+            data_file.write("\n]")
+            data_file.close()
+
         # WARN: ...
         if net.id == Coord.id:
             coord_data["x"] = net.msg.pos[0]
@@ -299,7 +304,7 @@ def img_cap(
                 photos["path_depth"] = path
 
             coord_data["file_name"] = file
-            data_file.write(f'{coord_data},\n')
+            data_file.write(f'{json.dumps(coord_data)},\n')
 
             net.send(
                 ImageLinkCameraStereo(
