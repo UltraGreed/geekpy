@@ -10,8 +10,6 @@ from object_recognition.image_utils import load_image_rgb, save_image_rgb
 from object_recognition.object_position import get_obj_pos_front, get_obj_pos_bottom
 from object_recognition.config import *
 
-import numpy as np
-
 #####################
 # CONFIG PARAMETERS #
 MODEL_PATH_PREFIX = '../object_recognition/'
@@ -20,7 +18,14 @@ DEBUG = True
 ####################
 
 
-def main(camera_name, model_name, camera_eye, obj_name):
+def main(camera_path: str, model_name: str, obj_name: str):
+    """
+    :param camera_path: camera.eye to listen to
+    :param model_name: np model to use in inference
+    :param obj_name: object to publish
+    :return:
+    """
+    camera_name, camera_eye = camera_path.split('.')
     robot_pos = [0 for _ in range(6)]
 
     if COLOR_SCHEME == 'HSV':
@@ -92,4 +97,8 @@ def main(camera_name, model_name, camera_eye, obj_name):
 if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
-    main(camera_name=sys.argv[1], model_name=sys.argv[2], camera_eye=sys.argv[3], obj_name=sys.argv[4])
+    main(
+        camera_path=sys.argv[1],
+        model_name=sys.argv[2],
+        obj_name=sys.argv[3]
+    )

@@ -70,7 +70,9 @@ def calc_direction(direction_aruco: np.ndarray) -> float:
     return (180 - np.rad2deg(np.arccos(direction_aruco[1]))) * np.sign(direction_aruco[0])
 
 
-def main(camera_name: tuple, object_name: str):
+def main(camera_path: str, object_name: str):
+    camera_name, camera_eye = camera_path.split('.')
+
     net = network.Net(1 / 10)
     counter = 0
 
@@ -78,10 +80,10 @@ def main(camera_name: tuple, object_name: str):
     depth: float = network.wait_message(FilteredObjects.id).objs[object_name][DEPTH]
 
     while net.receive():
-        if net.id == ImageLinkCameraStereo.id and net.msg.obj == camera_name[0]:
+        if net.id == ImageLinkCameraStereo.id and net.msg.obj == camera_name:
             msg: ImageLinkCameraStereo = net.msg
 
-            path = msg.path[camera_name[1]]
+            path = msg.path[camera_eye]
 
             img = cv2.imread(path)
             bboxes = aruco_bboxes(img, totalMarkers=250)
@@ -190,6 +192,6 @@ if __name__ == "__main__":
     setproctitle.setproctitle(sys.argv[0])
 
     main(
-        camera_name=tuple(sys.argv[1].split('.')),
+        camera_path=sys.argv[1],
         object_name=sys.argv[2]
     )
