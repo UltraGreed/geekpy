@@ -1,10 +1,14 @@
+import time
+
 import numpy as np
 
 from model_class import get_model_path
 
 from config import *
 
-print('Normalization begin')
+print('Normalization starts.')
+time1 = time.time()
+
 data_object = np.load(get_model_path('obj'))
 data_non_object = np.load(get_model_path('noobj'))
 data_all = np.load(get_model_path('all'))
@@ -40,4 +44,5 @@ data_sub_norm = np.where(
 )
 
 np.save(get_model_path('sub'), data_sub_norm)
-print('Normalization finish')
+
+print(f'Normalization success in {time.time() - time1}')

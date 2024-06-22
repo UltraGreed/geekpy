@@ -1,6 +1,7 @@
 import os
 import glob
 import time
+from pathlib import Path
 
 from image_utils import load_image_rgb, save_image_rgb
 
@@ -20,6 +21,8 @@ SAVE_PREFIX_TRUE_POSITIVE = SAVE_PREFIX + 'true_positive/'
 SAVE_PREFIX_FALSE_POSITIVE = SAVE_PREFIX + 'false_positive/'
 SAVE_PREFIX_TRUE_NEGATIVE = SAVE_PREFIX + 'true_negative/'
 SAVE_PREFIX_FALSE_NEGATIVE = SAVE_PREFIX + 'false_negative/'
+
+
 ####################
 
 
@@ -35,19 +38,19 @@ def find_obj_image(image_path, is_obj):
 
     time2 = time.time()
     is_obj_found = model.check_object(image)
-    print('obj check', time.time() - time2)
+    print('Object inference done in', time.time() - time2)
 
     if is_obj_found and is_obj:
-        print('found true positive', end=' ')
+        print('Found true positive', end=' ')
         save_prefix = SAVE_PREFIX_TRUE_POSITIVE
     elif is_obj_found and not is_obj:
-        print('found false positive', end=' ')
+        print('Found false positive', end=' ')
         save_prefix = SAVE_PREFIX_FALSE_POSITIVE
     elif not is_obj_found and is_obj:
-        print('found false negative', end=' ')
+        print('Found false negative', end=' ')
         save_prefix = SAVE_PREFIX_FALSE_NEGATIVE
     else:
-        print('found true negative', end=' ')
+        print('Found true negative', end=' ')
         save_prefix = SAVE_PREFIX_TRUE_NEGATIVE
 
     print(image_file)
@@ -56,7 +59,7 @@ def find_obj_image(image_path, is_obj):
     original_path = save_prefix + image_file
     save_image_rgb(original_path, image)
 
-    # Saving black and white image with detected object for debugging
+    # Saving image mask with detected object for debugging
     gray_file = image_file.replace('.jpg', '_gray.png')
     gray_path = save_prefix + gray_file
 
@@ -64,15 +67,14 @@ def find_obj_image(image_path, is_obj):
 
     save_image_rgb(gray_path, image_gray)
 
-    print('all', time.time() - time1)
+    print('Image checked in ', time.time() - time1)
 
 
-for directory in (
-        SAVE_PREFIX_TRUE_NEGATIVE,
-        SAVE_PREFIX_FALSE_NEGATIVE,
-        SAVE_PREFIX_TRUE_POSITIVE,
-        SAVE_PREFIX_FALSE_POSITIVE
-):
+for directory in (SAVE_PREFIX_TRUE_NEGATIVE,
+                  SAVE_PREFIX_FALSE_NEGATIVE,
+                  SAVE_PREFIX_TRUE_POSITIVE,
+                  SAVE_PREFIX_FALSE_POSITIVE):
+    Path(directory).mkdir(parents=True, exist_ok=True)
     clear_dir(directory)
 
 if COLOR_SCHEME == 'RGB':
@@ -80,8 +82,15 @@ if COLOR_SCHEME == 'RGB':
 elif COLOR_SCHEME == 'HSV':
     model = HSVModel(get_model_path())
 
+print("Checker starts")
+time1 = time.time()
+
+Path(LOAD_PREFIX_TRUE).mkdir(parents=True, exist_ok=True)
 for image_file in sorted(os.listdir(LOAD_PREFIX_TRUE)):
     find_obj_image(LOAD_PREFIX_TRUE + image_file, True)
 
+Path(LOAD_PREFIX_FALSE).mkdir(parents=True, exist_ok=True)
 for image_file in sorted(os.listdir(LOAD_PREFIX_FALSE)):
     find_obj_image(LOAD_PREFIX_FALSE + image_file, False)
+
+print(f"Checker success in {time.time() - time1}")

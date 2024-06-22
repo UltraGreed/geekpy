@@ -1,5 +1,6 @@
 import os
 import time
+from pathlib import Path
 
 import numpy as np
 
@@ -123,11 +124,16 @@ def learn_hsv():
 
 def main():
     time1 = time.time()
+
+    Path(get_model_path()).parent.mkdir(exist_ok=True)
+
+    print('Learning starts.')
     if COLOR_SCHEME == 'RGB':
         learn_rgb()
     elif COLOR_SCHEME == 'HSV':
         learn_hsv()
-    print(f"Images all: {time.time() - time1}")
+
+    print(f"Learning success in {time.time() - time1}.")
 
 
 if __name__ == '__main__':
