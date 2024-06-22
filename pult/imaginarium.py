@@ -21,7 +21,7 @@ PATH_PREFIX = sys.argv[1]
 #   or as "Object" e.g. "Front" (meaning first available sub-object will be shown)
 OBJECTS = [tuple(obj.split('.')) if '.' in obj else obj for obj in sys.argv[2:]]
 
-n_cols = math.ceil(math.sqrt(len(OBJECTS))) + 1
+n_cols = math.ceil(math.sqrt(len(OBJECTS))) + 3
 n_rows = math.ceil(len(OBJECTS) / n_cols)
 
 root_tk = tkinter.Tk()
