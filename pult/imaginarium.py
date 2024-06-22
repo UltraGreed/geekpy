@@ -21,7 +21,7 @@ PATH_PREFIX = sys.argv[1]
 #   or as "Object" e.g. "Front" (meaning first available sub-object will be shown)
 OBJECTS = [tuple(obj.split('.')) if '.' in obj else obj for obj in sys.argv[2:]]
 
-n_cols = math.ceil(math.sqrt(len(OBJECTS)))
+n_cols = math.ceil(math.sqrt(len(OBJECTS))) + 1
 n_rows = math.ceil(len(OBJECTS) / n_cols)
 
 root_tk = tkinter.Tk()
@@ -66,7 +66,8 @@ while net.receive():
                 print("hz cheto upalo v imaginariume (timeout)")
                 continue
             except (SyntaxError, OSError, ValueError) as e:
-                print(f"Imaginarium got broken png file: {e}")
+                print(f"Imaginarium got broken png file: {e}\n"
+                      f"url: {link}")
                 image_widgets[obj] = ImageTk.PhotoImage(Image.fromarray(iio.imread(start_image)))
 
             label_widget.config(image=image_widgets[obj])
