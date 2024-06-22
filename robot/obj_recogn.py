@@ -2,13 +2,16 @@ import sys
 import time
 import setproctitle
 
+from pathlib import Path
+
 from base import network, message
 from base.message import X, Y, DEPTH, DIAMETER
 
 from object_recognition.model_class import RGBModel, HSVModel, get_model_path
-from object_recognition.image_utils import load_image_rgb, save_image_rgb
-from object_recognition.object_position import get_obj_pos_front, get_obj_pos_bottom
+from object_recognition.image_utils import load_image_rgb, save_image_rgb, crop, meters_to_pixels
+from object_recognition.object_position import get_obj_pos_front, get_obj_pos_bottom, CAMERA_FOV
 from object_recognition.config import *
+from robot.line_recogn import meters_to_pixels
 
 #####################
 # CONFIG PARAMETERS #
@@ -18,11 +21,12 @@ DEBUG = True
 ####################
 
 
-def main(camera_path: str, model_name: str, obj_name: str):
+def main(camera_path: str, model_name: str, obj_name: str, visible_range: float):
     """
     :param camera_path: camera.eye to listen to
     :param model_name: np model to use in inference
     :param obj_name: object to publish
+    :param visible_range: side of visible area of the floor
     :return:
     """
     camera_name, camera_eye = camera_path.split('.')
@@ -35,12 +39,26 @@ def main(camera_path: str, model_name: str, obj_name: str):
     else:
         raise Exception
 
+    object_depth = network.wait_message(message.FilteredObjects.id).objs[obj_name][2]
+
     net = network.Net()
     while net.receive():
         if net.id == "ImageLinkCameraStereo":
             if net.msg.obj == camera_name:
                 time1 = time.time()
                 image = load_image_rgb(net.msg.path[camera_eye])
+
+                smaller_side = min(image.shape[:2])
+                image = crop(image, (smaller_side, smaller_side))
+
+                new_size = int(meters_to_pixels(
+                    visible_range,
+                    object_depth - robot_pos[DEPTH],
+                    CAMERA_FOV,
+                    image.shape[1]
+                ))
+                shape_ratio = image.shape[0] / image.shape[1]
+                image = crop(image, (int(new_size * shape_ratio), new_size))
 
                 is_obj_found = model.check_object(image)
 
@@ -74,7 +92,10 @@ def main(camera_path: str, model_name: str, obj_name: str):
 
                 # Saving black and white image with detected object for debugging
                 if DEBUG:
-                    save_path = net.msg.path[camera_eye].replace('.png', '_gray.png')
+                    original_filename = Path(net.msg.path[camera_eye]).with_suffix('')
+                    original_ext = Path(net.msg.path[camera_eye]).suffix
+
+                    save_path = f'{original_filename}_{obj_name}_gray{original_ext}'
 
                     image_grayscale = model.get_debug()
 
@@ -100,5 +121,6 @@ if __name__ == '__main__':
     main(
         camera_path=sys.argv[1],
         model_name=sys.argv[2],
-        obj_name=sys.argv[3]
+        obj_name=sys.argv[3],
+        visible_range=float(sys.argv[4])
     )

@@ -1,13 +1,15 @@
 import math
 import sys
 import time
+from pathlib import Path
+
 import setproctitle
 
 from base import network, message
 from base.mat import calc_lin_approx, line_closest_point
 
 from object_recognition.model_class import RGBModel, HSVModel, get_model_path
-from object_recognition.image_utils import load_image_rgb, save_image_rgb, crop
+from object_recognition.image_utils import load_image_rgb, save_image_rgb, crop, meters_to_pixels
 from object_recognition.config import *
 
 import numpy as np
@@ -25,16 +27,10 @@ DEBUG = True
 ####################
 
 
-# Calculate how big should be image to contain given space in real world
-def meters_to_pixels(meters, distance, fov, image_side):
-    return image_side * meters / distance / (2 * math.tan(fov / 2))
-
-
-def main(camera_path: str, model_name: str, line_depth: float, visible_range: float):
+def main(camera_path: str, model_name: str, visible_range: float):
     """
     :param camera_path: camera.eye to listen to
     :param model_name: np model to use in inference
-    :param line_depth:
     :param visible_range: side of visible area of the floor
     :return:
     """
@@ -50,6 +46,7 @@ def main(camera_path: str, model_name: str, line_depth: float, visible_range: fl
         raise "Wrong camera name"
 
     current_depth = 0
+    line_depth = network.wait_message(message.FilteredObjects.id).objs["Line"][2]
 
     net = network.Net()
     while net.receive():
@@ -58,6 +55,7 @@ def main(camera_path: str, model_name: str, line_depth: float, visible_range: fl
                 time1 = time.time()
 
                 image = load_image_rgb(net.msg.path[camera_eye])
+
 
                 # smaller_side = min(image.shape[:2])
                 # image = crop(image, (smaller_side, smaller_side))
@@ -99,7 +97,10 @@ def main(camera_path: str, model_name: str, line_depth: float, visible_range: fl
                     a, b = 0, shape[1] / 2
 
                 if DEBUG:
-                    save_path = net.msg.path[camera_eye].replace('.png', '_line.png')
+                    original_filename = Path(net.msg.path[camera_eye]).with_suffix('')
+                    original_ext = Path(net.msg.path[camera_eye]).suffix
+
+                    save_path = f'{original_filename}_Line_gray{original_ext}'
 
                     image_debug = model.get_debug()
 
@@ -160,6 +161,5 @@ if __name__ == '__main__':
     main(
         camera_path=sys.argv[1],
         model_name=sys.argv[2],
-        line_depth=float(sys.argv[3]),
-        visible_range=float(sys.argv[4])
+        visible_range=float(sys.argv[3])
     )

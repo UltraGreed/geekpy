@@ -1,3 +1,5 @@
+import math
+
 import cv2
 import numpy as np
 
@@ -63,3 +65,8 @@ def crop(img_array, new_shape):
         img_array = img_array[:, crop_index:img_array.shape[1] - 1 - crop_index]
 
     return img_array
+
+
+# Calculate how big should be image to contain given space in real world
+def meters_to_pixels(meters, distance, fov, image_side):
+    return image_side * meters / distance / (2 * math.tan(fov / 2))
