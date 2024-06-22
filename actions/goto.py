@@ -13,7 +13,7 @@ def goto(origin='', radius=1.0, speed=0.1, hold_time=0.0, depth=None):
     auv_pos = network.wait_message('Coord').pos
 
     # Either get object coords or use given coords
-    is_obj_oriented = origin is tuple
+    is_obj_oriented = origin is not tuple
     if is_obj_oriented:
         target_pos = network.wait_message('FilteredObjects').objs[origin]
     else:
@@ -21,7 +21,7 @@ def goto(origin='', radius=1.0, speed=0.1, hold_time=0.0, depth=None):
 
     # Infinite loop until auv reaches destination.
     net = network.Net(timer=TIMER)  # Wait for timer or message.
-    while net.receive():            # Wait for timer ticks and messages.
+    while net.receive():  # Wait for timer ticks and messages.
         # if auv is far from target
         if net.id == 'Timer' and mat.dist2d(auv_pos, target_pos) > radius:
             yaw = mat.direction(auv_pos, target_pos)  # Calculate relative yaw to object position.
@@ -33,7 +33,7 @@ def goto(origin='', radius=1.0, speed=0.1, hold_time=0.0, depth=None):
 
         # if auv is close to target
         if net.id == 'Timer' and mat.dist2d(auv_pos, target_pos) <= radius:
-            timer += TIMER   # time when auv is close to target
+            timer += TIMER  # time when auv is close to target
             net.send(message.Tack(
                 time=1.0,
                 speed_x=0.0, speed_y=0.0,
