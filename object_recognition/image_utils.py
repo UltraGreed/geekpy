@@ -57,9 +57,9 @@ def rgb_to_hsv(img_array):
 def crop(img_array, new_shape):
     if new_shape[0] < img_array.shape[0]:
         crop_index = (img_array.shape[0] - new_shape[0]) // 2
-        img_array = img_array[crop_index:-crop_index]
+        img_array = img_array[crop_index:img_array.shape[0] - 1 - crop_index]
     if new_shape[1] < img_array.shape[1]:
         crop_index = (img_array.shape[1] - new_shape[1]) // 2
-        img_array = img_array[:, crop_index:-crop_index]
+        img_array = img_array[:, crop_index:img_array.shape[1] - 1 - crop_index]
 
     return img_array

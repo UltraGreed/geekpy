@@ -30,15 +30,15 @@ def meters_to_pixels(meters, distance, fov, image_side):
     return image_side * meters / distance / (2 * math.tan(fov / 2))
 
 
-def main(camera_name, model_name, camera_eye, line_depth, visible_range):
+def main(camera_path: str, model_name: str, line_depth: float, visible_range: float):
     """
-    :param camera_name:
-    :param model_name:
-    :param camera_eye: left, right or depth
+    :param camera_path: camera.eye to listen to
+    :param model_name: np model to use in inference
     :param line_depth:
     :param visible_range: side of visible area of the floor
     :return:
     """
+    camera_name, camera_eye = camera_path.split('.')
     if COLOR_SCHEME == 'HSV':
         model = HSVModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
     elif COLOR_SCHEME == "RGB":
@@ -59,21 +59,22 @@ def main(camera_name, model_name, camera_eye, line_depth, visible_range):
 
                 image = load_image_rgb(net.msg.path[camera_eye])
 
-                smaller_side = min(image.shape[:2])
-                image = crop(image, (smaller_side, smaller_side))
+                # smaller_side = min(image.shape[:2])
+                # image = crop(image, (smaller_side, smaller_side))
 
                 new_size = int(meters_to_pixels(
                     visible_range,
                     line_depth - current_depth,
                     CAMERA_FOV,
-                    image.shape[0]
+                    image.shape[1]
                 ))
-                image = crop(image, (new_size, new_size))
+                shape_ratio = image.shape[0] / image.shape[1]
+                image = crop(image, (int(new_size * shape_ratio), new_size))
 
                 try:
                     is_obj_found = model.check_object(image)
                 except Exception as e:
-                    print(image)
+                    # print(image)
                     print(f'Распознавалка упала с ошибкой {e}')
                     continue
 
@@ -157,9 +158,8 @@ if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
     main(
-        camera_name=sys.argv[1],
+        camera_path=sys.argv[1],
         model_name=sys.argv[2],
-        camera_eye=sys.argv[3],
-        line_depth=float(sys.argv[4]),
-        visible_range=float(sys.argv[5])
+        line_depth=float(sys.argv[3]),
+        visible_range=float(sys.argv[4])
     )
