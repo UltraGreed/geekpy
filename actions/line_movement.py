@@ -12,7 +12,12 @@ D = 0
 MAX_X_SPEED = 0.2
 
 
-def line_movement(speed: float, object_delay: float, exit_object: str, timeout: float = None, depth: float = None):
+def line_movement(speed: float,
+                  object_delay: float,
+                  exit_object: str,
+                  exit_delay: float,
+                  timeout: float = None,
+                  depth: float = None):
     start_time = time.time()
 
     current_coord = network.wait_message('Coord')
@@ -22,9 +27,15 @@ def line_movement(speed: float, object_delay: float, exit_object: str, timeout: 
     target_yaw = current_pos[YAW]
     speed_x = 0
 
+    was_object_detected = False
+    object_detected_time = 0
+
     net = network.Net(timer=TIMER)
     while net.receive():
         if net.id == 'Timer':
+            if was_object_detected and time.time() - object_detected_time > exit_delay:
+                return  # Action ends here
+
             yaw_diff = abs(target_yaw - current_pos[YAW])
             speed_coef = 1 - mat.sat(yaw_diff / 45, 0, 1)
 
@@ -54,7 +65,10 @@ def line_movement(speed: float, object_delay: float, exit_object: str, timeout: 
                 speed_x *= -1 if net.msg.lag_error < 0 else 1
 
         elif net.id == 'DetectedObject':
-            if net.msg.obj != exit_object or time.time() - start_time < object_delay:
+            if (net.msg.obj != exit_object
+                    or time.time() - start_time < object_delay
+                    or was_object_detected):
                 continue
 
-            return
+            object_detected_time = time.time()
+            was_object_detected = True
