@@ -1,6 +1,6 @@
 import time
 
-from base import message, network
+from base import message, network, mat
 from base.message import YAW
 
 # Timer period to send 'Tack' message to regulator.
@@ -12,21 +12,25 @@ D = 0
 MAX_X_SPEED = 0.2
 
 
-def line_movement(speed, aruco_delay=0, timeout=None, depth=None):
+def line_movement(speed: float, object_delay: float, exit_object: str, timeout: float = None, depth: float = None):
     start_time = time.time()
 
     current_coord = network.wait_message('Coord')
     current_pos = current_coord.pos
     current_vel = current_coord.vel
+
     target_yaw = current_pos[YAW]
     speed_x = 0
 
     net = network.Net(timer=TIMER)
     while net.receive():
         if net.id == 'Timer':
+            yaw_diff = abs(target_yaw - current_pos[YAW])
+            speed_coef = 1 - mat.sat(yaw_diff / 45, 0, 1)
+
             net.send(message.Tack(
                 time=1.0,
-                speed_y=speed,
+                speed_y=speed * speed_coef,
                 speed_x=speed_x,
                 stab_depth=depth,
                 stab_yaw=target_yaw,
@@ -50,7 +54,7 @@ def line_movement(speed, aruco_delay=0, timeout=None, depth=None):
                 speed_x *= -1 if net.msg.lag_error < 0 else 1
 
         elif net.id == 'DetectedObject':
-            if net.msg.obj != 'Aruco' or time.time() - start_time < aruco_delay:
+            if net.msg.obj != exit_object or time.time() - start_time < object_delay:
                 continue
 
             return
