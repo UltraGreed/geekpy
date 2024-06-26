@@ -173,7 +173,8 @@ class Target(Message):
 
 
 class Line(Message):
-    def __init__(self, is_detected: bool, image_shape: tuple, lag_error: float = 0, yaw_error: float = 0, counter: int = 0):
+    def __init__(self, is_detected: bool, image_shape: tuple, lag_error: float = 0, yaw_error: float = 0,
+                 counter: int = 0):
         self.is_detected = is_detected
         self.image_shape = image_shape
         self.lag_error = lag_error
@@ -207,6 +208,7 @@ class FilteredObjects(Message):
                 "SquareBlack": [7.0, 7, 1.5, 0.0, 0.0, 0.0, "#000000"],
                 "Boxes": [3, 2.6, 1.0, 77.0, 0.0, 0.0, "#F44336"],
                 "Line": [0, 1, 1.5, 0.0, 0.0, 0.0, "#000000"],
+                "Pinger": [0, 0, 1.2, 0, 0, 0, "#0000ff"]
             }
         self.objs = objs
 
