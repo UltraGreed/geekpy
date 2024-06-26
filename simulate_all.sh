@@ -8,9 +8,9 @@
   python3 scene.py &
 
   # Acoustic objects detection:
-#   python3 bearing.py  29500 30500 Cells &
+   python3 bearing.py  29500 30500 Boxes &
 #   python3 bearing.py  37000 38000 Frame &
-   python3 bearing.py  37000 38000 Boxes &
+#   python3 bearing.py  37000 38000 Boxes &
 
   # Recognition:
   python line_recogn.py Bottom.left LineRedSim 2 &
@@ -34,7 +34,7 @@
   # SoundDelay simulation:
   #                     X  |  Y |  Z       Disp|Freq|  хз че это
 #   python3 acoustic.py -9.5 10.5 2.0      0.01 30000 9.95  50.0 &
-   python3 acoustic.py  3    2.6  1.4      0.01 37500 9.95  50.0 &
+   python3 acoustic.py  3    2.6  1.4      0.01 30000 9.95  50.0 &
   
   python camera_integration.py &
 )

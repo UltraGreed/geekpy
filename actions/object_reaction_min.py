@@ -6,17 +6,19 @@ from actions import key
 
 def drop_ball():
     print('ball dropped')
-    # key.on(0, 1)
+    key.on('Left', 1)
 
 
 def ping_green_led():
     print('green led enabled')
-    # key.on(1, 1)
+    key.off('Red')
+    key.on('Green', 1)
 
 
 def ping_red_led():
     print('red led enabled')
-    # key.on(2, 1)
+    key.off('Green')
+    key.on('Red', 1)
 
 
 def object_reaction_min(object_order: tuple,

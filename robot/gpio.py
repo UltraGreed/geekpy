@@ -60,9 +60,9 @@ GPIO = GPIOHandler()
 GPIO_PORTS = [396, 394, 395, 392]
 GPIO_MAP = {
     'Left': [GPIO_PORTS[0], False, Timer(0)],
-    'Right': [GPIO_PORTS[1], False, Timer(0)],
-    'Close': [GPIO_PORTS[2], False, Timer(0)],
-    'Open': [GPIO_PORTS[3], False, Timer(0)],
+    'Green': [GPIO_PORTS[1], False, Timer(0)],
+    'Right': [GPIO_PORTS[2], False, Timer(0)],
+    'Red': [GPIO_PORTS[3], False, Timer(0)],
 }
 
 

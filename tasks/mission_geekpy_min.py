@@ -32,7 +32,7 @@ object_reaction_process = multiprocessing.Process(
 )
 object_reaction_process.start()
 
-line_movement(exit_object='SquareGreen', object_delay=40, exit_delay=5, timeout=90, speed=0.15, depth=0.25)
+line_movement(exit_object='SquareGreen', object_delay=40, exit_delay=5, timeout=90, speed=0.15, depth=0.6)
 
 tack(mode="Absolute", yaw=18, speed=0, depth=1, dt=5)
 
@@ -41,10 +41,6 @@ goto(origin="Boxes", speed=0.2, radius=1, hold_time=5, depth=1)
 tack(mode="Absolute", yaw=77, speed=0, depth=1, dt=5)
 
 tack(mode="Relative", yaw=0, speed=0.2, depth=1, dist=1)
-
-# stab(origin="Aruco", yaw=None, dt=6, depth=0.35)
-# stab(origin="Aruco", yaw="Object", dt=6, depth=0.35)
-# stab(origin="Aruco", yaw="Object", dt=20, depth=1.3)
 
 photosave.stop("Bottom")
 

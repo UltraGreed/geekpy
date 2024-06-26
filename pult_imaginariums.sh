@@ -4,5 +4,5 @@
 
   cd pult
 
-  python imaginarium.py "" Bottom BottomLine BottomSquareYellow BottomSquareBlack &
+  python imaginarium.py "http://192.168.88.101" Bottom BottomLine BottomSquareYellow BottomSquareBlack &
 )
