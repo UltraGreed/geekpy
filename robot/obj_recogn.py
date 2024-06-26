@@ -18,24 +18,28 @@ from robot.line_recogn import meters_to_pixels
 MODEL_PATH_PREFIX = '../object_recognition/'
 
 DEBUG = True
+
+
 ####################
 
 
-def main(camera_path: str, model_name: str, obj_name: str, visible_range: float):
+def main(camera_path: str, model_name: str, obj_name: str, visible_range: float,
+         obj_treshold: float = THRESHOLD_OBJECT):
     """
     :param camera_path: camera.eye to listen to
     :param model_name: np model to use in inference
     :param obj_name: object to publish
     :param visible_range: side of visible area of the floor
+    :param obj_treshold: part of image to be filled to consider it as object
     :return:
     """
     camera_name, camera_eye = camera_path.split('.')
     robot_pos = [0 for _ in range(6)]
 
     if COLOR_SCHEME == 'HSV':
-        model = HSVModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
+        model = HSVModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name), threshold_object_part=obj_treshold)
     elif COLOR_SCHEME == "RGB":
-        model = RGBModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
+        model = RGBModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name), threshold_object_part=obj_treshold)
     else:
         raise Exception
 
@@ -118,9 +122,20 @@ def main(camera_path: str, model_name: str, obj_name: str, visible_range: float)
 if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
-    main(
-        camera_path=sys.argv[1],
-        model_name=sys.argv[2],
-        obj_name=sys.argv[3],
-        visible_range=float(sys.argv[4])
-    )
+    if len(sys.argv) == 5:
+        main(
+            camera_path=sys.argv[1],
+            model_name=sys.argv[2],
+            obj_name=sys.argv[3],
+            visible_range=float(sys.argv[4])
+        )
+    elif len(sys.argv) == 6:
+        main(
+            camera_path=sys.argv[1],
+            model_name=sys.argv[2],
+            obj_name=sys.argv[3],
+            visible_range=float(sys.argv[4]),
+            obj_treshold=float(sys.argv[5])
+        )
+    else:
+        raise NotImplementedError
