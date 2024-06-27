@@ -1,7 +1,10 @@
 import time
 
 from base import network, message
+from base.message import YAW
 from actions import key
+from actions.stab import stab
+from actions.tack import tack
 
 
 def drop_ball():
@@ -25,7 +28,9 @@ def object_reaction_min(object_order: tuple,
                         object_interval: float,
                         object_green_led: str,
                         object_red_led: str,
-                        ball_drop_delay: float):
+                        ball_drop_delay: float,
+                        line_depth: float,
+                        max_depth: float):
     """
     Enables red and green LEDs according to the rules, drops the ball.
     :param object_order: list of 'triangle' and 'square' strings; shall contain only yellow objects
@@ -60,12 +65,19 @@ def object_reaction_min(object_order: tuple,
 
             if net.msg.obj == object_green_led:
                 ping_green_led()
+                yaw = network.wait_message("Coord").pos[YAW]
                 if green_led_counter > len(object_order) or object_order[green_led_counter] == 'triangle':
                     # Do triangle shit I guess
-                    pass
+                    stab(priority=1, origin=object_green_led, depth=line_depth, dt=1.0, yaw=yaw)
+                    stab(priority=1, origin=object_green_led, depth=line_depth, dt=2.5, yaw=yaw + 90)
+                    stab(priority=1, origin=object_green_led, depth=line_depth, dt=2.5, yaw=yaw + 180)
+                    stab(priority=1, origin=object_green_led, depth=line_depth, dt=2.5, yaw=yaw + 270)
+                    stab(priority=1, origin=object_green_led, depth=line_depth, dt=2.5, yaw=yaw)
                 elif object_order[green_led_counter] == 'square':
                     # Do square shit I guess
-                    pass
+                    stab(priority=1, origin=object_green_led, depth=line_depth, dt=5.0, yaw=yaw)
+                    tack(priority=1, mode="Absolute", depth=max_depth, dt=10.0, dist=1.0, speed=0.0, yaw=yaw)
+                    stab(priority=1, origin=object_green_led, depth=line_depth, dt=5.0, yaw=yaw)
                 green_led_counter += 1
 
             if net.msg.obj in [object_green_led, object_red_led]:

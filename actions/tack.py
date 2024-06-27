@@ -8,7 +8,7 @@ TIMER = 0.25
 
 
 # Robot ahead moving function with given yaw
-def tack(mode='Relative', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None):
+def tack(mode='Relative', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None, priority=0):
     start_time = time.time()
 
     if not mat.is_num(dist) and not mat.is_num(dt):
@@ -36,7 +36,8 @@ def tack(mode='Relative', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=Non
     while net.receive():            # Wait for timer ticks and messages.
         if net.id == 'Timer':                           # If timer tick occurs then:
             d = mat.dist2d(start, pos)                  # Calc distance
-            net.send(message.Tack(time=1.0,             # Control time.speed_x=0.0,  # Send 'Tack'
+            net.send(message.Tack(priority=priority,
+                                  time=1.0,             # Control time.speed_x=0.0,  # Send 'Tack'
                                   speed_y=speed,        # message to
                                   stab_depth=depth,     # regulator
                                   stab_yaw=target_yaw,  # with all

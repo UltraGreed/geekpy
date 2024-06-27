@@ -10,7 +10,7 @@ from base.config import MAIN_TIMER
 
 ## Robot ahead moving function with given yaw
 def stab(
-    origin="Current", x=0.0, y=0.0, right=0.0, front=0.0, yaw=None, dt=0.0, depth=None
+    origin="Current", x=0.0, y=0.0, right=0.0, front=0.0, yaw=None, dt=0.0, depth=None, priority=0
 ):
     is_object_yaw = False
 
@@ -40,6 +40,7 @@ def stab(
         if net.id == "Timer":
             net.send(
                 message.Tack(
+                    priority=priority,
                     time=1.0,
                     stab_x=stab[X],
                     stab_y=stab[Y],
