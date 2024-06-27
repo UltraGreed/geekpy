@@ -10,6 +10,9 @@ from actions.init_robot import init_robot
 
 import multiprocessing
 
+line_depth = 0.6
+max_depth = 1.2
+
 
 init_robot(yaw=0, depth=0, x=0, y=0)
 
@@ -28,11 +31,13 @@ object_reaction_process = multiprocessing.Process(
           5,
           'SquareYellow',
           'SquareBlack',
-          0)
+          0,
+          line_depth,
+          max_depth)
 )
 object_reaction_process.start()
 
-line_movement(exit_object='SquareGreen', object_delay=40, exit_delay=5, timeout=90, speed=0.15, depth=0.6)
+line_movement(exit_object='SquareGreen', object_delay=40, exit_delay=5, timeout=90, speed=0.15, depth=line_depth)
 
 tack(mode="Absolute", yaw=18, speed=0, depth=1, dt=5)
 
