@@ -15,7 +15,7 @@
   python ctd_uart.py &
 
   python acoustic.py &
-  python bearing.py 39000 41000 Pinger &
+  python bearing.py 29500 30500 Pinger &
 
   python gpio.py &
 
