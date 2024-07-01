@@ -225,9 +225,8 @@ def img_cap(
 
     net = Net(frequency)
 
-    save_path = f"{args.save_path}/{cam_orientation}/" + datetime.today().strftime(
-        "%Y-%m-%d_%H-%M-%S"
-    )
+    save_path = f"{args.save_path}/{cam_orientation}/{LAUNCH_NUMBER}"
+
     if is_img_capture:
         Path(save_path).mkdir(parents=True, exist_ok=True)
         data_file = open(f"{save_path}/coord_data.txt", mode='w')
@@ -287,21 +286,21 @@ def img_cap(
 
             if save_mode & SaveMode.Left:
                 zed.retrieve_image(img, sl.VIEW.LEFT)
-                path = f"{save_path}/left_{LAUNCH_NUMBER}_{file}"
+                path = f"{save_path}/left_{file}"
                 saver(img, path, flip_img)
 
                 photos["path_left"] = path
 
             if save_mode & SaveMode.Right:
                 zed.retrieve_image(img, sl.VIEW.RIGHT)
-                path = f"{save_path}/right_{LAUNCH_NUMBER}_{file}"
+                path = f"{save_path}/right_{file}"
                 saver(img, path, flip_img)
 
                 photos["path_right"] = path
 
             if save_mode & SaveMode.Depth:
                 zed.retrieve_image(img, sl.VIEW.DEPTH)
-                path = f"{save_path}/depth_{LAUNCH_NUMBER}_{file}"
+                path = f"{save_path}/depth_{file}"
                 saver(img, path, flip_img)
 
                 photos["path_depth"] = path
