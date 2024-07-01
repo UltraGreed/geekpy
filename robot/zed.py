@@ -31,6 +31,9 @@ from base.network import Net
 ## CONSTANTS
 ROLL_OFFSET = 3.3
 
+LAUNCH_NUMBER = 0
+with open("/media/ssd/launch_number.txt") as f:
+     LAUNCH_NUMBER = int(next(f))
 
 ## END CONSTANTS
 
@@ -284,21 +287,21 @@ def img_cap(
 
             if save_mode & SaveMode.Left:
                 zed.retrieve_image(img, sl.VIEW.LEFT)
-                path = f"{save_path}/left_{file}"
+                path = f"{save_path}/left_{LAUNCH_NUMBER}_{file}"
                 saver(img, path, flip_img)
 
                 photos["path_left"] = path
 
             if save_mode & SaveMode.Right:
                 zed.retrieve_image(img, sl.VIEW.RIGHT)
-                path = f"{save_path}/right_{file}"
+                path = f"{save_path}/right_{LAUNCH_NUMBER}_{file}"
                 saver(img, path, flip_img)
 
                 photos["path_right"] = path
 
             if save_mode & SaveMode.Depth:
                 zed.retrieve_image(img, sl.VIEW.DEPTH)
-                path = f"{save_path}/depth_{file}"
+                path = f"{save_path}/depth_{LAUNCH_NUMBER}_{file}"
                 saver(img, path, flip_img)
 
                 photos["path_depth"] = path

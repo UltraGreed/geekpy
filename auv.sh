@@ -3,6 +3,13 @@
 (
   export PYTHONPATH=$(pwd)
 
+  sh ./offpy.sh
+
+  launch_old=$(cat /media/ssd/launch_number.txt)
+  launch_new=$((launch_old + 1))
+
+  echo "$launch_new" > /media/ssd/launch_number.txt
+
   cd robot
   python3 scene.py &
 
