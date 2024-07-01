@@ -10,7 +10,7 @@ from base import network, message, mat
 # from message import AXIS
 
 TIMER   = 0.25  # Filtered objects publication timer.
-TIMEOUT = 5.00  # Timeout of old data.
+DEFAULT_TIMEOUT = 10.0
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 net    = network.Net(timer=TIMER)              # Will send/receive some messages and wait timer ticks.
@@ -18,17 +18,17 @@ out    = message.FilteredObjects()             # Sended array with all filtered 
 ini    = message.FilteredObjects()             # Initial array with objects coordinates.
 update = message.FilteredObjects().objs        # Update time of all coord each object.
 
-is_detection_on = {}
+is_detection_on = {} # if object must be detected
 for key in ini.objs:
     is_detection_on[key] = False
 
-timeout_for_on = {}
+timeout_for_on = {} # then set timeout to this value
 for key in ini.objs:
-    timeout_for_on[key] = 10.0
+    timeout_for_on[key] = DEFAULT_TIMEOUT
 
-timeout_for_off = {}
+timeout_for_off = {} # else to this value
 for key in ini.objs:
-    timeout_for_off[key] = 10.0
+    timeout_for_off[key] = DEFAULT_TIMEOUT
 
 # Wait for messages or timer.
 while net.receive():
@@ -36,8 +36,8 @@ while net.receive():
     if net.id == 'Timer':                                   # If timer has come then
         for obj in update:                                  # For all objects
             for i in range(message.YAW):                    # and all axis:
-                # if time.time() - update[obj][i] > TIMEOUT and not is_detection_on[obj]:  # if value is old
-                    # out.objs[obj][i] = ini.objs[obj][i]     # then change to initial value.
+                                                            # if value is old
+                                                            # then change to initial value.
 
                 if is_detection_on[obj] and time.time() - update[obj][i] > timeout_for_on[obj]:
                     out.objs[obj][i] = ini.objs[obj][i]
