@@ -1,3 +1,4 @@
+import sys
 import time
 
 import numpy as np
@@ -6,12 +7,14 @@ from model_class import get_model_path
 
 from config import *
 
+obj_name = sys.argv[1]
+
 print('Normalization starts.')
 time1 = time.time()
 
-data_object = np.load(get_model_path('obj'))
-data_non_object = np.load(get_model_path('noobj'))
-data_all = np.load(get_model_path('all'))
+data_object = np.load(get_model_path(obj_name, model_id='obj'))
+data_non_object = np.load(get_model_path(obj_name, model_id='noobj'))
+data_all = np.load(get_model_path(obj_name, model_id='all'))
 
 object_max = np.max(data_object)
 non_object_max = np.max(data_non_object)
@@ -31,8 +34,8 @@ data_non_object_norm = np.where(
     1
 )
 
-np.save(get_model_path('obj_norm'), data_object_norm)
-np.save(get_model_path('noobj_norm'), data_non_object_norm)
+np.save(get_model_path(obj_name, model_id='obj_norm'), data_object_norm)
+np.save(get_model_path(obj_name, model_id='noobj_norm'), data_non_object_norm)
 
 data_sub = data_object_norm - data_non_object_norm
 
@@ -43,6 +46,6 @@ data_sub_norm = np.where(
     0
 )
 
-np.save(get_model_path('sub'), data_sub_norm)
+np.save(get_model_path(obj_name, model_id='sub'), data_sub_norm)
 
 print(f'Normalization success in {time.time() - time1}')

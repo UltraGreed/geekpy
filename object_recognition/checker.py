@@ -1,5 +1,6 @@
 import os
 import glob
+import sys
 import time
 from pathlib import Path
 
@@ -9,10 +10,12 @@ from model_class import RGBModel, HSVModel
 from config import *
 from model_class import get_model_path
 
+
+obj_name = sys.argv[1]
 #####################
 # CONFIG PARAMETERS #
 LOAD_PREFIX = 'images/selection_test/'
-LOAD_PREFIX_OBJ = LOAD_PREFIX + OBJ_NAME + '/'
+LOAD_PREFIX_OBJ = LOAD_PREFIX + obj_name + '/'
 LOAD_PREFIX_TRUE = LOAD_PREFIX_OBJ + 'true/'
 LOAD_PREFIX_FALSE = LOAD_PREFIX_OBJ + 'false/'
 
@@ -21,8 +24,6 @@ SAVE_PREFIX_TRUE_POSITIVE = SAVE_PREFIX + 'true_positive/'
 SAVE_PREFIX_FALSE_POSITIVE = SAVE_PREFIX + 'false_positive/'
 SAVE_PREFIX_TRUE_NEGATIVE = SAVE_PREFIX + 'true_negative/'
 SAVE_PREFIX_FALSE_NEGATIVE = SAVE_PREFIX + 'false_negative/'
-
-
 ####################
 
 
@@ -78,9 +79,9 @@ for directory in (SAVE_PREFIX_TRUE_NEGATIVE,
     clear_dir(directory)
 
 if COLOR_SCHEME == 'RGB':
-    model = RGBModel(get_model_path())
+    model = RGBModel(get_model_path(obj_name))
 elif COLOR_SCHEME == 'HSV':
-    model = HSVModel(get_model_path())
+    model = HSVModel(get_model_path(obj_name))
 
 print("Checker starts")
 time1 = time.time()
