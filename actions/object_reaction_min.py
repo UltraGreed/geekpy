@@ -42,6 +42,7 @@ def object_reaction_min(object_order: tuple,
     was_red_led = False
     was_ball_drop = False
     red_led_time = 0
+    orange_count = 0
 
     net = network.Net(timer=0.25)
     while net.receive():
@@ -53,13 +54,14 @@ def object_reaction_min(object_order: tuple,
         if net.id == message.DetectedObject.id:
             if time.time() - last_object_time < object_interval:
                 continue
-            if net.msg.obj == object_red_led and not was_red_led:
+            if net.msg.obj == object_red_led and not was_red_led and orange_count == 2:
                 ping_red_led()
                 was_red_led = True
                 red_led_time = time.time()
 
             if net.msg.obj == object_green_led:
                 ping_green_led()
+                orange_count += 1
                 if green_led_counter > len(object_order) or object_order[green_led_counter] == 'triangle':
                     # Do triangle shit I guess
                     pass
