@@ -1,9 +1,12 @@
+import sys
+
 import numpy as np
 from image_utils import save_image_rgb
 from model_class import get_model_path
 from config import *
 
 
+obj_name = sys.argv[1]
 COLOR_AMOUNT = tuple(RGB_AMOUNT for _ in range(3)) if COLOR_SCHEME == 'RGB' else (H_AMOUNT, S_AMOUNT, V_AMOUNT)
 
 
@@ -25,9 +28,9 @@ def get_histogram_model(axel_ind):
     return np.stack((image_r.astype('uint8'), image_g, image_b.astype('uint8')), axis=-1)
 
 
-data_obj_norm = np.load(get_model_path('obj_norm')).reshape(COLOR_AMOUNT)
-data_non_obj_norm = np.load(get_model_path('noobj_norm')).reshape(COLOR_AMOUNT)
-data_sub = np.load(get_model_path('sub')).reshape(COLOR_AMOUNT)
+data_obj_norm = np.load(get_model_path(obj_name, 'obj_norm')).reshape(COLOR_AMOUNT)
+data_non_obj_norm = np.load(get_model_path(obj_name, 'noobj_norm')).reshape(COLOR_AMOUNT)
+data_sub = np.load(get_model_path(obj_name, 'sub')).reshape(COLOR_AMOUNT)
 
 save_image_rgb('hist_sep_23.png', get_histogram_separate(0))
 save_image_rgb('hist_sep_13.png', get_histogram_separate(1))

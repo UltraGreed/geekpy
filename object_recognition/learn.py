@@ -1,4 +1,5 @@
 import os
+import sys
 import time
 from pathlib import Path
 
@@ -9,13 +10,15 @@ from model_class import get_model_path
 
 from config import *
 
+
+obj_name = sys.argv[1]
 #####################
 # CONFIG PARAMETERS #
 LOAD_PREFIX = 'images/selection_learn/'
-LOAD_PREFIX_OBJ = LOAD_PREFIX + OBJ_NAME + '/'
+LOAD_PREFIX_OBJ = LOAD_PREFIX + obj_name + '/'
 
 SAVE_PREFIX = 'images/selection_learn/'
-SAVE_PREFIX_OBJ = SAVE_PREFIX + OBJ_NAME + '/'
+SAVE_PREFIX_OBJ = SAVE_PREFIX + obj_name + '/'
 #####################
 
 
@@ -87,9 +90,9 @@ def learn_rgb():
         inc_data_rgb(data_non_object, index_matrix[a_layer >= 128], data_all.shape[0])
         print(f"Image: {time.time() - time1}")
 
-    np.save(get_model_path('obj'), data_object)
-    np.save(get_model_path('noobj'), data_non_object)
-    np.save(get_model_path('all'), data_all)
+    np.save(get_model_path(obj_name, model_id='obj'), data_object)
+    np.save(get_model_path(obj_name, model_id='noobj'), data_non_object)
+    np.save(get_model_path(obj_name, model_id='all'), data_all)
 
 
 def learn_hsv():
@@ -117,15 +120,15 @@ def learn_hsv():
         inc_data_hsv(data_non_object, hsv_data[a_layer.flatten() >= 128])
         print(f"Image: {time.time() - time1}")
 
-    np.save(get_model_path('obj'), data_object)
-    np.save(get_model_path('noobj'), data_non_object)
-    np.save(get_model_path('all'), data_all)
+    np.save(get_model_path(obj_name, model_id='obj'), data_object)
+    np.save(get_model_path(obj_name, model_id='noobj'), data_non_object)
+    np.save(get_model_path(obj_name, model_id='all'), data_all)
 
 
 def main():
     time1 = time.time()
 
-    Path(get_model_path()).parent.mkdir(exist_ok=True)
+    Path(get_model_path(obj_name)).parent.mkdir(exist_ok=True)
 
     print('Learning starts.')
     if COLOR_SCHEME == 'RGB':
