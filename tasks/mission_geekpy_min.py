@@ -21,10 +21,10 @@ photosave.start("Bottom", 'line_sim')
 # in this example and then terminate at the end.
 object_reaction_process = multiprocessing.Process(
     target=object_reaction_min,
-    args=(('triangle',
-           'triangle',
+    args=(('square',
            'square',
-           'square'),
+           'triangle',
+           'triangle'),
           5,
           'SquareYellow',
           'SquareBlack',
