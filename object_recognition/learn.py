@@ -130,7 +130,7 @@ def main():
 
     Path(get_model_path(obj_name)).parent.mkdir(exist_ok=True)
 
-    print('Learning starts.')
+    print(f'Learning of {obj_name} starts.')
     if COLOR_SCHEME == 'RGB':
         learn_rgb()
     elif COLOR_SCHEME == 'HSV':
