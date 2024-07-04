@@ -6,11 +6,12 @@ import time
 from datetime import datetime
 from enum import IntFlag
 from pathlib import Path
-from PIL import Image
 
 import numpy as np
 import pyzed.sl as sl
 import setproctitle
+
+import io
 
 sys.path.append("./")
 
@@ -260,10 +261,14 @@ def img_cap(
             logging.info("Image capture disable")
             is_img_capture = False
 
-            data_file.seek(-1, 2)
-            data_file.truncate()
-            data_file.write("\n]")
-            data_file.close()
+            try:
+                data_file.seek(-1, 2)
+                data_file.truncate()
+                data_file.write("\n]")
+            except io.UnsupportedOperation as e:
+                print(f"ZED: coordinate logging failed with {e}")
+            finally:
+                data_file.close()
 
         # WARN: ...
         if net.id == Coord.id:
