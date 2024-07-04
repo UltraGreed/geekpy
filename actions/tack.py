@@ -11,7 +11,7 @@ TIMER = 0.25
 def tack(mode='Relative', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=None, depth=None, priority=0):
     start_time = time.time()
 
-    if not mat.is_num(dist) and not mat.is_num(dt):
+    if not dist and not dt:
         raise Exception('dist is None and dt is None')
 
     # Initial and current robot positions and objects data.
@@ -44,9 +44,9 @@ def tack(mode='Relative', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=Non
                                   stab_pitch=0.0,       # calculated
                                   stab_roll=0.0))       # parameters.
 
-            if mat.is_num(dt) and time.time() > start_time + dt: return
+            if not dt and time.time() > start_time + dt: return
 
-            if mat.is_num(dist) and d > dist: return                         # If work done => exit.
+            if not dist and d > dist: return                         # If work done => exit.
 
         elif net.id == 'Coord':  # If coordinates has come
             pos = net.msg.pos    # then save robot position.

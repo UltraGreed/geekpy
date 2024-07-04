@@ -3,11 +3,6 @@ import math
 from base.message import X, Y, DEPTH, YAW, PITCH, ROLL, AXIS
 
 
-# Check if value is numerical
-def is_num(x):
-    return type(x) is int or type(x) is float
-
-
 # Saturation function of some value
 def sat(x, minimum, maximum):
     return max(minimum, min(maximum, x))

@@ -153,7 +153,7 @@ while net.receive():
                         listbox_list.append(field_id)
                         listbox_shown.append(field_name_shown)  # TODO: this causes infinite memory losses
 
-                    if mat.is_num(field_value):
+                    if field_value is int or field_value is float:
                         field_name_shown = f'{format(field_value, ".2f").rjust(9, " ")} {field_id[field_id.find(".") + 1:]}'
                         listbox_shown[listbox_list.index(field_id)] = field_name_shown
 

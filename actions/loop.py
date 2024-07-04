@@ -26,7 +26,7 @@ def loop(yaw=0.0, pitch=0.0, roll=0.0, dt=None, depth=None):
                                   speed_roll=roll,
                                   stab_depth=depth))     # regulator
 
-            if mat.is_num(dt) and time.time() > start_time + dt: return
+            if dt is not None and time.time() > start_time + dt: return
 
         elif net.id == 'Coord':  # If coordinates has come
             pos = net.msg.pos    # then save robot position.
