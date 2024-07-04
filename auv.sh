@@ -36,10 +36,10 @@
   #   python3 obj_recogn.py Bottom        CellY         CellY &
 
   #                   camera_name model_name
-  python3 line_recogn.py Bottom.right LineDirt 2 0.01 &
-  #  python obj_recogn.py Bottom.left SquareGreenSim SquareGreen 0.5 &
-  python obj_recogn.py Bottom.right SquareBlackDirt SquareBlack 0.35 0.075 &
-  python obj_recogn.py Bottom.right SquareYellowDirt SquareYellow 0.35 0.1 &
+  python line_recogn.py Bottom.right LineRedFEFU 0.75 0.01 &
+  python obj_recogn.py Bottom.right SquareBlackFEFU SquareBlack 0.35 0.075 &
+  python obj_recogn.py Bottom.right SquareOrangeFEFU SquareOrange 0.35 0.1 &
+  python obj_recogn.py Bottom.right SquareGreenFEFU SquareGreen 0.75 0.025 &
 
   #	python aruco.py Bottom.right Aruco &
 )

@@ -48,7 +48,7 @@ while net.receive():
     elif net.id == 'DetectedObject':               # If object has come
         msg = net.msg                              # then read message.
         for i in range(len(msg.pos)):              # For all axis:
-            if mat.is_num(msg.pos[i]):             # if position in axel is number
+            if msg.pos[i] is not None:             # if position in axel is number
                 out.objs[msg.obj][i] = msg.pos[i]  # then save to output data.
                 update[msg.obj][i] = time.time()   # Update time of each value.
 

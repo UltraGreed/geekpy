@@ -7,9 +7,9 @@ from base.message import YAW
 TIMER = 0.25
 
 # Coefficients for lag line following
-P = 0.8
+P = 1
 D = 0
-MAX_X_SPEED = 0.2
+MAX_X_SPEED = 0.3
 
 
 def line_movement(speed: float,

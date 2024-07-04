@@ -25,7 +25,8 @@ def object_reaction_min(object_order: tuple,
                         object_interval: float,
                         object_green_led: str,
                         object_red_led: str,
-                        ball_drop_delay: float):
+                        ball_drop_delay: float,
+                        orange_count: int):
     """
     Enables red and green LEDs according to the rules, drops the ball.
     :param object_order: list of 'triangle' and 'square' strings; shall contain only yellow objects
@@ -33,6 +34,7 @@ def object_reaction_min(object_order: tuple,
     :param object_green_led: name of object to enable green leds
     :param object_red_led: name of object to enable red leds
     :param ball_drop_delay: delay after red led to drop ball
+    :param orange_count: amount of orange objects before black
     :return:
     """
     green_led_counter = 0
@@ -41,8 +43,7 @@ def object_reaction_min(object_order: tuple,
 
     was_red_led = False
     was_ball_drop = False
-    red_led_time = 0
-    orange_count = 0
+    red_led_time = 1000
 
     net = network.Net(timer=0.25)
     while net.receive():
@@ -54,14 +55,14 @@ def object_reaction_min(object_order: tuple,
         if net.id == message.DetectedObject.id:
             if time.time() - last_object_time < object_interval:
                 continue
-            if net.msg.obj == object_red_led and not was_red_led and orange_count == 2:
+
+            if net.msg.obj == object_red_led and not was_red_led and orange_count == green_led_counter:
                 ping_red_led()
                 was_red_led = True
                 red_led_time = time.time()
 
             if net.msg.obj == object_green_led:
                 ping_green_led()
-                orange_count += 1
                 if green_led_counter > len(object_order) or object_order[green_led_counter] == 'triangle':
                     # Do triangle shit I guess
                     pass

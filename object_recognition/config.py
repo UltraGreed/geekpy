@@ -26,8 +26,8 @@ V_COMPRESSION = 256 // V_AMOUNT
 PIXEL_AREA = 2
 # NORMALIZATION PARAMETERS #
 # Thresholds for model normalization
-UPPER_BORDER_OBJECT = 0.5
-UPPER_BORDER_NON_OBJECT = 0.2
+UPPER_BORDER_OBJECT = 0.1
+UPPER_BORDER_NON_OBJECT = 0.1
 # Model value which will equal to zero chance
 # Ranges from -1 to 1
 LOWER_MODEL_BORDER = 0.1

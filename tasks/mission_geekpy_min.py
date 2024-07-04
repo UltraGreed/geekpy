@@ -1,7 +1,5 @@
 from actions.line_movement import line_movement
 from actions.stab import stab
-# from actions.tack import tack
-from actions import detection
 from actions.goto import goto
 from actions import photosave
 from actions.tack import tack
@@ -9,11 +7,15 @@ from actions.object_reaction_min import object_reaction_min
 from actions.init_robot import init_robot
 
 import multiprocessing
+import time
 
+mission_depth = 1.3
 
 init_robot(yaw=0, depth=0, x=0, y=0)
 
-photosave.start("Bottom", 'line_sim')
+# detection.on('Pinger', 30)
+
+photosave.start("Bottom", None)
 
 # I know you won't like this,
 # but I really prefer this way of doing things :)
@@ -21,26 +23,33 @@ photosave.start("Bottom", 'line_sim')
 # in this example and then terminate at the end.
 object_reaction_process = multiprocessing.Process(
     target=object_reaction_min,
-    args=(('square',
-           'square',
-           'triangle',
-           'triangle'),
-          5,
-          'SquareYellow',
-          'SquareBlack',
-          0)
+    kwargs={
+        'object_order': ('square',
+                         'square',
+                         'triangle',
+                         'triangle'),
+        'object_interval': 5,
+        'object_green_led': 'SquareOrange',
+        'object_red_led': 'SquareBlack',
+        'ball_drop_delay': 2,
+        'orange_count': 4
+    }
 )
 object_reaction_process.start()
 
-line_movement(exit_object='SquareGreen', object_delay=40, exit_delay=5, timeout=90, speed=0.15, depth=0.6)
+time1 = time.time()
+line_movement(exit_object='SquareGreen', object_delay=50, exit_delay=2,
+              timeout=60, speed=0.2, depth=mission_depth)
 
-tack(mode="Absolute", yaw=18, speed=0, depth=1, dt=5)
+print(f"Line ended in ${time.time() - time1}")
 
-goto(origin="Boxes", speed=0.2, radius=1, hold_time=5, depth=1)
+tack(mode="Absolute", yaw=260, speed=0, depth=mission_depth, dt=5)
 
-tack(mode="Absolute", yaw=77, speed=0, depth=1, dt=5)
+tack(mode="Absolute", yaw=260, speed=0.5, depth=mission_depth, dist=2)
 
-tack(mode="Relative", yaw=0, speed=0.2, depth=1, dist=1)
+goto(origin="Pinger", speed=0.2, radius=1, hold_time=5, depth=mission_depth)
+
+stab(origin="Pinger", yaw=90, depth=mission_depth, dt=5)
 
 photosave.stop("Bottom")
 
