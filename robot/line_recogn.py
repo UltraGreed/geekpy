@@ -56,9 +56,8 @@ def main(camera_path: str, model_name: str, visible_range: float):
 
                 image = load_image_rgb(net.msg.path[camera_eye])
 
-
-                # smaller_side = min(image.shape[:2])
-                # image = crop(image, (smaller_side, smaller_side))
+                smaller_side = min(image.shape[:2])
+                image = crop(image, (smaller_side, smaller_side))
 
                 new_size = int(meters_to_pixels(
                     visible_range,
