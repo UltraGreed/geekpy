@@ -91,7 +91,10 @@ def main(camera_path: str, model_name: str, visible_range: float):
                 mean_x_vector = (filtered_sum[1] // filtered_sum[2]).astype('uint64')
 
                 if mean_x_vector.size > 1:
-                    a, b = calc_lin_approx((filtered_indexes, mean_x_vector))
+                    a, b = np.linalg.lstsq(
+                            np.vstack((filtered_indexes, np.ones_like(filtered_indexes))).T,
+                            mean_x_vector
+                            )[0]
                 else:
                     a, b = 0, shape[1] / 2
 
