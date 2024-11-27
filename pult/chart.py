@@ -133,7 +133,7 @@ while net.receive():
                     and field_value.shape == ()
                 ):
                     field_name_shown = (
-                        f'{field_value:.2f}'.rjust(9, ' ') + field_id[field_id.find('.') + 1 :]
+                        f'{field_value:.2f}'.rjust(9, ' ') + ' ' + field_id[field_id.find('.') + 1 :]
                     )
                     listbox_shown[listbox_list.index(field_id)] = field_name_shown
 

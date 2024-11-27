@@ -9,9 +9,9 @@ from actions.init_robot import init_robot
 import multiprocessing
 import time
 
-mission_depth = 1.3
+mission_depth = 1
 
-init_robot(yaw=0, depth=0, x=0, y=0)
+init_robot(yaw=0, depth=1, x=-0.5, y=1)
 
 # detection.on('Pinger', 30)
 
@@ -39,7 +39,7 @@ object_reaction_process.start()
 
 time1 = time.time()
 line_movement(exit_object='SquareGreen', object_delay=50, exit_delay=2,
-              timeout=60, speed=0.2, depth=mission_depth)
+              timeout=60, speed=0.05, depth=mission_depth)
 
 print(f"Line ended in ${time.time() - time1}")
 

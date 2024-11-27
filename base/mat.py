@@ -83,7 +83,8 @@ def direction(a, b):
 
 def calc_lin_approx(data):
     """
-    Returns coefficients for linear function with the lowest possible MSE
+    Return coefficients for linear function with the lowest possible MSE.
+
     :param data: tuple of two arrays: xs and ys
     :return: tuple of coefficients
     """
@@ -103,7 +104,8 @@ def calc_lin_approx(data):
 
 def line_closest_point(coefs: tuple, point: tuple):
     """
-    Returns point from line closest to the given point
+    Return point from line closest to the given point.
+
     :param coefs: line coefs in either (Ax + By + C = 0) or (y = kx + b) format
     :param point: coordinates of point
     :return:
