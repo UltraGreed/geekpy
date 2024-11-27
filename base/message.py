@@ -7,17 +7,19 @@ X, Y, DEPTH, YAW, PITCH, ROLL, AXIS, DIAMETER = 0, 1, 2, 3, 4, 5, 6, 7
 
 class MetaMessage(type):
     """
-     You probably won't understand how this works, neither will I, so leave it as is.
-     ...
-     OK, basically we need metaclass for two reasons:
-       1. to call message.id without braces ()
-       2. to be able to get id from class itself (make id static)
+    Meta class for messages, required to use id as static property.
 
-     we could just use @classmethod with @property, but this chaining was deprecated in python 3.11
+    You probably won't understand how this works, neither do I, so leave it as is.
+    ...
+    OK, basically we need metaclass for two reasons:
+      1. to call message.id without braces ()
+      2. to be able to get id from class itself (make id static)
+
+    we could just use @classmethod with @property, but this chaining was deprecated in python 3.11
     """
 
     def __init__(cls, *args, **kwargs):
-        super(MetaMessage, cls).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         cls.id = cls.__name__
 
 
@@ -353,9 +355,4 @@ class LogShow(Message):
 def get_msg_table():
     from base import message
 
-    table = {}
-    for name, obj in inspect.getmembers(message):
-        if inspect.isclass(obj):
-            table[name] = obj
-
-    return table
+    return {name: obj for name, obj in inspect.getmembers(message) if inspect.isclass(obj)}

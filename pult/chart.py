@@ -7,8 +7,10 @@ import json
 from base import network, mat
 from base.message import X, Y, DEPTH, YAW, PITCH, ROLL
 
-import tkinter
+import tkinter as tk
 from tkinter import ttk
+
+import numpy as np
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
@@ -17,27 +19,15 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 def update_plot(*_):
     plt.cla()
     for entry in [plot_data[listbox_list[selected_i]] for selected_i in listbox.curselection()]:
-        color = entry.color
-        entry_data = entry.data[-1000:]
+        entry_data = entry[-1000:]
         ax_plot.plot(*reversed(list(zip(*entry_data))))
 
     canvas_plot.draw()
 
 
-class ListboxEntry:
-    data: list[tuple[float, float]]
-
-    def __init__(self, color="Black"):
-        self.color = color
-        self.data = []
-
-    def add(self, entry):
-        self.data.append(entry)
-
-
 def clear_pause():
     for entry in [plot_data[listbox_list[selected_i]] for selected_i in listbox.curselection()]:
-        entry.data.clear()
+        entry.clear()
 
 
 def change_pause():
@@ -51,49 +41,29 @@ N_PLT_COLORS = 8
 
 start_time = time.time()
 
-root = tkinter.Tk()
-root.title('Chart')  # заголовок
+root = tk.Tk()
+root.title('Chart')
 root.geometry('1265x740')
 
-listbox_shown: list[ListboxEntry] = list()
-# noinspection PyTypeChecker
-listbox_var = tkinter.StringVar(value=listbox_shown)
+listbox_shown: list[str] = list()
+listbox_var = tk.StringVar(value=listbox_shown)  # type: ignore
 listbox_list = list()
 
 btn_frame = ttk.Frame(master=root)
 btn_frame.grid(row=0, column=0, sticky='ns')
 
-listbox = tkinter.Listbox(master=btn_frame, listvariable=listbox_var, selectmode='multiple')
+listbox = tk.Listbox(master=btn_frame, listvariable=listbox_var, selectmode='multiple')
 listbox.pack(expand=True, fill='y')
 
-clear_button = ttk.Button(master=btn_frame, command=clear_pause, width=10, text="Clear")
+clear_button = ttk.Button(master=btn_frame, command=clear_pause, width=10, text='Clear')
 clear_button.pack()
-pause_button = ttk.Button(master=btn_frame, command=change_pause, width=10, text="Pause")
+pause_button = ttk.Button(master=btn_frame, command=change_pause, width=10, text='Pause')
 pause_button.pack()
-
-# cmap = plt.cm.get_cmap('hsv', N_PLT_COLORS)
-#
-# fig_cmap = plt.figure()
-# fig_cmap.set_size_inches(1, 7)
-#
-# ax_cmap = fig_cmap.add_subplot()
-#
-# n_rect = 43
-# ax_cmap.set_xlim([-0.5, 0.5])
-# ax_cmap.set_ylim([0, n_rect])
-# for i in range(n_rect):
-#     rect = plt.Rectangle((-0.5, n_rect - i - 1), 1, 1, facecolor=cmap(i % (N_PLT_COLORS - 1)))
-#     ax_cmap.add_artist(rect)
-#
-# ax_cmap.set_position((0, 0, 0.1, 1))
-
-# canvas_cmap = FigureCanvasTkAgg(fig_cmap, master=root)
-# canvas_cmap.get_tk_widget().grid(row=0, column=1, sticky='n', pady=1)
 
 fig_plot = plt.figure()
 fig_plot.set_size_inches(10, 7)
 ax_plot = fig_plot.add_subplot()
-ax_plot.yaxis.set_label_position("right")
+ax_plot.yaxis.set_label_position('right')
 ax_plot.yaxis.tick_right()
 
 toolbar_frame = ttk.Frame(master=root)
@@ -105,13 +75,12 @@ toolbar = NavigationToolbar2Tk(canvas_plot, toolbar_frame)
 
 plt.tight_layout()
 
-plot_data = {}
+plot_data: dict[str, list[tuple[object, float]]] = {}
 net = network.Net(timer=0.2)
 is_paused = False
 while net.receive():
     if net.id == 'Timer':
-        # noinspection PyTypeChecker
-        listbox_var.set(listbox_shown)
+        listbox_var.set(listbox_shown)  # type: ignore
 
         if not is_paused:
             update_plot()
@@ -119,42 +88,54 @@ while net.receive():
         root.update()
         root.update_idletasks()
     else:
-        try:
-            msg_dict = json.loads(str(net.msg))
-        except json.JSONDecodeError as e:
-            print(f"chart err: {e}")
+        msg_dict = json.loads(str(net.msg))
         for key, value in msg_dict.items():
             if value is None:
                 continue
             try:
                 enumerate(value)
             except TypeError:
-                value = [value]
-            finally:
-                for i, field_value in enumerate(value):
-                    if net.id in ('Sensor', 'Tack', 'Coord', 'InitRobot'):
-                        field_type = {X: 'X', Y: 'Y', DEPTH: 'DEPTH', YAW: 'YAW', PITCH: 'PITCH', ROLL: 'ROLL'}[i]
-                    else:
-                        field_type = str(i)  # TODO: hardcode sensor, tack, and others with X Y DEPTH YAW PITCH ROLL
-                    field_id = f'{net.id}.{key}.{field_type}'
+                value = [value]  # noqa
 
-                    # Add class name
-                    if net.id not in plot_data:
-                        plot_data[net.id] = ListboxEntry()
-                        listbox_list.append(net.id)
-                        listbox_shown.append(net.id.upper())
+            for i, field_value in enumerate(value):
+                if net.id in ('Sensor', 'Tack', 'Coord', 'InitRobot'):
+                    field_type = {
+                        X: 'X',
+                        Y: 'Y',
+                        DEPTH: 'DEPTH',
+                        YAW: 'YAW',
+                        PITCH: 'PITCH',
+                        ROLL: 'ROLL',
+                    }[i]
+                else:
+                    field_type = str(i)
+                field_id = f'{net.id}.{key}.{field_type}'
 
-                    # Add field name
-                    if field_id not in plot_data:
-                        plot_data[field_id] = ListboxEntry()
+                # Add class name
+                if net.id not in plot_data:
+                    plot_data[net.id] = list()
+                    listbox_list.append(net.id)
+                    listbox_shown.append(net.id.upper())
 
-                        field_name_shown = f'{" " * 13}{field_id[field_id.find(".") + 1:]}'
+                # Add field name
+                if field_id not in plot_data:
+                    plot_data[field_id] = list()
 
-                        listbox_list.append(field_id)
-                        listbox_shown.append(field_name_shown)  # TODO: this causes infinite memory losses
+                    field_name_shown = f'{" " * 13}{field_id[field_id.find(".") + 1:]}'
 
-                    if field_value is int or field_value is float:
-                        field_name_shown = f'{format(field_value, ".2f").rjust(9, " ")} {field_id[field_id.find(".") + 1:]}'
-                        listbox_shown[listbox_list.index(field_id)] = field_name_shown
+                    listbox_list.append(field_id)
+                    listbox_shown.append(field_name_shown)
 
-                        plot_data[field_id].add((field_value, time.time() - start_time))
+                if (
+                    type(field_value) is int
+                    or type(field_value) is float
+                    or type(field_value) is np.ndarray
+                    and field_value.shape == ()
+                ):
+                    field_name_shown = (
+                        f'{field_value:.2f}'.rjust(9, ' ') + field_id[field_id.find('.') + 1 :]
+                    )
+                    listbox_shown[listbox_list.index(field_id)] = field_name_shown
+
+                    # HACK: plot_data never clears, so memory losses are to be expected
+                    plot_data[field_id].append((field_value, time.time() - start_time))
