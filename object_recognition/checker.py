@@ -1,5 +1,3 @@
-import os
-import glob
 import sys
 import time
 from pathlib import Path
@@ -11,29 +9,32 @@ from config import *
 from model_class import get_model_path
 
 
-obj_name = sys.argv[1]
 #####################
 # CONFIG PARAMETERS #
-LOAD_PREFIX = 'images/selection_test/'
-LOAD_PREFIX_OBJ = LOAD_PREFIX + obj_name + '/'
-LOAD_PREFIX_TRUE = LOAD_PREFIX_OBJ + 'true/'
-LOAD_PREFIX_FALSE = LOAD_PREFIX_OBJ + 'false/'
+obj_name = sys.argv[1]
 
-SAVE_PREFIX = 'images/result_test/'
-SAVE_PREFIX_TRUE_POSITIVE = SAVE_PREFIX + 'true_positive/'
-SAVE_PREFIX_FALSE_POSITIVE = SAVE_PREFIX + 'false_positive/'
-SAVE_PREFIX_TRUE_NEGATIVE = SAVE_PREFIX + 'true_negative/'
-SAVE_PREFIX_FALSE_NEGATIVE = SAVE_PREFIX + 'false_negative/'
+LOAD_PATH = Path('images/selection_test/')
+LOAD_OBJ = LOAD_PATH / obj_name
+LOAD_POSITIVE_PATH = LOAD_OBJ / 'positive'
+LOAD_NEGATIVE_PATH = LOAD_OBJ / 'negative'
+
+ENABLE_OUTPUT = True
+
+SAVE_PATH = Path('images/result_test/')
+SAVE_TRUE_POSITIVE_PATH = SAVE_PATH / 'true_positive'
+SAVE_FALSE_POSITIVE_PATH = SAVE_PATH / 'false_positive'
+SAVE_TRUE_NEGATIVE_PATH = SAVE_PATH / 'true_negative'
+SAVE_FALSE_NEGATIVE_PATH = SAVE_PATH / 'false_negative'
 ####################
 
 
 def clear_dir(path):
-    files = glob.glob(f'{path}*')
+    files = path.glob('*')
     for file in files:
-        os.remove(file)
+        file.unlink()
 
 
-def find_obj_image(image_path, is_obj):
+def load_check_image(image_path, is_obj):
     time1 = time.time()
     image = load_image_rgb(image_path)
 
@@ -41,41 +42,46 @@ def find_obj_image(image_path, is_obj):
     is_obj_found = model.check_object(image)
     print('Object inference done in', time.time() - time2)
 
-    if is_obj_found and is_obj:
-        print('Found true positive', end=' ')
-        save_prefix = SAVE_PREFIX_TRUE_POSITIVE
-    elif is_obj_found and not is_obj:
-        print('Found false positive', end=' ')
-        save_prefix = SAVE_PREFIX_FALSE_POSITIVE
-    elif not is_obj_found and is_obj:
-        print('Found false negative', end=' ')
-        save_prefix = SAVE_PREFIX_FALSE_NEGATIVE
-    else:
-        print('Found true negative', end=' ')
-        save_prefix = SAVE_PREFIX_TRUE_NEGATIVE
+    is_correct = is_obj == is_obj_found
+    match is_correct, is_obj:
+        case True, True:
+            save_path = SAVE_TRUE_POSITIVE_PATH
+            result = 'Found true positive '
+        case False, True:
+            save_path = SAVE_FALSE_POSITIVE_PATH
+            result = 'Found false positive '
+        case True, False:
+            save_path = SAVE_TRUE_NEGATIVE_PATH
+            result = 'Found true negative '
+        case False, False:
+            save_path = SAVE_FALSE_NEGATIVE_PATH
+            result = 'Found false negative '
 
-    print(image_file)
+    print(result + image_path.name) # type: ignore
 
     # Copying original image according to our model
-    original_path = save_prefix + image_file
+    original_path = save_path / image_path.name # type: ignore
     save_image_rgb(original_path, image)
 
     # Saving image mask with detected object for debugging
-    gray_file = image_file.replace('.jpg', '_gray.png')
-    gray_path = save_prefix + gray_file
-
-    image_gray = model.get_debug()
-
-    save_image_rgb(gray_path, image_gray)
+    image_debug = model.get_debug()
+    debug_path = save_path / (image_path.stem + '_mask' + image_path.suffix) # type: ignore
+    save_image_rgb(debug_path, image_debug)
 
     print('Image checked in ', time.time() - time1)
+    return is_correct
 
 
-for directory in (SAVE_PREFIX_TRUE_NEGATIVE,
-                  SAVE_PREFIX_FALSE_NEGATIVE,
-                  SAVE_PREFIX_TRUE_POSITIVE,
-                  SAVE_PREFIX_FALSE_POSITIVE):
-    Path(directory).mkdir(parents=True, exist_ok=True)
+LOAD_POSITIVE_PATH.mkdir(parents=True, exist_ok=True)
+LOAD_NEGATIVE_PATH.mkdir(parents=True, exist_ok=True)
+
+for directory in (
+    SAVE_TRUE_NEGATIVE_PATH,
+    SAVE_FALSE_NEGATIVE_PATH,
+    SAVE_TRUE_POSITIVE_PATH,
+    SAVE_FALSE_POSITIVE_PATH,
+):
+    directory.mkdir(parents=True, exist_ok=True)
     clear_dir(directory)
 
 if COLOR_SCHEME == 'RGB':
@@ -83,15 +89,17 @@ if COLOR_SCHEME == 'RGB':
 elif COLOR_SCHEME == 'HSV':
     model = HSVModel(get_model_path(obj_name))
 
-print("Checker starts")
+print('Checker starts')
 time1 = time.time()
+true_positive, true_negative = 0, 0
+for image_path in LOAD_POSITIVE_PATH.iterdir():
+    if load_check_image(image_path, is_obj=True):
+        true_positive += 1
 
-Path(LOAD_PREFIX_TRUE).mkdir(parents=True, exist_ok=True)
-for image_file in sorted(os.listdir(LOAD_PREFIX_TRUE)):
-    find_obj_image(LOAD_PREFIX_TRUE + image_file, True)
+for image_path in LOAD_NEGATIVE_PATH.iterdir():
+    if load_check_image(image_path, is_obj=False):
+        true_negative += 1
 
-Path(LOAD_PREFIX_FALSE).mkdir(parents=True, exist_ok=True)
-for image_file in sorted(os.listdir(LOAD_PREFIX_FALSE)):
-    find_obj_image(LOAD_PREFIX_FALSE + image_file, False)
-
-print(f"Checker success in {time.time() - time1}")
+print(f'Checker success in {time.time() - time1}')
+print(f'True positive: {true_positive}/{len(list(LOAD_POSITIVE_PATH.iterdir()))}')
+print(f'True negative: {true_negative}/{len(list(LOAD_NEGATIVE_PATH.iterdir()))}')

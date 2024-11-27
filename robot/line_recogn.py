@@ -22,8 +22,6 @@ MODEL_PATH_PREFIX = '../object_recognition/'
 CAMERA_FOV = 51
 
 DEBUG = True
-
-
 ####################
 
 
@@ -37,118 +35,115 @@ def main(camera_path: str, model_name: str, visible_range: float):
     camera_name, camera_eye = camera_path.split('.')
     if COLOR_SCHEME == 'HSV':
         model = HSVModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
-    elif COLOR_SCHEME == "RGB":
+    elif COLOR_SCHEME == 'RGB':
         model = RGBModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
     else:
         raise Exception
 
     if camera_name != 'Bottom':
-        raise "Wrong camera name"
+        raise Exception('Wrong camera name')
 
     current_depth = 0
-    line_depth = network.wait_message(message.FilteredObjects.id).objs["Line"][2]
+    line_depth = network.wait_message(message.FilteredObjects.id).objs['Line'][2]
 
     net = network.Net()
     while net.receive():
-        if net.id == "ImageLinkCameraStereo":
-            if net.msg.obj == camera_name:
-                time1 = time.time()
+        if net.id == 'ImageLinkCameraStereo' and net.msg.obj == camera_name:
+            time1 = time.time()
 
-                image = load_image_rgb(net.msg.path[camera_eye])
+            image = load_image_rgb(net.msg.path[camera_eye])
 
-                smaller_side = min(image.shape[:2])
-                image = crop(image, (smaller_side, smaller_side))
+            smaller_side = min(image.shape[:2])
+            image = crop(image, (smaller_side, smaller_side))
 
-                new_size = int(meters_to_pixels(
-                    visible_range,
-                    line_depth - current_depth,
-                    CAMERA_FOV,
-                    image.shape[1]
-                ))
-                shape_ratio = image.shape[0] / image.shape[1]
-                image = crop(image, (int(new_size * shape_ratio), new_size))
+            new_size = int(
+                meters_to_pixels(
+                    visible_range, line_depth - current_depth, CAMERA_FOV, image.shape[1]
+                )
+            )
+            shape_ratio = image.shape[0] / image.shape[1]
+            image = crop(image, (int(new_size * shape_ratio), new_size))
 
-                try:
-                    is_obj_found = model.check_object(image)
-                except Exception as e:
-                    # print(image)
-                    print(f'Распознавалка упала с ошибкой {e}')
-                    continue
+            if not image:
+                continue
 
-                shape = image.shape
-                image_mask = model.image_weight
+            is_obj_found = model.check_object(image)
 
-                # Creating auxiliary array to filter zero sums
-                auxiliary_sum = np.stack((
-                    np.arange(shape[0]),
-                    image_mask @ np.arange(shape[1]),
-                    np.sum(image_mask, axis=1)
-                ))
-                filtered_sum = auxiliary_sum[:, auxiliary_sum[2] != 0]
+            shape = image.shape
+            image_mask = model.image_weight
 
-                filtered_indexes = filtered_sum[0].astype('uint64')
+            # Filtering rows with zero sum
+            row_sums = np.sum(image_mask, axis=1, dtype=MODEL_NEXT_DTYPE)
+            nonzero_mask = row_sums != 0
 
-                mean_x_vector = (filtered_sum[1] // filtered_sum[2]).astype('uint64')
+            rows = np.arange(shape[0], dtype=np.uint16)[nonzero_mask]
+            row_weighted_sums = np.matmul(
+                image_mask,
+                np.arange(shape[1], dtype=np.uint16),
+                dtype=MODEL_NEXT_DTYPE
+            )[nonzero_mask]
+            row_means = row_weighted_sums / row_sums[nonzero_mask]
 
-                if mean_x_vector.size > 1:
-                    a, b = calc_lin_approx((filtered_indexes, mean_x_vector))
-                else:
-                    a, b = 0, shape[1] / 2
+            if row_means.size > 1:
+                a, b = np.linalg.lstsq(
+                    np.vstack((rows, np.ones_like(rows))).T,
+                    row_means
+                )[0]
+            else:
+                a, b = 0, shape[1] / 2
 
-                if DEBUG:
-                    original_filename = Path(net.msg.path[camera_eye]).with_suffix('')
-                    original_ext = Path(net.msg.path[camera_eye]).suffix
+            if DEBUG:
+                original_filename = Path(net.msg.path[camera_eye]).with_suffix('')
+                original_ext = Path(net.msg.path[camera_eye]).suffix
 
-                    save_path = f'{original_filename}_Line_gray{original_ext}'
+                save_path = f'{original_filename}_Line_debug{original_ext}'
 
-                    image_debug = model.get_debug()
+                image_debug = model.get_debug()
 
-                    image_debug[filtered_indexes, mean_x_vector] = 255, 255, 0
+                image_debug[rows, row_means.astype(np.uint64)] = 255, 255, 0
 
-                    line_ys = np.arange(shape[0])
-                    line_xs = (a * np.arange(shape[0]) + b).astype('int64')
+                line_ys = np.arange(shape[0])
+                line_xs = (a * np.arange(shape[0]) + b).astype(np.int64)
 
-                    line_indexes = np.stack((line_ys, line_xs))
-                    line_indexes = line_indexes[
-                                   :,
-                                   (line_indexes[1, :] >= 0) & (line_indexes[1, :] < image_debug.shape[1])
-                                   ]
+                line_indexes = np.stack((line_ys, line_xs))
+                line_indexes = line_indexes[
+                    :, (line_indexes[1, :] >= 0) & (line_indexes[1, :] < image_debug.shape[1])
+                ]
 
-                    image_debug[line_indexes[0], line_indexes[1]] = 255, 0, 0
+                image_debug[line_indexes[0], line_indexes[1]] = 255, 0, 0
 
-                    save_image_rgb(save_path, image_debug)
+                save_image_rgb(save_path, image_debug)
 
-                    net.send(message.ImageLinkRecognition(
-                        obj=camera_name + 'Line',
-                        path=save_path,
-                        counter=None
-                    ))
-
-                if is_obj_found:
-                    # x, y in line coordinate system
-                    x, y = line_closest_point(
-                        (a, b),
-                        (shape[0] / 2, shape[1] / 2)
+                net.send(
+                    message.ImageLinkRecognition(
+                        obj=camera_name + 'Line', path=save_path, counter=None
                     )
+                )
 
-                    lag_error = (y / shape[1] - 0.5) * visible_range
+            if is_obj_found:
+                # x, y in line coordinate system
+                x, y = line_closest_point((a, b), (shape[0] / 2, shape[1] / 2))
 
-                    yaw_error = math.degrees(math.atan(a))
+                lag_error = (y / shape[1] - 0.5) * visible_range
 
-                    net.send(message.Line(
+                yaw_error = math.degrees(math.atan(a))
+
+                net.send(
+                    message.Line(
                         is_detected=True,
                         image_shape=image.shape,
                         lag_error=lag_error,
                         yaw_error=yaw_error,
-                        counter=0
-                    ))
+                        counter=0,
+                    )
+                )
 
-                else:
-                    net.send(message.Line(is_detected=False, image_shape=image.shape))
+            else:
+                net.send(message.Line(is_detected=False, image_shape=image.shape))
 
-                time2 = time.time()
-                if time2 - time1 > 0.25:
-                    print(f"Image recognition slower than 0.25s: {time2 - time1}")
+            time2 = time.time()
+            if time2 - time1 > 0.25:
+                print(f'Image recognition slower than 0.25s: {time2 - time1}')
 
         elif net.id == 'Coord':
             current_depth = net.msg.pos[2]
@@ -157,8 +152,4 @@ def main(camera_path: str, model_name: str, visible_range: float):
 if __name__ == '__main__':
     setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 
-    main(
-        camera_path=sys.argv[1],
-        model_name=sys.argv[2],
-        visible_range=float(sys.argv[3])
-    )
+    main(camera_path=sys.argv[1], model_name=sys.argv[2], visible_range=float(sys.argv[3]))
