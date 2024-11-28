@@ -14,9 +14,10 @@
 
   # Recognition:
   python line_recogn.py Bottom.left LineRedSim 2 &
-  python obj_recogn.py Bottom.left SquareGreenSim SquareGreen 0.5 &
+  python obj_recogn.py Bottom.left SquareYellowSim SquareYellow 0.5 &
   python obj_recogn.py Bottom.left SquareBlackSim SquareBlack 0.5 &
-  python obj_recogn.py Bottom.left SquareYellowSim SquareOrange 0.5 &
+  python obj_recogn.py Bottom.left SquareOrangeSim SquareOrange 0.5 &
+  python obj_recogn.py Bottom.left SquareGreenSim SquareGreen 0.5 &
 
   cd ../simulation
   python3 imu.py &
