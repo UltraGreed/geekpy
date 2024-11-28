@@ -68,12 +68,11 @@ def main(camera_path: str, model_name: str, visible_range: float):
                 shape_ratio = image.shape[0] / image.shape[1]
                 image = crop(image, (int(new_size * shape_ratio), new_size))
 
-                try:
-                    is_obj_found = model.check_object(image)
-                except Exception as e:
-                    # print(image)
-                    print(f'Распознавалка упала с ошибкой {e}')
+                if image.size == 0:
+                    print('Пустой image в line recognition')
                     continue
+
+                is_obj_found = model.check_object(image)
 
                 shape = image.shape
                 image_mask = model.image_weight
