@@ -25,9 +25,9 @@ class Command(QWidget):
 
         self.is_timer = False
         self.timer = QTimer()
-        self.timer.timeout.connect(self.sendMessage)
+        self.timer.timeout.connect(self.sendMessageOnTimer)
         self.timer_value = 0.0
-        self.send_active = False
+        self.send_pressed = False
 
         arguments = inspect.signature(message).parameters.values()
 
@@ -114,14 +114,19 @@ class Command(QWidget):
 
         return self.message(*arguments)
 
-    def sendMessage(self):
-        self.net.send(self.send_message)
+    # send will start only if send button is pressed
+    def sendMessageOnTimer(self):
+        if self.send_pressed:
+            self.net.send(self.send_message)
 
     @pyqtSlot()
     def onSendButtonClicked(self):
         self.send_message = self.getMessage()
-        self.sendMessage()
-        self.send_active = True
+
+        if self.is_timer:
+            self.send_pressed = True
+        else:
+            self.net.send(self.send_message)
 
     @pyqtSlot(int)
     def onTimerChecked(self, state):
@@ -130,6 +135,7 @@ class Command(QWidget):
             self.timer.start(int(self.timer_value * 1000))
         else:
             self.timer.stop()
+            self.send_pressed = False
 
     @pyqtSlot(float)
     def onTimerValueChanged(self, value):
@@ -188,28 +194,6 @@ class MainWindow(QMainWindow):
         self.is_close_pressed = True
         super().closeEvent(event)
 
-    def sendCycle(self):
-        net = network.Net()
-        while True:
-            if self.is_close_pressed:
-                break
-
-            for it in self.commands:
-                if not it.send_active:
-                    continue
-
-                if not it.is_timer:
-                    net.send(it.getMessage())
-                    it.send_active = False
-                    continue
-
-                if it.timer.is_unlock:
-                    net.send(it.getMessage())
-
-            QApplication.instance().processEvents()
-
-            time.sleep(0.0005)
-
 
 def main(): 
     setproctitle.setproctitle(' '.join(sys.argv))
@@ -218,7 +202,6 @@ def main():
 
     window = MainWindow()
     window.show()
-    # window.sendCycle()
 
     app.exec()
 
