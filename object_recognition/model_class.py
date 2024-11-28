@@ -156,7 +156,7 @@ class InferenceModel:
                 np.arange(0, self.image.shape[1]),
                 np.sum(self.image_weight, axis=0, dtype=MODEL_NEXT_DTYPE),
             ) / self.image_sum
-            self._object_center = np.asarray([mean_y, mean_x], dtype=np.uint16)
+            self._object_center = (float(mean_y), float(mean_x))
 
         return self._object_center
 
