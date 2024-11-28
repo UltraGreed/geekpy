@@ -264,7 +264,9 @@ class RGBModel(InferenceModel):
         def get_image_weight(image):
             rgb_data = image // RGB_COMPRESSION
 
-            return model[*rgb_data.transpose((2, 0, 1))]
+            transposed = rgb_data.transpose((2, 0, 1))
+
+            return model[transposed[0], transposed[1], transposed[2]]
 
         model = np.load(model_path)
 
@@ -280,7 +282,9 @@ class HSVModel(InferenceModel):
             hsv_data[:, :, 1] //= S_COMPRESSION
             hsv_data[:, :, 2] //= V_COMPRESSION
 
-            return model[*hsv_data.transpose((2, 0, 1))]
+            transposed = hsv_data.transpose((2, 0, 1))
+
+            return model[transposed[0], transposed[1], transposed[2]]
 
         model = np.load(model_path)
 

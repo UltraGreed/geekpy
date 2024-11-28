@@ -43,19 +43,18 @@ def load_check_image(image_path, is_obj):
     print('Object inference done in', time.time() - time2)
 
     is_correct = is_obj == is_obj_found
-    match is_correct, is_obj:
-        case True, True:
-            save_path = SAVE_TRUE_POSITIVE_PATH
-            result = 'Found true positive '
-        case False, True:
-            save_path = SAVE_FALSE_POSITIVE_PATH
-            result = 'Found false positive '
-        case True, False:
-            save_path = SAVE_TRUE_NEGATIVE_PATH
-            result = 'Found true negative '
-        case False, False:
-            save_path = SAVE_FALSE_NEGATIVE_PATH
-            result = 'Found false negative '
+    if is_correct and is_obj:
+        save_path = SAVE_TRUE_POSITIVE_PATH
+        result = 'Found true positive '
+    elif not is_correct and is_obj:
+        save_path = SAVE_FALSE_POSITIVE_PATH
+        result = 'Found false positive '
+    elif is_correct and not is_obj:
+        save_path = SAVE_TRUE_NEGATIVE_PATH
+        result = 'Found true negative '
+    else:
+        save_path = SAVE_FALSE_NEGATIVE_PATH
+        result = 'Found false negative '
 
     print(result + image_path.name) # type: ignore
 

@@ -5,14 +5,14 @@ import math
 from pathlib import Path
 
 
-def load_image(path: str | Path, color_convert: int | None = None):
+def load_image(path: str, color_convert: int = None):
     img = cv2.imread(str(path), flags=-1)
     if color_convert is not None:
         img = cv2.cvtColor(img, color_convert)
     return img
 
 
-def save_image(path: str | Path, img_array: np.ndarray, color_convert: int):
+def save_image(path: str, img_array: np.ndarray, color_convert: int):
     img = cv2.cvtColor(img_array, color_convert)
     cv2.imwrite(str(path), img)
 

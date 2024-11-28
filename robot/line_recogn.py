@@ -90,7 +90,8 @@ def main(camera_path: str, model_name: str, visible_range: float):
             if row_means.size > 1:
                 a, b = np.linalg.lstsq(
                     np.vstack((rows, np.ones_like(rows))).T,
-                    row_means
+                    row_means,
+                    rcond=None
                 )[0]
             else:
                 a, b = 0, shape[1] / 2
