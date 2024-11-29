@@ -64,6 +64,10 @@ def main(camera_path: str, model_name: str, obj_name: str, visible_range: float,
                 shape_ratio = image.shape[0] / image.shape[1]
                 image = crop(image, (int(new_size * shape_ratio), new_size))
 
+                if image.size == 0:
+                    print('Warning: Пустой image в obj_recogn.py')
+                    continue
+
                 is_obj_found = model.check_object(image)
 
                 if is_obj_found:

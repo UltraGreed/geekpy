@@ -33,7 +33,8 @@ def object_reaction_max(object_order: tuple,
                         max_depth: float,
                         orange_count: int):
     """
-    Enables red and green LEDs according to the rules, drops the ball.
+    Enable red and green LEDs according to the rules, drop the ball.
+
     :param object_order: list of 'triangle' and 'square' strings; shall contain only yellow objects
     :param object_interval: after detected object ignore next ones for this amount of time
     :param object_green_led: name of object to enable green leds

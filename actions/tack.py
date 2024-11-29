@@ -1,7 +1,7 @@
 import time
 
 from base import mat, message, network
-from base.message import YAW, X, Y
+from base.message import YAW
 
 # Timer period to send 'Tack' message to regulator.
 TIMER = 0.25
@@ -25,7 +25,7 @@ def tack(mode='Relative', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=Non
         target_yaw = yaw + pos[YAW]
     else:                            # Set direction to object as target yaw
         if has_target:
-            raise "Tack shouldn't have both target and object at the same time"
+            raise Exception("Tack shouldn't have both target and object at the same time")
         obj   = network.wait_message('FilteredObjects').objs[mode]
         target_yaw = mat.direction(pos, obj)  # and save target yaw.
 
@@ -44,15 +44,15 @@ def tack(mode='Relative', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=Non
                                   stab_pitch=0.0,       # calculated
                                   stab_roll=0.0))       # parameters.
 
-            if not dt and time.time() > start_time + dt: return
+            if dt and time.time() > start_time + dt:
+                return
 
-            if not dist and d > dist: return                         # If work done => exit.
+            if dist and d > dist:
+                return                         # If work done => exit.
 
         elif net.id == 'Coord':  # If coordinates has come
             pos = net.msg.pos    # then save robot position.
 
         elif net.id == 'Target' and has_target:
-            if net.msg.is_detected:
-                target_yaw = pos[YAW] + net.msg.offset_yaw
-            else:
-                target_yaw = target_yaw_old  # TODO: choose either reset to initial or keep old value
+            # TODO: choose either reset to initial or keep old value
+            target_yaw = pos[YAW] + net.msg.offset_yaw if net.msg.is_detected else target_yaw_old

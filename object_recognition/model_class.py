@@ -9,12 +9,17 @@ def get_model_path(obj_name, model_id='sub', color_scheme=COLOR_SCHEME):
     return MODEL_DIRECTORY + f'{model_id}_{obj_name}_{color_scheme.upper()}.npy'
 
 
-class ImageNotLoaded(Exception):
+class ImageNotLoadedError(Exception):
     pass
 
 
 class InferenceModel:
-    def __init__(self, get_image_weight, threshold_object_part=THRESHOLD_OBJECT, threshold_clean_part=THRESHOLD_CLEAN):
+    def __init__(
+        self,
+        get_image_weight,
+        threshold_object_part=THRESHOLD_OBJECT,
+        threshold_clean_part=THRESHOLD_CLEAN,
+    ):
         self.get_image_weight = get_image_weight
 
         self._image = None
@@ -37,8 +42,8 @@ class InferenceModel:
     def image(self):
         if self._image is not None:
             return self._image
-        else:
-            raise ImageNotLoaded
+
+        raise ImageNotLoadedError
 
     @image.setter
     def image(self, value):
@@ -58,14 +63,18 @@ class InferenceModel:
     @property
     def threshold_object(self):
         if self._threshold_object is None:
-            self._threshold_object = self._threshold_object_part * len(self.image) ** 2 * MAX_PIXEL_WEIGHT
+            self._threshold_object = (
+                self._threshold_object_part * len(self.image) ** 2 * MODEL_MAX_VALUE
+            )
 
         return self._threshold_object
 
     @property
     def threshold_clean(self):
         if self._threshold_clean is None:
-            self._threshold_clean = self._threshold_clean_part * len(self.image) ** 2 * MAX_PIXEL_WEIGHT
+            self._threshold_clean = (
+                self._threshold_clean_part * len(self.image) ** 2 * MODEL_MAX_VALUE
+            )
 
         return self._threshold_clean
 
@@ -81,8 +90,8 @@ class InferenceModel:
         if self._image_weight is None:
             # Removes low weighted borders of image
             # Arrays with sums of columns and rows
-            col_sums = np.sum(self.image_weight_raw, axis=0)
-            row_sums = np.sum(self.image_weight_raw, axis=1)
+            col_sums = np.sum(self.image_weight_raw, axis=0, dtype=MODEL_NEXT_DTYPE)
+            row_sums = np.sum(self.image_weight_raw, axis=1, dtype=MODEL_NEXT_DTYPE)
             # Starting indexes of iterators
             up = 0
             down = self.image.shape[0] - 1
@@ -94,10 +103,15 @@ class InferenceModel:
             left_removed = 0
             right_removed = 0
 
-            while (up_removed <= self.threshold_clean / 4 or
-                   down_removed <= self.threshold_clean / 4) and up != down or \
-                    (left_removed <= self.threshold_clean / 4 or
-                     right_removed <= self.threshold_clean / 4) and left != right:
+            while (
+                (up_removed <= self.threshold_clean / 4 or down_removed <= self.threshold_clean / 4)
+                and up != down
+                or (
+                    left_removed <= self.threshold_clean / 4
+                    or right_removed <= self.threshold_clean / 4
+                )
+                and left != right
+            ):
                 if up_removed <= self.threshold_clean / 4 and up != down:
                     up += 1
                     up_removed += row_sums[up]
@@ -112,13 +126,12 @@ class InferenceModel:
                     right_removed += col_sums[right]
 
             # Remaining part of image
-            image_remain = self.image_weight_raw[up:down + 1, left:right + 1]
+            image_remain = self.image_weight_raw[up : down + 1, left : right + 1]
 
             # Pad resulting array to original size
             self._image_weight = np.pad(
                 image_remain,
-                ((up, self.image.shape[0] - down - 1),
-                 (left, self.image.shape[1] - right - 1))
+                ((up, self.image.shape[0] - down - 1), (left, self.image.shape[1] - right - 1)),
             )
 
         return self._image_weight
@@ -126,7 +139,7 @@ class InferenceModel:
     @property
     def image_sum(self):
         if self._image_sum is None:
-            self._image_sum = np.sum(self.image_weight)
+            self._image_sum = np.sum(self.image_weight, dtype=MODEL_NEXT_DTYPE)
 
         return self._image_sum
 
@@ -135,23 +148,42 @@ class InferenceModel:
         if self.image_sum == 0:
             return self.image.shape[0] // 2, self.image.shape[1] // 2
         if self._object_center is None:
-            mean_y = np.dot(np.arange(0, self.image.shape[0]), np.sum(self.image_weight, axis=1)) / self.image_sum
-            mean_x = np.dot(np.arange(0, self.image.shape[1]), np.sum(self.image_weight, axis=0)) / self.image_sum
-            self._object_center = np.asarray([mean_y, mean_x])
+            mean_y = np.dot(
+                np.arange(0, self.image.shape[0]),
+                np.sum(self.image_weight, axis=1, dtype=MODEL_NEXT_DTYPE),
+            ) / self.image_sum
+            mean_x = np.dot(
+                np.arange(0, self.image.shape[1]),
+                np.sum(self.image_weight, axis=0, dtype=MODEL_NEXT_DTYPE),
+            ) / self.image_sum
+            self._object_center = (float(mean_y), float(mean_x))
 
         return self._object_center
 
     @property
+    # HACK: Potential bottleneck here
     def object_dispersion_sq(self):
         if self._object_dispersion_sq is None:
             dispersion_x = np.sum(
-                np.square(np.tile(np.arange(0, self.image.shape[0])[:, np.newaxis] - self.object_center[0],
-                                  (1, self.image.shape[1]))) * self.image_weight
+                np.tile(
+                    np.arange(0, self.image.shape[0], dtype=MODEL_NEXT_SIGNED_DTYPE)[:, np.newaxis]
+                    - self.object_center[0],
+                    (1, self.image.shape[1]),
+                )
+                ** 2
+                * self.image_weight,
+                dtype=MODEL_NEXT_DTYPE,
             ) / (self.image_sum if self.image_sum else 1)
 
             dispersion_y = np.sum(
-                np.square(np.tile(np.arange(0, self.image.shape[1]) - self.object_center[1],
-                                  (self.image.shape[0], 1))) * self.image_weight
+                np.tile(
+                    np.arange(0, self.image.shape[1], dtype=MODEL_NEXT_SIGNED_DTYPE)
+                    - self.object_center[1],
+                    (self.image.shape[0], 1),
+                )
+                ** 2
+                * self.image_weight,
+                dtype=MODEL_NEXT_DTYPE,
             ) / (self.image_sum if self.image_sum else 1)
 
             self._object_dispersion_sq = np.asarray([dispersion_x, dispersion_y])
@@ -170,33 +202,49 @@ class InferenceModel:
         if new_image is not None:
             self.image = new_image
 
-        return self.image_sum >= self.threshold_object
+        return bool(self.image_sum >= self.threshold_object)
 
-    # Function creating a black and white array image of raw object
+    # Function creating a mask image of raw object
     def get_debug_raw(self):
-        r_layer, g_layer = [
-            np.where(np.asarray(self.image_weight_raw) == 0, 0, self.image_weight_raw * 255) for _ in range(2)
-        ]
-        b_layer = np.where(np.asarray(self.image_weight_raw) == 0, 255, self.image_weight_raw * 255)
+        r_layer, g_layer = (
+            np.where(
+                self.image_weight_raw == 0,
+                0,
+                self.image_weight_raw // MODEL_IMAGE_CAST,
+            ).astype(np.uint8)
+            for _ in range(2)
+        )
+        b_layer = np.where(
+            self.image_weight_raw == 0,
+            255,
+            self.image_weight_raw // MODEL_IMAGE_CAST,
+        ).astype(np.uint8)
 
-        return np.dstack(tuple(np.asarray(layer, dtype='uint8') for layer in (r_layer, g_layer, b_layer)))
+        return np.dstack(tuple(np.asarray(layer) for layer in (r_layer, g_layer, b_layer)))
 
-    # Function creating a black and white array image of object
+    # Function creating a mask image of object
     def get_debug(self):
-        r_layer = self.image_weight * 255
+        r_layer = (self.image_weight // MODEL_IMAGE_CAST).astype(np.uint8)
 
         g_layer = np.where(
             np.logical_and(self.image_weight == 0, self.image_weight_raw != 0),
             200,
-            self.image_weight * 255
+            self.image_weight // MODEL_IMAGE_CAST,
+        ).astype(np.uint8)
+
+        b_layer = np.where(
+            self.image_weight == 0,
+            255,
+            self.image_weight // MODEL_IMAGE_CAST,
+        ).astype(np.uint8)
+
+        image_grayscale = np.dstack((r_layer, g_layer, b_layer))
+
+        cross_color = (
+            np.asarray([0, 255, 0], dtype='uint8')
+            if self.check_object()
+            else np.asarray([255, 0, 0], dtype='uint8')
         )
-
-        b_layer = np.where(self.image_weight == 0, 255, self.image_weight * 255)
-
-        image_grayscale = np.dstack(tuple(np.asarray(layer, dtype='uint8') for layer in (r_layer, g_layer, b_layer)))
-
-        cross_color = np.asarray([0, 255, 0], dtype='uint8') if self.check_object() else np.asarray([255, 0, 0],
-                                                                                                    dtype='uint8')
 
         size_x, size_y = self.object_pixel_size
 
@@ -214,11 +262,11 @@ class InferenceModel:
 class RGBModel(InferenceModel):
     def __init__(self, model_path, **kwargs):
         def get_image_weight(image):
-            rgb_data = image.astype('uint32') // RGB_COMPRESSION
+            rgb_data = image // RGB_COMPRESSION
 
-            index_matrix = rgb_data[:, :, 0] * RGB_AMOUNT ** 2 + rgb_data[:, :, 1] * RGB_AMOUNT + rgb_data[:, :, 2]
+            transposed = rgb_data.transpose((2, 0, 1))
 
-            return model[index_matrix]
+            return model[transposed[0], transposed[1], transposed[2]]
 
         model = np.load(model_path)
 
@@ -234,9 +282,9 @@ class HSVModel(InferenceModel):
             hsv_data[:, :, 1] //= S_COMPRESSION
             hsv_data[:, :, 2] //= V_COMPRESSION
 
-            index_matrix = hsv_data[:, :, 0] * S_AMOUNT * V_AMOUNT + hsv_data[:, :, 1] * V_AMOUNT + hsv_data[:, :, 2]
+            transposed = hsv_data.transpose((2, 0, 1))
 
-            return model[index_matrix.astype('uint32')]
+            return model[transposed[0], transposed[1], transposed[2]]
 
         model = np.load(model_path)
 

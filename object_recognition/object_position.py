@@ -55,7 +55,7 @@ def get_obj_pos_front(robot_pos, obj_real, obj_pixel, image_shape, obj_center):
 
 # Function converting pixel coordinates to map coordinates
 def get_yaw_from_pixel(image_shape, obj_coords):
-    raise NotImplementedError
+    # raise NotImplementedError
     pixel_relative_y = obj_coords[Y] - image_shape[Y] / 2
 
     offset_yaw = pixel_relative_y / image_shape[Y] * CAMERA_FOV
