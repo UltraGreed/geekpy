@@ -11,14 +11,9 @@ from model_class import get_model_path
 from config import *
 
 
-obj_name = sys.argv[1]
 #####################
 # CONFIG PARAMETERS #
-LOAD_PREFIX = 'images/selection_train/'
-LOAD_PREFIX_OBJ = LOAD_PREFIX + obj_name + '/'
-
-SAVE_PREFIX = 'images/selection_train/'
-SAVE_PREFIX_OBJ = SAVE_PREFIX + obj_name + '/'
+LOAD_PREFIX = Path('images/selection_train/')
 #####################
 
 
@@ -77,18 +72,20 @@ def inc_data_hsv(model, hsv_columns):
     np.add.at(model, index, 1)
 
 
-def train_rgb():
+def train_rgb(model_name):
+    load_path = LOAD_PREFIX / model_name
+
     data_all = np.zeros(RGB_AMOUNT**3, dtype=TRAIN_DTYPE)
     data_object = np.zeros(RGB_AMOUNT**3, dtype=TRAIN_DTYPE)
     data_non_object = np.zeros(RGB_AMOUNT**3, dtype=TRAIN_DTYPE)
 
-    for image_name in os.listdir(LOAD_PREFIX_OBJ):
-        if 'out' in image_name:
+    for image_path in load_path.iterdir():
+        if 'out' in image_path.name:
             continue
 
         time1 = time.time()
 
-        image = load_image_rgba(LOAD_PREFIX_OBJ + image_name)
+        image = load_image_rgba(image_path)
 
         r_layer, g_layer, b_layer = (
             np.asarray(image[:, :, i] // RGB_COMPRESSION) for i in range(3)
@@ -103,23 +100,24 @@ def train_rgb():
 
         print(f'Image: {time.time() - time1}')
 
-    np.save(get_model_path(obj_name, model_id='obj'), data_object.reshape(MODEL_SHAPE))
-    np.save(get_model_path(obj_name, model_id='noobj'), data_non_object.reshape(MODEL_SHAPE))
-    np.save(get_model_path(obj_name, model_id='all'), data_all.reshape(MODEL_SHAPE))
+    np.save(get_model_path(model_name, model_id='obj'), data_object.reshape(MODEL_SHAPE))
+    np.save(get_model_path(model_name, model_id='noobj'), data_non_object.reshape(MODEL_SHAPE))
+    np.save(get_model_path(model_name, model_id='all'), data_all.reshape(MODEL_SHAPE))
 
 
-def train_hsv():
+def train_hsv(model_name):
+    load_path = LOAD_PREFIX / model_name
     data_all = np.zeros(H_AMOUNT * S_AMOUNT * V_AMOUNT, dtype=TRAIN_DTYPE)
     data_object = np.zeros(H_AMOUNT * S_AMOUNT * V_AMOUNT, dtype=TRAIN_DTYPE)
     data_non_object = np.zeros(H_AMOUNT * S_AMOUNT * V_AMOUNT, dtype=TRAIN_DTYPE)
 
-    for image_name in os.listdir(LOAD_PREFIX_OBJ):
-        if 'out' in image_name:
+    for image_path in load_path.iterdir():
+        if 'out' in image_path.name:
             continue
 
         time1 = time.time()
 
-        rgba_image = load_image_rgba(LOAD_PREFIX_OBJ + image_name)
+        rgba_image = load_image_rgba(image_path)
         a_layer = rgba_image[:, :, 3]
 
         hsv_data = np.reshape(rgba_to_hsv(rgba_image), (-1, 3))
@@ -133,23 +131,27 @@ def train_hsv():
         inc_data_hsv(data_non_object, hsv_data[a_layer.flatten() >= 128])
         print(f'Image: {time.time() - time1}')
 
-    np.save(get_model_path(obj_name, model_id='obj'), data_object.reshape(MODEL_SHAPE))
-    np.save(get_model_path(obj_name, model_id='noobj'), data_non_object.reshape(MODEL_SHAPE))
-    np.save(get_model_path(obj_name, model_id='all'), data_all.reshape(MODEL_SHAPE))
+    np.save(get_model_path(model_name, model_id='obj'), data_object.reshape(MODEL_SHAPE))
+    np.save(get_model_path(model_name, model_id='noobj'), data_non_object.reshape(MODEL_SHAPE))
+    np.save(get_model_path(model_name, model_id='all'), data_all.reshape(MODEL_SHAPE))
 
 
 def main():
-    time1 = time.time()
+    if len(sys.argv) < 2:
+        print('Please specify at least one model for training.')
+        sys.exit(1)
 
-    Path(get_model_path(obj_name)).parent.mkdir(exist_ok=True)
+    for model_name in sys.argv[1:]:
+        time1 = time.time()
+        print(f'Training of {model_name} starts.')
 
-    print('Training starts.')
-    if COLOR_SCHEME == 'RGB':
-        train_rgb()
-    elif COLOR_SCHEME == 'HSV':
-        train_hsv()
+        Path(get_model_path(model_name)).parent.mkdir(exist_ok=True)
+        if COLOR_SCHEME == 'RGB':
+            train_rgb(model_name)
+        elif COLOR_SCHEME == 'HSV':
+            train_hsv(model_name)
 
-    print(f'Training success in {time.time() - time1}.')
+        print(f'Training success in {time.time() - time1}.')
 
 
 if __name__ == '__main__':

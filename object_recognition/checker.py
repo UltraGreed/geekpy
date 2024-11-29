@@ -11,10 +11,10 @@ from model_class import get_model_path
 
 #####################
 # CONFIG PARAMETERS #
-obj_name = sys.argv[1]
+model_name = sys.argv[1]
 
 LOAD_PATH = Path('images/selection_test/')
-LOAD_OBJ = LOAD_PATH / obj_name
+LOAD_OBJ = LOAD_PATH / model_name
 LOAD_POSITIVE_PATH = LOAD_OBJ / 'positive'
 LOAD_NEGATIVE_PATH = LOAD_OBJ / 'negative'
 
@@ -84,11 +84,11 @@ for directory in (
     clear_dir(directory)
 
 if COLOR_SCHEME == 'RGB':
-    model = RGBModel(get_model_path(obj_name))
+    model = RGBModel(get_model_path(model_name))
 elif COLOR_SCHEME == 'HSV':
-    model = HSVModel(get_model_path(obj_name))
+    model = HSVModel(get_model_path(model_name))
 
-print('Checker starts')
+print(f'Checker for {model_name} starts')
 time1 = time.time()
 true_positive, true_negative = 0, 0
 for image_path in LOAD_POSITIVE_PATH.iterdir():

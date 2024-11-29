@@ -6,7 +6,7 @@ from model_class import get_model_path
 from config import *
 
 
-obj_name = sys.argv[1]
+model_name = sys.argv[1]
 
 
 def get_histogram_separate(axel_ind):
@@ -42,9 +42,9 @@ def get_histogram_model(axel_ind):
     )
 
 
-data_obj_norm = np.load(get_model_path(obj_name, 'obj_norm')).reshape(MODEL_SHAPE)
-data_non_obj_norm = np.load(get_model_path(obj_name, 'noobj_norm')).reshape(MODEL_SHAPE)
-data_sub = np.load(get_model_path(obj_name, 'sub')).reshape(MODEL_SHAPE)
+data_obj_norm = np.load(get_model_path(model_name, 'obj_norm')).reshape(MODEL_SHAPE)
+data_non_obj_norm = np.load(get_model_path(model_name, 'noobj_norm')).reshape(MODEL_SHAPE)
+data_sub = np.load(get_model_path(model_name, 'sub')).reshape(MODEL_SHAPE)
 
 save_image_rgb('hist_sep_SV.png', get_histogram_separate(0))
 save_image_rgb('hist_sep_HV.png', get_histogram_separate(1))
@@ -53,3 +53,5 @@ save_image_rgb('hist_sep_HS.png', get_histogram_separate(2))
 save_image_rgb('hist_model_SV.png', get_histogram_model(0))
 save_image_rgb('hist_model_HV.png', get_histogram_model(1))
 save_image_rgb('hist_model_HS.png', get_histogram_model(2))
+
+print(f'Generated histograms for {model_name}')
