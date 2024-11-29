@@ -129,8 +129,8 @@ while net.receive():
                 if (
                     type(field_value) is int
                     or type(field_value) is float
-                    or type(field_value) is np.ndarray
-                    and field_value.shape == ()
+                    or type(field_value) is bool
+                    or (type(field_value) is np.ndarray and field_value.shape == ())
                 ):
                     field_name_shown = (
                         f'{field_value:.2f}'.rjust(9, ' ') + ' ' + field_id[field_id.find('.') + 1 :]

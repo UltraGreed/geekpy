@@ -21,8 +21,10 @@ def cosd(x):
 # Rotate angle to +-180 deg range
 def to180(x):
     angle = x
-    while angle > 180.0: angle -= 360.0
-    while angle < -180.0: angle += 360.0
+    while angle > 180.0:
+        angle -= 360.0
+    while angle < -180.0:
+        angle += 360.0
     return angle
 
 
@@ -89,13 +91,13 @@ def calc_lin_approx(data):
     :return: tuple of coefficients
     """
     sum_x = sum(data[0])
-    sum_x2 = sum([x ** 2 for x in data[0]])
+    sum_x2 = sum([x**2 for x in data[0]])
     sum_y = sum(data[1])
     sum_xy = sum([data[0][i] * data[1][i] for i in range(len(data[0]))])
     n = len(data[0])
 
     # Calculate coefficients
-    a = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x ** 2)
+    a = (n * sum_xy - sum_x * sum_y) / (n * sum_x2 - sum_x**2)
 
     b = (sum_y - a * sum_x) / n
 
@@ -116,13 +118,11 @@ def line_closest_point(coefs: tuple, point: tuple):
     elif len(coefs) == 3:
         a, b, c = coefs
     else:
-        raise ValueError("Wrong number of coefficients")
+        raise ValueError('Wrong number of coefficients')
 
     x0, y0 = point
 
-    x = (b * (b * x0 - a * y0) - a * c) / (a ** 2 + b ** 2)
-    y = (a * (-b * x0 + a * y0) - b * c) / (a ** 2 + b ** 2)
+    x = (b * (b * x0 - a * y0) - a * c) / (a**2 + b**2)
+    y = (a * (-b * x0 + a * y0) - b * c) / (a**2 + b**2)
 
     return x, y
-
-

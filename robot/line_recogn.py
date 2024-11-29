@@ -58,11 +58,9 @@ def main(camera_path: str, model_name: str, visible_range: float):
             smaller_side = min(image.shape[:2])
             image = crop(image, (smaller_side, smaller_side))
 
-            new_size = int(
-                meters_to_pixels(
-                    visible_range, line_depth - current_depth, CAMERA_FOV, image.shape[1]
-                )
-            )
+            new_size = int(meters_to_pixels(
+                visible_range, line_depth - current_depth, CAMERA_FOV, image.shape[1]
+            ))
             shape_ratio = image.shape[0] / image.shape[1]
             image = crop(image, (int(new_size * shape_ratio), new_size))
 
@@ -107,14 +105,13 @@ def main(camera_path: str, model_name: str, visible_range: float):
                 image_debug[rows, row_means.astype(np.uint64)] = 255, 255, 0
 
                 line_ys = np.arange(shape[0])
-                line_xs = (a * np.arange(shape[0]) + b).astype(np.int64)
+                line_xs = (a * line_ys + b).astype(np.int64)
 
-                line_indexes = np.stack((line_ys, line_xs))
-                line_indexes = line_indexes[
-                    :, (line_indexes[1, :] >= 0) & (line_indexes[1, :] < image_debug.shape[1])
-                ]
+                xs_mask = (line_xs >= 0) & (line_xs < image_debug.shape[1])
+                line_xs = line_xs[xs_mask]
+                line_ys = line_ys[xs_mask]
 
-                image_debug[line_indexes[0], line_indexes[1]] = 255, 0, 0
+                image_debug[line_ys, line_xs] = 255, 0, 0
 
                 save_image_rgb(save_path, image_debug)
 
