@@ -7,13 +7,12 @@ import multiprocessing
 import time
 
 
-mission_depth = 1.0
+mission_depth = 0.75
 pool_depth = 2.0
 
 lower_depth = 1.1
 upper_depth = 0.6
-start_depth = lower_depth
-target_depth = 1.1
+target_depth = lower_depth
 
 line_speed = 0.2
 homing_speed = 0.1
@@ -21,6 +20,7 @@ homing_speed = 0.1
 init_robot(yaw=0, depth=0, x=0, y=0)
 
 photosave.start("Bottom", None)
+photosave.start("Front", None)
 
 target_homing_process = multiprocessing.Process(
     target=target_homing,
@@ -33,11 +33,12 @@ target_homing_process.start()
 
 time1 = time.time()
 line_movement(exit_object="NOEXIT", object_delay=-1, exit_delay=-1,
-              timeout=100, speed=line_speed, depth=start_depth)
+              timeout=100, speed=line_speed, depth=mission_depth)
 
 print(f"Line ended in ${time.time() - time1}")
 
 photosave.stop("Bottom")
+photosave.stop("Front")
 
 # Don't forget to terminate started processes
 target_homing_process.terminate()

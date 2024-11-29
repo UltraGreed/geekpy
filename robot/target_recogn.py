@@ -41,7 +41,7 @@ def main(camera_name, model_name, camera_eye):
                             model.object_center
                         ))
                     else:
-                        raise "Wrong camera name"
+                        raise Exception("Wrong camera name")
 
                     net.send(message.Target(
                         offset_yaw=offset_yaw,
