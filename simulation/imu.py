@@ -4,8 +4,8 @@ from base import network, message, mat
 from base.message import YAW
 
 TIMEOUT = 0.50  # Force timeout.
-PERIOD  = 0.05  # Integration period and publication timer.
-MOMENT  = 0.10  # Momement of inertion in yaw axis.
+PERIOD  = 1 / 12  # Integration period and publication timer.
+MOMENT  = 0.05  # Momement of inertion in yaw axis.
 
 setproctitle.setproctitle(' '.join(sys.argv))  # Set filename.py title for process.
 net    = network.Net(timer=PERIOD)             # Network communication.

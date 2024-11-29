@@ -6,8 +6,8 @@ import time
 from base import network, message, mat
 from base.message import X, Y, YAW
 
-TIMER   = 0.05        # Integration and publication timer period.
-MX, MY  = 1.50, 1.00  # Mass in lateral and longitudinal directions.
+TIMER = 1 / 12        # Integration and publication timer period.
+MX, MY  = 3.00, 1.00  # Mass in lateral and longitudinal directions.
 TIMEOUT = 0.5         # Force timeout.
 
 setproctitle.setproctitle(' '.join(sys.argv))                        # Set filename.py title for process.
