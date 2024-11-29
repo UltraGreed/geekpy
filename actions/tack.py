@@ -16,7 +16,7 @@ def tack(mode='Relative', has_target=False, yaw=0.0, dist=0.1, speed=0.1, dt=Non
 
     # Initial and current robot positions and objects data.
     start = network.wait_message('Coord').pos
-    pos   = network.wait_message('Coord').pos
+    pos   = start
 
     # Read target yaw.
     if mode == 'Absolute':           # Use given yaw as absolute target yaw

@@ -88,7 +88,12 @@ while net.receive():
         root.update()
         root.update_idletasks()
     else:
-        msg_dict = json.loads(str(net.msg))
+        try:
+            msg_dict = json.loads(str(net.msg))
+        except json.JSONDecodeError:
+            print(net.id, net.msg)
+            continue
+
         for key, value in msg_dict.items():
             if value is None:
                 continue
