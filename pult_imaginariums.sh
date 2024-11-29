@@ -4,5 +4,5 @@
 
   cd pult
 
-  python imaginarium.py "" Bottom BottomLine BottomSquareOrange BottomSquareBlack BottomSquareGreen &
+  python imaginarium.py "" Front Bottom BottomRedSircle BottomGreenTriangle BottomYellowSquare BottomLine &
 )

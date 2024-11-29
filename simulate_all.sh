@@ -8,15 +8,16 @@
   python3 scene.py &
 
   # Acoustic objects detection:
-   python3 bearing.py  29500 30500 Boxes &
+   # python3 bearing.py  29500 30500 Boxes &
 #   python3 bearing.py  37000 38000 Frame &
 #   python3 bearing.py  37000 38000 Boxes &
 
   # Recognition:
-  python line_recogn.py Bottom.left LineRedSim 2 &
-  python obj_recogn.py Bottom.left SquareGreenSim SquareGreen 0.5 &
-  python obj_recogn.py Bottom.left SquareBlackSim SquareBlack 0.5 &
-  python obj_recogn.py Bottom.left SquareYellowSim SquareOrange 0.5 &
+  python line_recogn.py Bottom.left sim_BottomLine 2 &
+  python obj_recogn.py Bottom.left sim_BottomRedSircle RedSircle 0.5 &
+  python obj_recogn.py Bottom.left sim_BottomGreenTriangle GreenTriangle 0.5 &
+  python obj_recogn.py Bottom.left sim_BottomYellowSquare YellowSquare 0.5 &
+  python obj_recogn.py Front.left sim_FrontRedSircle Target 0.5 &
 
   cd ../simulation
   python3 imu.py &
@@ -34,7 +35,7 @@
   # SoundDelay simulation:
   #                     X  |  Y |  Z       Disp|Freq|  хз че это
 #   python3 acoustic.py -9.5 10.5 2.0      0.01 30000 9.95  50.0 &
-   python3 acoustic.py  3    2.6  1.4      0.01 30000 9.95  50.0 &
+   # python3 acoustic.py  3    2.6  1.4      0.01 30000 9.95  50.0 &
   
   python camera_integration.py &
 )
