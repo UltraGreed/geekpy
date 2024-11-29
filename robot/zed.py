@@ -265,10 +265,10 @@ def img_cap(
                 data_file.seek(-1, 2)
                 data_file.truncate()
                 data_file.write("\n]")
-            except io.UnsupportedOperation as e:
+            except (io.UnsupportedOperation, ValueError) as e:
                 print(f"ZED: coordinate logging failed with {e}")
-            finally:
-                data_file.close()
+
+            data_file.close()
 
         # WARN: ...
         if net.id == Coord.id:
