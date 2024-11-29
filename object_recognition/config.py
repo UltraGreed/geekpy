@@ -11,7 +11,7 @@ THRESHOLD_CLEAN = 0.00005
 # MODEL-WIDE PARAMETERS #
 # Integer size of one model element
 # Value higher than 32 does not work correctly
-MODEL_PRECISION = 8
+MODEL_PRECISION = 32
 MODEL_MAX_VALUE = 2**MODEL_PRECISION - 1
 MODEL_DTYPE = f'uint{MODEL_PRECISION}'
 MODEL_NEXT_DTYPE = 'uint32' if MODEL_PRECISION < 32 else 'uint64'

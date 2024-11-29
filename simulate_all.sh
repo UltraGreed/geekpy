@@ -13,11 +13,8 @@
 #   python3 bearing.py  37000 38000 Boxes &
 
   # Recognition:
-  python line_recogn.py Bottom.left sim_BottomLine 2 &
-  python obj_recogn.py Bottom.left sim_BottomRedSircle RedSircle 0.5 &
-  python obj_recogn.py Bottom.left sim_BottomGreenTriangle GreenTriangle 0.5 &
-  python obj_recogn.py Bottom.left sim_BottomYellowSquare YellowSquare 0.5 &
-  python obj_recogn.py Front.left sim_FrontRedSircle Target 0.5 &
+  python line_recogn.py Bottom.left LineOrangeSim 2 &
+  python target_recogn.py Front CircleRedSim left &
 
   cd ../simulation
   python3 imu.py &
