@@ -7,7 +7,7 @@ from base.message import YAW
 TIMER = 0.25
 
 # Coefficients for lag line following
-P = 1
+P = 0.1
 D = 0
 MAX_X_SPEED = 0.3
 
@@ -16,8 +16,8 @@ def line_movement(speed: float,
                   object_delay: float,
                   exit_object: str,
                   exit_delay: float,
-                  timeout: float = None,
-                  depth: float = None):
+                  timeout: float,
+                  depth: float):
     start_time = time.time()
 
     current_coord = network.wait_message('Coord')

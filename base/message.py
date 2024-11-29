@@ -28,7 +28,6 @@ class Message(metaclass=MetaMessage):
     def __str__(self):
         return json.dumps(self.__dict__)
 
-
 # Test message
 class TestMessage(Message):
     def __init__(self, text="Hello world!"):
@@ -105,7 +104,7 @@ class Tack(Message):
     def __init__(self, priority=0, time=1.0,
                  speed_x=None, speed_y=None, speed_depth=None, speed_yaw=None, speed_pitch=None, speed_roll=None,
                  stab_x=None, stab_y=None, stab_depth=None, stab_yaw=None, stab_pitch=None, stab_roll=None):
-        self.priority = priority  # Priority of movement control: 0=Mission, 1=Keyboard, 2=Gamepad
+        self.priority = priority  # Priority of movement control: 0=Mission, 1=Higher priority mission, 2=Gamepad
         self.time = time  # Time of movement control
         self.speed = [speed_x, speed_y, speed_depth, speed_yaw, speed_pitch, speed_roll]  # Speed mode, m/s, deg/s
         self.stab = [stab_x, stab_y, stab_depth, stab_yaw, stab_pitch, stab_roll]  # Stabilization mode, m, deg
@@ -212,9 +211,9 @@ class FilteredObjects(Message):
                 "Line": [0, 1, 2, 0.0, 0.0, 0.0, "#000000"],
                 # "Pinger": [0, 0, 2, 0, 0, 0, "#0000ff"]
                 "CircleRed": [0, 0, 2, 0.0, 0.0, 0.0, "#ff0000"],
-                "TriangleGreen" : [0, 0, 2, 0.0, 0.0, 0.0, "#00ff00"],
-                "SquareYellow" : [0, 0, 2, 0.0, 0.0, 0.0, "#ffff00"],
-                # "Target": [0, 3, 2, 0.0, 0.0, 0.0, "#999999"],
+                # "TriangleGreen" : [0, 0, 1.2, 0.0, 0.0, 0.0, "#00ff00"],
+                # "SquareYellow" : [0, 0, 1.2, 0.0, 0.0, 0.0, "#ffff00"],
+                "Target": [0, 3, 1.1, 0.0, 0.0, 0.0, "#999999"],
             }
         self.objs = objs
 
