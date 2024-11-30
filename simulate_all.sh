@@ -16,6 +16,12 @@
   python line_recogn.py Bottom.left LineOrangeSim 2 &
   python target_recogn.py Front CircleRedSim left &
 
+  # python line_recogn.py Bottom.left LineOrangeSim 2 &
+  # python obj_recogn.py Bottom.left CircleRedSim CircleRed 10 0.1 &
+  # python obj_recogn.py Bottom.left TriangleGreenSim TriangleGreen 0.1 &
+  # python obj_recogn.py Bottom.left SquareYellowSim SquareYellow 0.1 &
+  # python target_recogn.py Front TargetRedSim left &
+
   cd ../simulation
   python3 imu.py &
   python3 ctd.py &

@@ -211,8 +211,8 @@ class FilteredObjects(Message):
                 "Line": [0, 1, 2, 0.0, 0.0, 0.0, "#000000"],
                 # "Pinger": [0, 0, 2, 0, 0, 0, "#0000ff"]
                 "CircleRed": [0, 0, 2, 0.0, 0.0, 0.0, "#ff0000"],
-                # "TriangleGreen" : [0, 0, 1.2, 0.0, 0.0, 0.0, "#00ff00"],
-                # "SquareYellow" : [0, 0, 1.2, 0.0, 0.0, 0.0, "#ffff00"],
+                "TriangleGreen" : [0, 0, 1.2, 0.0, 0.0, 0.0, "#00ff00"],
+                "SquareYellow" : [0, 0, 1.2, 0.0, 0.0, 0.0, "#ffff00"],
                 "Target": [0, 3, 1.1, 0.0, 0.0, 0.0, "#999999"],
             }
         self.objs = objs
