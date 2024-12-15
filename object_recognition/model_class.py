@@ -1,12 +1,36 @@
 import numpy as np
 
-from object_recognition.config import *
-
+from object_recognition.config import COLOR_SCHEME, MODEL_DIRECTORY
 from object_recognition.image_utils import rgb_to_hsv
 
+from pathlib import Path
 
-def get_model_path(obj_name, model_id='sub', color_scheme=COLOR_SCHEME):
-    return MODEL_DIRECTORY + f'{model_id}_{obj_name}_{color_scheme.upper()}.npy'
+
+def get_model_path(
+    obj_name, model_id='sub', color_scheme=COLOR_SCHEME, model_dir_path=MODEL_DIRECTORY
+):
+    return Path(model_dir_path) / f'{model_id}_{obj_name}_{color_scheme.upper()}.npy'
+
+
+def create_inference_model(
+    obj_name, model_id='sub', color_scheme=COLOR_SCHEME, model_dir_path=MODEL_DIRECTORY, **kwargs
+):
+    """Create inference model for provided object. All **kwargs go to model class."""
+    if color_scheme == 'HSV':
+        model_class = HSVModel
+    elif color_scheme == 'RGB':
+        model_class = RGBModel
+    else:
+        raise NotImplementedError
+
+    model_path = get_model_path(
+        obj_name,
+        model_id=model_id,
+        color_scheme=color_scheme,
+        model_dir_path=model_dir_path
+    )
+
+    return model_class(model_path, **kwargs)
 
 
 class ImageNotLoadedError(Exception):

@@ -8,7 +8,7 @@ import setproctitle
 from base import network, message
 from base.mat import line_closest_point
 
-from object_recognition.model_class import RGBModel, HSVModel, get_model_path
+from object_recognition.model_class import create_inference_model
 from object_recognition.image_utils import load_image_rgb, save_image_rgb, crop, meters_to_pixels
 from object_recognition.config import *
 
@@ -17,7 +17,7 @@ import cv2
 
 #####################
 # CONFIG PARAMETERS #
-MODEL_PATH_PREFIX = '../object_recognition/'
+RECOGNITION_LIB_PATH = Path('../object_recognition/')
 
 # Value which would be used in received path dictionary
 CAMERA_FOV = 51
@@ -36,12 +36,8 @@ def main(camera_path: str, model_name: str, visible_range: float):
     :return:
     """
     camera_name, camera_eye = camera_path.split('.')
-    if COLOR_SCHEME == 'HSV':
-        model = HSVModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
-    elif COLOR_SCHEME == 'RGB':
-        model = RGBModel(MODEL_PATH_PREFIX + get_model_path(obj_name=model_name))
-    else:
-        raise Exception
+
+    model = create_inference_model(obj_name=model_name, model_dir_path=RECOGNITION_LIB_PATH)
 
     if camera_name != 'Bottom':
         raise Exception('Wrong camera name')

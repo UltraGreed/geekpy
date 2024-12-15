@@ -4,9 +4,8 @@ from pathlib import Path
 
 from image_utils import load_image_rgb, save_image_rgb
 
-from model_class import RGBModel, HSVModel
+from model_class import create_model
 from config import *
-from model_class import get_model_path
 
 
 #####################
@@ -83,10 +82,7 @@ for directory in (
     directory.mkdir(parents=True, exist_ok=True)
     clear_dir(directory)
 
-if COLOR_SCHEME == 'RGB':
-    model = RGBModel(get_model_path(model_name))
-elif COLOR_SCHEME == 'HSV':
-    model = HSVModel(get_model_path(model_name))
+model = create_model(model_name)
 
 print(f'Checker for {model_name} starts')
 time1 = time.time()

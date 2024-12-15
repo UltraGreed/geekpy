@@ -3,9 +3,8 @@ import time
 
 from image_utils import load_image_rgb
 
-from model_class import RGBModel, HSVModel
+from model_class import create_model
 from config import *
-from model_class import get_model_path
 
 from itertools import chain
 from pathlib import Path
@@ -28,10 +27,7 @@ def check_image(image):
     print('Object inference done in', time.time() - time1)
 
 
-if COLOR_SCHEME == 'RGB':
-    model = RGBModel(get_model_path(obj_name))
-elif COLOR_SCHEME == 'HSV':
-    model = HSVModel(get_model_path(obj_name))
+model = create_model(obj_name)
 
 print('Image loading starts')
 time1 = time.time()
