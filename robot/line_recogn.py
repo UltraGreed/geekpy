@@ -13,6 +13,7 @@ from object_recognition.image_utils import load_image_rgb, save_image_rgb, crop,
 from object_recognition.config import *
 
 import numpy as np
+import cv2
 
 #####################
 # CONFIG PARAMETERS #
@@ -100,18 +101,11 @@ def main(camera_path: str, model_name: str, visible_range: float):
 
                 save_path = f'{original_filename}_Line_debug{original_ext}'
 
-                image_debug = model.get_debug()
+                image_debug = model.get_debug(cross_hair=False)
 
                 image_debug[rows, row_means.astype(np.uint64)] = 255, 255, 0
 
-                line_ys = np.arange(shape[0])
-                line_xs = (a * line_ys + b).astype(np.int64)
-
-                xs_mask = (line_xs >= 0) & (line_xs < image_debug.shape[1])
-                line_xs = line_xs[xs_mask]
-                line_ys = line_ys[xs_mask]
-
-                image_debug[line_ys, line_xs] = 255, 0, 0
+                cv2.line(image_debug, (int(b), 0), (int(a * shape[0] + b), shape[0]), (255, 0, 0), 2)
 
                 save_image_rgb(save_path, image_debug)
 

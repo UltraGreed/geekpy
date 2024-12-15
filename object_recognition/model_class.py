@@ -223,7 +223,7 @@ class InferenceModel:
         return np.dstack(tuple(np.asarray(layer) for layer in (r_layer, g_layer, b_layer)))
 
     # Function creating a mask image of object
-    def get_debug(self):
+    def get_debug(self, *, cross_hair=True):
         r_layer = (self.image_weight // MODEL_IMAGE_CAST).astype(np.uint8)
 
         g_layer = np.where(
@@ -240,21 +240,22 @@ class InferenceModel:
 
         image_grayscale = np.dstack((r_layer, g_layer, b_layer))
 
-        cross_color = (
-            np.asarray([0, 255, 0], dtype='uint8')
-            if self.check_object()
-            else np.asarray([255, 0, 0], dtype='uint8')
-        )
+        if cross_hair:
+            cross_color = (
+                np.asarray([0, 255, 0], dtype='uint8')
+                if self.check_object()
+                else np.asarray([255, 0, 0], dtype='uint8')
+            )
 
-        size_x, size_y = self.object_pixel_size
+            size_x, size_y = self.object_pixel_size
 
-        obj_x, obj_y = self.object_center
-        for i in range(-int(size_x), int(size_x) + 1):
-            if 0 <= int(obj_x) + i < image_grayscale.shape[0]:
-                image_grayscale[int(obj_x) + i][int(obj_y)] = cross_color
-        for i in range(-int(size_y), int(size_y) + 1):
-            if 0 <= int(obj_y) + i < image_grayscale.shape[1]:
-                image_grayscale[int(obj_x)][int(obj_y) + i] = cross_color
+            obj_x, obj_y = self.object_center
+            for i in range(-int(size_x), int(size_x) + 1):
+                if 0 <= int(obj_x) + i < image_grayscale.shape[0]:
+                    image_grayscale[int(obj_x) + i][int(obj_y)] = cross_color
+            for i in range(-int(size_y), int(size_y) + 1):
+                if 0 <= int(obj_y) + i < image_grayscale.shape[1]:
+                    image_grayscale[int(obj_x)][int(obj_y) + i] = cross_color
 
         return image_grayscale
 
