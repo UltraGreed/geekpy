@@ -36,8 +36,8 @@
   #   python3 obj_recogn.py Bottom        CellY         CellY &
 
   #                   camera_name model_name
-  python line_recogn.py Bottom.right LineBlueDirt 10 &
-  python target_recogn.py Front SovokOrangeDirt left &
+  python line_recogn.py Bottom.right LineOrangeMSU 10 &
+  python target_recogn.py Front TargetMSU left &
   # python obj_recogn.py Bottom.right SquareOrangeFEFU SquareOrange 0.35 0.1 &
   # python obj_recogn.py Bottom.right SquareGreenFEFU SquareGreen 0.75 0.025 &
 
