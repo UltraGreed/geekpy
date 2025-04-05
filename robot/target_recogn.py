@@ -4,7 +4,7 @@ import setproctitle
 
 from base import network, message
 
-from object_recognition.model_class import create_model
+from object_recognition.model_class import create_inference_model
 from object_recognition.image_utils import load_image_rgb, save_image_rgb
 from object_recognition.object_position import get_yaw_from_pixel
 from object_recognition.config import *
@@ -18,7 +18,7 @@ DEBUG = True
 
 
 def main(camera_name, model_name, camera_eye):
-    model = create_model(model_name, model_dir_path=RECOGNITION_LIB_PATH)
+    model = create_inference_model(model_name, model_dir_path=RECOGNITION_LIB_PATH)
 
     net = network.Net()
     while net.receive():

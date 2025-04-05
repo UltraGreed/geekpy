@@ -4,7 +4,7 @@ from pathlib import Path
 
 from image_utils import load_image_rgb, save_image_rgb
 
-from model_class import create_model
+from model_class import create_inference_model
 from config import *
 
 
@@ -82,7 +82,7 @@ for directory in (
     directory.mkdir(parents=True, exist_ok=True)
     clear_dir(directory)
 
-model = create_model(model_name)
+model = create_inference_model(model_name)
 
 print(f'Checker for {model_name} starts')
 time1 = time.time()

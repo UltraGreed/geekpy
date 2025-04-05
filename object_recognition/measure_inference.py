@@ -3,7 +3,7 @@ import time
 
 from image_utils import load_image_rgb
 
-from model_class import create_model
+from model_class import create_inference_model
 from config import *
 
 from itertools import chain
@@ -27,7 +27,7 @@ def check_image(image):
     print('Object inference done in', time.time() - time1)
 
 
-model = create_model(obj_name)
+model = create_inference_model(obj_name)
 
 print('Image loading starts')
 time1 = time.time()
