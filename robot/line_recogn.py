@@ -37,13 +37,13 @@ def main(camera_path: str, model_name: str, visible_range: float):
     """
     camera_name, camera_eye = camera_path.split('.')
 
-    model = create_inference_model(obj_name=model_name, model_dir_path=RECOGNITION_LIB_PATH)
+    model = create_inference_model(obj_name=model_name, model_dir_path=RECOGNITION_LIB_PATH)  # type: ignore
 
     if camera_name != 'Bottom':
-        raise Exception('Wrong camera name')
+        raise Exception('Wrong camera name')  # noqa
 
     current_depth = 0
-    line_depth = network.wait_message(message.FilteredObjects.id).objs['Line'][2]
+    line_depth = network.wait_message(message.FilteredObjects.id).objs['Line'][2]  # type: ignore
 
     net = network.Net()
     while net.receive():
