@@ -1,12 +1,8 @@
-import math
 import serial
 import setproctitle
 import sys
 
-import threading
-
 from base import message, network
-from base.message import YAW
 
 import time
 
@@ -15,9 +11,10 @@ import time
 BAUDRATE = 115200
 PACKAGE_FREQ = 1200  # Packages per second
 PORT_NAME = '/dev/ttyUSB0'
-
-EARTH_ROTATION = -0.008
-SENSOR_ERROR = 1.5
+EARTH_ROTATION = -0.0050437326344210075
+# From datasheet
+# SCALE_COEFFICIENT = 0.006  # For VG103PD
+SCALE_COEFFICIENT = 0.012  # For VG103PD-200SH
 #################
 
 
@@ -85,9 +82,8 @@ class PhysopticSerial(serial.Serial):
 
     @staticmethod
     def bytes_to_unit(data):
-        rate = int.from_bytes((data[2], data[3], data[1]), byteorder='big', signed=True) * 5 / 2 ** 24 / math.pi * 180
-
-        rate *= SENSOR_ERROR
+        rate = int.from_bytes((data[2], data[3], data[1]), byteorder='big', signed=True) * 5 / 2**24
+        rate /= SCALE_COEFFICIENT  
 
         counter = data[4]
         extra = data[5]
