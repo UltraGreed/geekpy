@@ -5,8 +5,12 @@ import numpy as np
 
 from model_class import get_model_path
 
-from config import *
-
+from config import (
+    MODEL_MAX_VALUE,
+    MODEL_DTYPE,
+    UPPER_BORDER_OBJECT,
+    LOWER_MODEL_BORDER,
+)
 
 def normalize(model_name):
     data_object = np.load(get_model_path(model_name, model_id='obj'))

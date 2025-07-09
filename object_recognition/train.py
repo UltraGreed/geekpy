@@ -1,4 +1,3 @@
-import os
 import sys
 import time
 from pathlib import Path
@@ -8,7 +7,20 @@ import numpy as np
 from image_utils import load_image_rgba, rgba_to_hsv
 from model_class import get_model_path
 
-from config import *
+from config import (
+    PIXEL_AREA,
+    RGB_AMOUNT,
+    RGB_COMPRESSION,
+    H_AMOUNT,
+    S_AMOUNT,
+    V_AMOUNT,
+    H_COMPRESSION,
+    S_COMPRESSION,
+    V_COMPRESSION,
+    TRAIN_DTYPE,
+    MODEL_SHAPE,
+    COLOR_SCHEME,
+)
 
 
 #####################

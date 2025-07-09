@@ -1,6 +1,20 @@
 import numpy as np
 
-from object_recognition.config import COLOR_SCHEME, MODEL_DIRECTORY
+from object_recognition.config import (
+    COLOR_SCHEME,
+    H_COMPRESSION,
+    MODEL_DIRECTORY,
+    MODEL_IMAGE_CAST,
+    MODEL_MAX_VALUE,
+    MODEL_NEXT_DTYPE,
+    MODEL_NEXT_SIGNED_DTYPE,
+    PIXEL_SIZE_COEFFICIENT,
+    RGB_COMPRESSION,
+    S_COMPRESSION,
+    THRESHOLD_CLEAN,
+    THRESHOLD_OBJECT,
+    V_COMPRESSION,
+)
 from object_recognition.image_utils import rgb_to_hsv
 
 from pathlib import Path
@@ -27,7 +41,7 @@ def create_inference_model(
         obj_name,
         model_id=model_id,
         color_scheme=color_scheme,
-        model_dir_path=model_dir_path
+        model_dir_path=model_dir_path,
     )
 
     return model_class(model_path, **kwargs)

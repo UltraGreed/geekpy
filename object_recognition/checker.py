@@ -5,7 +5,6 @@ from pathlib import Path
 from image_utils import load_image_rgb, save_image_rgb
 
 from model_class import create_inference_model
-from config import *
 
 
 #####################
