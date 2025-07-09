@@ -1,27 +1,22 @@
 import sys
+import time
 from pathlib import Path
 
-import cv2
-
-import time
 from image_utils import load_image_rgba, save_image_rgba, save_image_rgb
+
 import numpy as np
+import cv2
 
 
 def merge(background_img: np.ndarray,
           object_img: np.ndarray,
           x_offset: int,
           y_offset: int,
-          size_scale: float) -> (np.ndarray, np.ndarray):
+          size_scale: float) -> tuple[np.ndarray, np.ndarray]:
     """
-    Returns merged image from given bg and obj images with given offset of xy and size.
+    Return merged image from given bg and obj images with given offset of xy and size.
+
     Object image should be of the same size as background image. Or not. I'm not sure.
-    :param background_img:
-    :param object_img:
-    :param x_offset:
-    :param y_offset:
-    :param size_scale:
-    :return:
     """
 
     scaled_obj_img = cv2.resize(object_img, (0, 0), fx=size_scale, fy=size_scale)
@@ -73,15 +68,7 @@ def merge(background_img: np.ndarray,
 
 def option_merge(bg_img, obj_img, save_path, x_range, y_range, size_range, n_steps):
     """
-    Creates a set of images from given bg and obj images within a given ranges of offsets.
-    :param bg_img:
-    :param obj_img:
-    :param save_path:
-    :param x_range:
-    :param y_range:
-    :param size_range:
-    :param n_steps:
-    :return:
+    Create a set of images from given bg and obj images within a given ranges of offsets.
     """
     i = 0
     # TODO: fix for n_steps < 2 and zero delta values
@@ -116,8 +103,8 @@ if __name__ == '__main__':
             str(base_path / 'background.png'),
             str(base_path / 'object.png'),
             str(base_path / 'result'),
-            200,
-            100,
-            0,
-            2
+            x_range=200,
+            y_range=100,
+            size_range=0,
+            n_steps=2
         )
