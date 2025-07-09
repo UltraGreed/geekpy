@@ -2,10 +2,9 @@ import cv2
 import numpy as np
 
 import math
-from pathlib import Path
 
 
-def load_image(path: str, color_convert: int = None):
+def load_image(path: str, color_convert: int | None = None):
     img = cv2.imread(str(path), flags=-1)
     if color_convert is not None:
         img = cv2.cvtColor(img, color_convert)
